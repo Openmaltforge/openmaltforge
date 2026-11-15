@@ -126,8 +126,8 @@ const LFONTS = [
   { id: 'pirata', n: 'Pirata One — gothique', f: "'LF Pirata'", up: 'none', ls: '.01em', w: 400 },
   {
     id: 'scratchy',
-    n: 'Superscratchy — gribouillé',
-    f: "'Superscratchy','Rock Salt','LF Bangers'",
+    n: 'Rock Salt — gribouillé',
+    f: "'Rock Salt','LF Bangers'",
     up: 'none',
     ls: '.01em',
     w: 400
@@ -273,7 +273,7 @@ const lblNrmF = x => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function lblFontFams(n) {
   const al = (typeof FONTS_SEED !== 'undefined' && (FONTS_SEED.find(x => x.n === n) || {}).f) || '',
     k = lblNrmF(n),
-    out = ['LU ' + n, al, /^Inter(?![A-Za-z])/.test(n) ? 'Inter' : '', /^Roboto[ _-]?Mono/i.test(n) ? 'Roboto Mono' : '', /^Superscratchy/i.test(n) ? 'Superscratchy' : ''];
+    out = ['LU ' + n, al, /^Inter(?![A-Za-z])/.test(n) ? 'Inter' : '', /^Roboto[ _-]?Mono/i.test(n) ? 'Roboto Mono' : ''];
   LFONTS.forEach(f =>
     (f.f.match(/'[^']+'|"[^"]+"|[A-Za-z][A-Za-z0-9 ]*(?=,|$)/g) || []).forEach(q => {
       const fam = q.replace(/^['"]|['"]$/g, '').trim(),
@@ -1991,7 +1991,7 @@ document.addEventListener('keydown', e => {
 /* ---------- encart « Polices de caractères » (Paramètres) ---------- */
 /* polices de l'interface (liste v2 de fonts_seed.js) : modifiables par remplacement du fichier, jamais supprimables */
 /* polices de l'interface (non supprimables) : les 9 du lot v2 + les polices Google Fonts utilisées par le CSS et les modèles d'étiquette */
-const UIFONT_RE = /^(Inter(?![A-Za-z])|Roboto[ _-]?Mono|Playfair[ _-]?Display|Courier[ _-]?Prime|Bowlby[ _-]?One|Caprasimo|Rock[ _-]?Salt|Superscratchy)/i;
+const UIFONT_RE = /^(Inter(?![A-Za-z])|Roboto[ _-]?Mono|Playfair[ _-]?Display|Courier[ _-]?Prime|Bowlby[ _-]?One|Caprasimo|Rock[ _-]?Salt)/i;
 const fontLocked = n => (typeof FONTS_SEED !== 'undefined' && FONTS_SEED.some(f => f.v >= 2 && f.n === n)) || UIFONT_RE.test(String(n || ''));
 let FSORT = 0; /* tri de la colonne « Nom » : 0 = ordre de la base, 1 = croissant, -1 = décroissant */
 const fontsHead = () => `Nom${FSORT ? `<span class="sar ${FSORT === 1 ? 'up' : 'dn'}" title="${FSORT === 1 ? 'Tri croissant' : 'Tri décroissant'}"></span>` : ''}`;

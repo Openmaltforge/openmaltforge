@@ -1,4 +1,4 @@
-# OpenMaltForge v6.1.0
+# OpenMaltForge v6.2.0
 
 Application de bureau de conception de recettes de bière : un binaire Go unique qui embarque l'interface
 (JavaScript sans framework) et gère la base SQLite, affichée dans une fenêtre d'application Chromium
@@ -42,7 +42,7 @@ Options : `--no-browser` (serveur seul, affiche l'adresse), `--port <n>`, `--dos
 
 ## Polices
 
-Uniquement des polices libres de Google Fonts, stockées dans la base (table `polices`) : les polices de l'interface ne sont pas supprimables ; les autres peuvent être remplacées à la suppression (Inter par défaut). Seule exception, fournie par l'utilisateur : Superscratchy (police par défaut du « Bandeau oblique »).
+Uniquement des polices libres de Google Fonts, stockées dans la base (table `polices`) : les polices de l'interface ne sont pas supprimables ; les autres peuvent être remplacées à la suppression (Inter par défaut). La police par défaut du « Bandeau oblique » est Rock Salt (Superscratchy, de licence non libre, a été retirée en 6.2.0 ; chacun peut l'importer lui-même).
 
 ## Développement
 

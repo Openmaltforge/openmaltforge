@@ -38,7 +38,7 @@ This Font Software is licensed under the SIL Open Font License, Version 1.1.
 Toutes ces polices (Google Fonts) sont publiées sous SIL Open Font License 1.1 — https://openfontlicense.org
 Utilisation libre, y compris commerciale, embarquement autorisé.
 
-Note v3.37 : Superscratchy (dafont.com) n'est pas fournie (licence propre à la police) : importez-la depuis l'écran Étiquettes ou déposez fonts/Superscratchy.ttf.
+Note 6.2.0 : Superscratchy (dafont.com, licence propre à son auteur) n'est plus fournie ; le « Bandeau oblique » utilise Rock Salt (Google Fonts, licence Apache 2.0). Chacun peut importer Superscratchy depuis l'écran Paramètres › Polices.
 Impact, Chiller, Jokerman, Stencil, Old English Text MT, Ink Free, Bauhaus 93 : polices système/Office, non embarquées.
 
 === Polices de l'interface (ajoutées en v3.113.0) — fichiers issus du dépôt Google Fonts (https://github.com/google/fonts)

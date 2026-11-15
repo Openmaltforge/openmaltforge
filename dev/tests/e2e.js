@@ -1295,7 +1295,7 @@ async function scenarioApp(label) {
       JSON.stringify({ ...lb, txt: lb.txt.slice(0, 80) })
     );
     check(
-      'format « Bandeau oblique » : 188 × 34 mm, en tête de liste, police par défaut Superscratchy (gribouillé), logo en gris',
+      'format « Bandeau oblique » : 188 × 34 mm, en tête de liste, police par défaut Rock Salt (gribouillé, police libre Google), logo en gris',
       await page.evaluate(() => {
         const f = LF[0];
         S.kv.recipe.etq.fmt = 'bandeauxl';
@@ -1304,7 +1304,7 @@ async function scenarioApp(label) {
           f.id === 'bandeauxl' &&
           f.n === 'Bandeau oblique' &&
           f.font === 'scratchy' &&
-          /Superscratchy/.test(lblFont(f.font).f) &&
+          /^'Rock Salt'/.test(lblFont(f.font).f) &&
           f.w === 188 &&
           f.h === 34 &&
           f.shape === 'para2' &&
@@ -3803,7 +3803,7 @@ check(
       })
     );
     check(
-      'étiquette Excel : texte vertical (« année#brassin … IBU », % alcool, volume) et police Superscratchy',
+      'étiquette Excel : texte vertical (« année#brassin … IBU », % alcool, volume) et police Rock Salt',
       await page.evaluate(async () => {
         const Q = S.kv.recipe.etq;
         Q.fnt = 'auto';
@@ -3823,7 +3823,7 @@ check(
           v.some(x => /IBU/.test(x.t) && x.t.includes(brewNo(S.kv.recipe).code)) &&
           v.some(x => /%/.test(x.t)) &&
           v.some(x => /cl/.test(x.t)) &&
-          /Superscratchy/.test(getComputedStyle(n).fontFamily)
+          /Rock Salt/.test(getComputedStyle(n).fontFamily)
         );
       })
     );
@@ -3857,7 +3857,7 @@ check(
           ff: [...document.fonts].map(f => f.family + ':' + f.status).filter(x => /rock salt/i.test(x)),
           o: [...document.querySelectorAll('select[data-q="fnt"] option')]
             .map(o => o.textContent)
-            .filter(t => /rock ?salt/i.test(t))
+            .filter(t => /rock ?salt/i.test(t) && !/gribouill/i.test(t)) /* hors modèle « Rock Salt — gribouillé » */
         };
       });
       check(
@@ -7172,7 +7172,7 @@ async function scenarioI18n() {
       })
     );
     check(
-      'polices Superscratchy (normale + italique) : en base, verrouillées, chargées ; police par défaut du « Bandeau oblique »',
+      'Superscratchy (licence non libre) retirée : absente des polices de départ, plus verrouillée ; « Bandeau oblique » en Rock Salt (Google Fonts), chargée',
       await page.evaluate(async () => {
         await document.fonts.ready;
         lblRegFonts();
@@ -7180,11 +7180,12 @@ async function scenarioI18n() {
         const f = S.kv.equip.fonts,
           fs = [...document.fonts].filter(x => x.status === 'loaded').map(x => x.family.replace(/"/g, '') + '|' + x.style);
         return (
-          ['Superscratchy', 'Superscratchy_Italic'].every(n => f.some(x => x.n === n && x.b) && fontLocked(n)) &&
-          fs.includes('Superscratchy|normal') &&
-          fs.includes('Superscratchy|italic') &&
+          !FONTS_SEED.some(x => /scratchy/i.test(x.n)) &&
+          !f.some(x => /scratchy/i.test(x.n)) &&
+          !fontLocked('Superscratchy') &&
+          fs.some(x => /^Rock Salt\|/.test(x)) &&
           LF.find(x => x.id === 'bandeauxl').font === 'scratchy' &&
-          lblFont('scratchy').f.startsWith("'Superscratchy'")
+          lblFont('scratchy').f.startsWith("'Rock Salt'")
         );
       })
     );
@@ -7527,10 +7528,10 @@ async function scenarioI18n() {
         kv = db.exec("select count(*) from parametres where cle='fonts'")[0].values[0][0];
       db.close();
       check(
-        'table « polices » : polices intégrées (32 = 9 + 9 + 13 + 2 de l’interface, Anton supprimée ci-dessus) (nom, format, données) et plus de clé « fonts » dans parametres',
+        'table « polices » : polices intégrées (30 = 9 + 9 + 13 − Anton supprimée ci-dessus ; Superscratchy retirée en 6.2.0) (nom, format, données) et plus de clé « fonts » dans parametres',
         r.length >= 8 &&
           r.every(x => x[1] === 'ttf' && x[3] > 1000) &&
-          r.filter(x => x[2] === 1).length === 32 &&
+          r.filter(x => x[2] === 1).length === 30 &&
           kv === 0,
         JSON.stringify(r.slice(0, 2))
       );
