@@ -4203,7 +4203,7 @@ check(
         const og = document.querySelectorAll('th.srt').length;
         S.biblio.pop();
         SORT.biblio = undefined;
-        const nav = [...document.querySelectorAll('#nav button')].map(x => x.textContent || x.dataset.s || x.id);
+        const nav = [...document.querySelectorAll('#nav button, #nav a.kofi')].map(x => x.textContent || x.dataset.s || x.id);
         return { a, d, og, nav: nav.slice(-4) };
       });
       check(
@@ -5910,7 +5910,7 @@ check(
       );
       const dc = await page.evaluate(async () => {
         const w = ms => new Promise(r => setTimeout(r, ms)),
-          b = [...document.querySelectorAll('#nav button')],
+          b = [...document.querySelectorAll('#nav button, #nav a.kofi')],
           i = b.findIndex(x => x.dataset.s === 'doc'),
           o = { pos: b[i - 1].dataset.s === 'params' && b[i + 1].id === 'navdon', icon: !!(b[i] && b[i].querySelector('svg.fa-bookopen')) };
         b[i].click();
@@ -6059,11 +6059,18 @@ check(
         conception();
         await w(150);
         /* icône de don à droite de la documentation */
-        const nb = [...document.querySelectorAll('#nav button')],
+        const nb = [...document.querySelectorAll('#nav button, #nav a.kofi')],
           di = nb.findIndex(x => x.id === 'navdon');
-        o.don = di === nb.length - 1 && nb[di - 1].dataset.s === 'doc' && !!nb[di].querySelector('svg.fa-coffee');
+        /* 6.4.0 : bouton Ko-fi (image intégrée) à droite de la documentation ; jamais cliqué ici (ouvrirait la vraie page) */
+        o.don =
+          di === nb.length - 1 &&
+          nb[di - 1].dataset.s === 'doc' &&
+          nb[di].tagName === 'A' &&
+          nb[di].href === 'https://ko-fi.com/G7U82APSVO' &&
+          !!nb[di].querySelector('img[src="lib/kofi6.png"]') &&
+          nb[di].querySelector('img').naturalWidth > 0;
         window.__bcManual = true;
-        nb[di].click();
+        donDialog(); /* fenêtre du lancement */
         for (let k = 0; k < 20 && !document.querySelector('.bcdlg.dondlg'); k++) await w(100);
         /* 6.0.0 : fenêtre « Offrir un café » (adresse de don pas encore renseignée : un seul bouton Fermer) */
         const dd = document.querySelector('.bcdlg.dondlg');
@@ -6072,12 +6079,13 @@ check(
           /Offrir un café/.test(dd.textContent) &&
           /GNU GPL v3/.test(dd.textContent) &&
           /Ko-fi/.test(dd.textContent) &&
-          dd.querySelector('[data-donopen]')?.textContent === 'ko-fi.com/openmaltforge' &&
+          dd.querySelector('a.kofi[data-donopen]')?.href === 'https://ko-fi.com/G7U82APSVO' &&
+          !!dd.querySelector('a.kofi img[src="lib/kofi6.png"]') &&
           !!dd.querySelector('.bcico svg') &&
-          dd.querySelector('button.no')?.textContent === 'Plus tard' &&
-          dd.querySelector('button.ok').textContent === 'Offrir un café';
-        /* « Plus tard » : rien n'est ouvert (le bouton principal ouvrirait la vraie page Ko-fi) */
-        if (dd) dd.querySelector('button.no').click();
+          !dd.querySelector('button.no') &&
+          dd.querySelector('button.ok').textContent === 'Plus tard';
+        /* « Plus tard » : rien n'est ouvert (le bouton Ko-fi ouvrirait la vraie page) */
+        if (dd) dd.querySelector('button.ok').click();
         await w(150);
         o.donClosed = !document.querySelector('.bcdlg');
         window.__bcManual = false;
@@ -6085,7 +6093,7 @@ check(
         return o;
       });
       check(
-        'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, fenêtre « Offrir un café » avec le lien Ko-fi',
+        'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, bouton Ko-fi (image) dans l’en-tête et dans la fenêtre « Offrir un café » (seulement au lancement)',
         Object.values(c5).every(Boolean),
         JSON.stringify(c5)
       );
@@ -6108,7 +6116,7 @@ check(
             for (let k = 0; k < 20 && !document.querySelector('.bcdlg.dondlg'); k++) await new Promise(r => setTimeout(r, 100));
             const d = document.querySelector('.bcdlg.dondlg'),
               t = d ? d.innerText : '';
-            if (d) d.querySelector('button.no').click();
+            if (d) d.querySelector('button.ok').click();
             window.__bcManual = false;
             setLang(l0);
             return /free and open source/.test(t) && /Ko-fi/.test(t) && !/gratuit|Merci|Plus tard/.test(t);

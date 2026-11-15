@@ -5586,3 +5586,21 @@ main {
   background: #fff !important;
   color: var(--t) !important;
 }
+
+/* 6.4.0 — bouton Ko-fi (image) : en-tête, à droite de la documentation, et fenêtre « Offrir un café » */
+#nav a.kofi {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 6px;
+  align-self: center;
+}
+a.kofi img {
+  display: block;
+  border-radius: 6px;
+}
+a.kofi:hover img {
+  filter: brightness(1.08);
+}
+.dondlg .donbtn {
+  margin: 12px 0 6px;
+}

@@ -3479,8 +3479,11 @@ const SCR = {
   params: ['Paramètres', params],
   doc: ['Documentation', docScreen]
 };
-/* don : fenêtre « Offrir un café » (pourquoi donner, ce que finance le don), au lancement et au clic sur l'icône café ;
-   le bouton (ou le lien) ouvre la page Ko-fi dans le navigateur habituel (le serveur n'ouvre que config.DonURL) */
+/* don : bouton Ko-fi (image ko-fi.com copiée dans lib/kofi6.png : affichage hors ligne), dans l'en-tête et dans la fenêtre
+   « Offrir un café » ; un clic ouvre la page Ko-fi dans le navigateur habituel (le serveur n'ouvre que config.DonURL) */
+const KOFI_URL = 'https://ko-fi.com/G7U82APSVO';
+const KOFI_BTN = id =>
+  `<a${id ? ` id="${id}"` : ''} class="kofi" href="${KOFI_URL}" target="_blank" data-donopen="1" title="Offrir un café au développeur (Ko-fi)"><img height="36" style="border:0px;height:36px;" src="lib/kofi6.png" border="0" alt="Buy Me a Coffee at ko-fi.com" /></a>`;
 async function donOpen() {
   try {
     await api('api/don', { method: 'POST', headers: { 'X-OpenMaltForge': '1' } });
@@ -3489,6 +3492,7 @@ async function donOpen() {
     notify('don', /pas encore renseignée/.test(err.message) ? 'La page de don n’est pas encore disponible.' : '⚠ ' + err.message, 'err');
   }
 }
+/* fenêtre « Offrir un café » : seulement au lancement ; le bouton Ko-fi ouvre la page de don et ferme la fenêtre */
 async function donDialog() {
   if (document.querySelector('.bcdlg.dondlg')) return;
   let info = {};
@@ -3496,36 +3500,30 @@ async function donDialog() {
     info = await (await api('api/info')).json();
   } catch (_) {}
   const on = !!info.don,
-    url = String(info.donUrl || '').replace(/^https?:\/\//, ''),
-    p = t => `<p>${esc(tx(t))}</p>`,
-    ok = await bcAsk('OpenMaltForge est gratuit et libre (licence GNU GPL v3), sans publicité ni abonnement.', {
-      title: 'Offrir un café',
-      ico: ic('coffee'),
-      cls: 'dondlg',
-      body:
-        p('Il est développé sur le temps libre d’un brasseur, pour les brasseurs.') +
-        p('Un café offert aide à financer le temps de développement, les nouvelles fonctions et les traductions.') +
-        (on
-          ? p('Le paiement se fait sur Ko-fi, dans votre navigateur ; aucune donnée de l’application n’est transmise.') +
-            `<p class="donurl" data-nt><a href="#" data-donopen="1">${esc(url)}</a></p>`
-          : `<p class="donoff">${esc(tx('La page de don n’est pas encore disponible : revenez dans une prochaine version.'))}</p>`) +
-        `<p class="donmerci">${esc(tx('Merci pour votre soutien !'))} ${ic('heart')}</p>`,
-      alert: !on,
-      ok: on ? 'Offrir un café' : 'Fermer',
-      cancel: 'Plus tard'
-    });
-  if (ok && on) donOpen();
+    p = t => `<p>${esc(tx(t))}</p>`;
+  await bcAsk('OpenMaltForge est gratuit et libre (licence GNU GPL v3), sans publicité ni abonnement.', {
+    title: 'Offrir un café',
+    ico: ic('coffee'),
+    cls: 'dondlg',
+    body:
+      p('Il est développé sur le temps libre d’un brasseur, pour les brasseurs.') +
+      p('Un café offert aide à financer le temps de développement, les nouvelles fonctions et les traductions.') +
+      (on
+        ? p('Le paiement se fait sur Ko-fi, dans votre navigateur ; aucune donnée de l’application n’est transmise.') +
+          `<p class="donbtn">${KOFI_BTN()}</p>`
+        : `<p class="donoff">${esc(tx('La page de don n’est pas encore disponible : revenez dans une prochaine version.'))}</p>`) +
+      `<p class="donmerci">${esc(tx('Merci pour votre soutien !'))} ${ic('heart')}</p>`,
+    alert: 1,
+    ok: on ? 'Plus tard' : 'Fermer'
+  });
 }
 document.addEventListener('click', e => {
-  if (!e.target.closest) return;
-  if (e.target.closest('#navdon')) donDialog();
-  const l = e.target.closest('[data-donopen]');
-  if (l) {
-    e.preventDefault();
-    const d = l.closest('.bcdlg');
-    if (d) d.querySelector('button.no')?.click();
-    donOpen();
-  }
+  const l = e.target.closest && e.target.closest('[data-donopen]');
+  if (!l) return;
+  e.preventDefault();
+  const d = l.closest('.bcdlg');
+  if (d) d.querySelector('button.ok')?.click();
+  donOpen();
 });
 /* Documentation (web/doc/index.html), affichée dans l'application ; même thème que l'interface */
 function docScreen() {
@@ -3535,7 +3533,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.3.0',
+const VER = '6.4.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4305,7 +4303,7 @@ function show(s) {
         : `<button data-s="${k}"${k === s ? ' class="on"' : ''}>${l}</button>`
     )
     .join('') +
-    `<button id="navdon" class="navdoc navdon" title="Offrir un café au développeur (Ko-fi)" aria-label="Offrir un café au développeur (Ko-fi)">${ic('coffee')}</button>`;
+    KOFI_BTN('navdon');
   applyTheme();
   const pg = document.getElementById('pgstyle');
   if (pg && s !== 'labels' && s !== 'sheet') pg.remove();

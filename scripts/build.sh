@@ -85,7 +85,8 @@ if [ -f site/index.html ]; then
   echo "== Site web (site/) : binaires à télécharger et icône"
   mkdir -p site/telechargements
   rm -f site/telechargements/*
-  cp "$OUT/OpenMaltForge_$VER.exe" "$OUT/OpenMaltForge_${VER}_windows.zip" "$OUT/openmaltforge_${VER}_linux_amd64" \
+  # fichiers compressés et paquet .deb seulement
+  cp "$OUT/OpenMaltForge_${VER}_windows.zip" \
     "$OUT/openmaltforge_${VER}_linux_amd64.tar.gz" "$OUT/openmaltforge_${VER}_amd64.deb" \
     "$OUT/OpenMaltForge_${VER}_macos_apple_silicon.zip" "$OUT/OpenMaltForge_${VER}_macos_intel.zip" site/telechargements/
   mkdir -p site/img/fr site/img/en
@@ -93,6 +94,7 @@ if [ -f site/index.html ]; then
     cp "web/doc/img/$f.jpg" site/img/fr/ && cp "web/doc/img/en/$f.jpg" site/img/en/
   done
   rm -rf site/doc && cp -r web/doc site/doc # documentation en ligne (5 langues, captures comprises)
+  cp web/lib/kofi6.png site/img/kofi6.png
   cp dev/icon/icon256.png site/icon.png
   cp dev/icon/icon32.png site/favicon.png
   cp dev/icon/openmaltforge.ico site/favicon.ico

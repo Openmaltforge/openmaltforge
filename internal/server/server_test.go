@@ -299,7 +299,7 @@ func TestDon(t *testing.T) {
 	OpenURL = func(u string) error { opened = append(opened, u); return nil }
 	d0 := config.DonURL
 	defer func() { OpenURL = desktop.OpenURL; config.DonURL = d0 }()
-	if d0 != "https://ko-fi.com/openmaltforge" {
+	if d0 != "https://ko-fi.com/G7U82APSVO" {
 		t.Errorf("adresse de don : %q", d0)
 	}
 	config.DonURL = ""
