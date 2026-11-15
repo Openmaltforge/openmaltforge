@@ -1,0 +1,32 @@
+=== 33A | Wood-Aged Beer
+IMP: A pleasant enhancement of the base beer style with the characteristics from aging in contact with wood. The best examples will be smooth, flavorful, well-balanced, and well-aged.
+APP: Varies with base style. Often darker than the unadulterated base beer style, particularly if toasted or charred barrels are used.
+ARO: Varies with base style. A low to moderate woody aroma is usually present; some varietals may have a stronger, or distinctive character. Fresh wood can occasionally impart raw, fresh-cut wood smell, although this character should never be too strong. If the wood is toasted or charred, there may be low to moderate vanilla, caramel, toffee, toast, or cocoa character present.
+FLA: Varies with base style. Wood usually contributes a woody flavor, and possibly a distinctive varietal character. New wood may add a raw, fresh-cut wood impression. Toasted or charred wood can add vanilla, caramel, butterscotch, toasted bread, toasted nuts, coffee, chocolate, or cocoa, depending on the wood varietal and level of toast or char. Wood-derived flavors should be balanced, supportive, and noticeable, while not overpowering the base beer style.
+MOU: Varies with base style. Tannins from the wood may increase the perception of body, as well as enhancing the dryness of the finish; some astringency from wood tannins is allowable. Tart or acidic characteristics should be low to none, and never distracting.
+COM: Much of the character depends on the type of wood used, and how well it complements and enhances the base style. Age character is allowable, but excessive oxidation or sourness is a fault. Noticeable alcohol is not a fault in stronger base styles. This category should not be used for base styles where wood-aging is a fundamental requirement for the style (e.g., Flanders Red, Lambic). Beers made using either limited wood aging or products that only provide a subtle background character may be entered in the base beer style categories as long as the wood character isn’t prominently featured.
+HIS: A traditional production method that is rarely used by major breweries, and usually only with specialty products. More popular with modern craft breweries looking for new, distinctive products. Oak cask and barrels are traditional, although other woods are becoming more popular.
+ING: Varies with base style. Aged in wooden casks or barrels, or using wood-based additives (e.g., chips, staves, spirals, cubes). Fuller-bodied, higher-gravity base styles often are used since they can best stand up to the additional flavors, although experimentation is encouraged.
+CMP: Varies with base style.
+IBU:
+SRM:
+OG:
+FG:
+ABV:
+EX: Bush Prestige, Cigar City Spanish Cedar Jai Alai, Firestone Walker Double Barrel Ale, Midnight Sun Arctic Devil, Petrus Aged Pale, Samuel Smith Yorkshire Stingo.
+=== 33B | Specialty Wood-Aged Beer
+IMP: An elevation of the base beer style with characteristics from aging in contact with wood, including alcoholic products previously in contact with the wood. The best examples will be smooth, flavorful, well-balanced, and well-aged.
+APP: Varies with base style. Often darker than the unadulterated base beer style, particularly if charred barrels are used. Beers aged in wine barrels or other products with distinctive colors may also impart a color to the finished beer.
+ARO: Varies with base style. A low to moderate woody aroma is usually present; some varietals may have a stronger, or distinctive character. If the wood is toasted or charred, there may be low to moderate vanilla, caramel, toffee, toast, or cocoa character present. Aromatics associated with alcohol (e.g., distilled spirits, wine) previously stored in the wood should be noticeable, but balanced.
+FLA: Varies with base style. Wood usually contributes a woody flavor, and possibly a distinctive varietal character. Toasted or charred wood can add vanilla, caramel, butterscotch, toasted bread, toasted nuts, coffee, chocolate, or cocoa, depending on the wood varietal and level of toast or char. Wood-derived flavors and added alcohol flavors should be balanced, mutually supportive, and noticeable, while not overpowering the base beer style or each other.
+MOU: Varies with base style. Tannins from the wood may increase the perception of body, as well as enhancing the dryness of the finish; some astringency from wood tannins is allowable. Usually exhibits additional alcohol warming, but should not be hot or harsh. Tart or acidic characteristics should be low to none, and never distracting.
+COM: Success in this style depends on how well the wood and alcohol character supports and enhances the base beer, and how well integrated they are with the overall flavor profile. Age character is allowable, but excessive oxidation or sourness is a fault. Special wood-aged wild ales should be entered in the 28C Wild Specialty Beer.
+HIS: Same as 33A Wood-Aged Beer.
+ING: Varies with base style. Aged in wooden casks or barrels previously used to store alcohol (e.g., whiskey, bourbon, rum, gin, tequila, port, sherry, Madeira, wine). Fuller-bodied, higher-gravity base styles often are used since they can best stand up to the additional flavors, although experimentation is encouraged.
+CMP: Varies with base style.
+IBU:
+SRM:
+OG:
+FG:
+ABV:
+EX: AleSmith Barrel-Aged Old Numbskull, Founders Kentucky Breakfast Stout, Firestone Walker Parabola, Goose Island Bourbon County Stout, Great Divide Barrel Aged Yeti, The Lost Abbey Angel’s Share Ale.

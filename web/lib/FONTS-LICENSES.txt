@@ -1,0 +1,52 @@
+=== metalmania
+Copyright (c) 2012 by Open Window (dathanboardman@gmail.com) with Reseved Font Name "Metal Mania"
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== newrocker
+Copyright (c) 2011, Pablo Impallari (www.impallari.com|impallari@gmail.com),
+Copyright (c) 2011, Brenda Gallo (gbrenda1987@gmail.com),
+Copyright (c) 2011, Rodrigo Fuenzalida (www.rfuenzalida.com|hello@rfuenzalida.com), 
+=== bangers
+Copyright 2010 The Bangers Project Authors (https://github.com/googlefonts/bangers)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== anton
+Copyright 2020 The Anton Project Authors (https://github.com/googlefonts/AntonFont.git)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== pirataone
+Copyright (c) 2012, Rodrigo Fuenzalida, Nicolas Massi (www.taip.com.ar / abc.taip.com.ar), with Reserved Font Name 'Pirata'
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== rye
+Copyright (c) 2011 by Sorkin Type Co (www.sorkintype.com),
+with Reserved Font Name "Rye".
+
+=== blackopsone
+Copyright 2022 The Black-Ops Project Authors (https://github.com/googlefonts/googlefonts-project-template)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== sancreek
+Copyright 2011 The Sancreek Project Authors (https://github.com/googlefonts/sancreek)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+=== oswald
+Copyright 2016 The Oswald Project Authors (https://github.com/googlefonts/OswaldFont)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+Toutes ces polices (Google Fonts) sont publiées sous SIL Open Font License 1.1 — https://openfontlicense.org
+Utilisation libre, y compris commerciale, embarquement autorisé.
+
+Note v3.37 : Superscratchy (dafont.com) n'est pas fournie (licence propre à la police) : importez-la depuis l'écran Étiquettes ou déposez fonts/Superscratchy.ttf.
+Impact, Chiller, Jokerman, Stencil, Old English Text MT, Ink Free, Bauhaus 93 : polices système/Office, non embarquées.
+
+=== Polices de l'interface (ajoutées en v3.113.0) — fichiers issus du dépôt Google Fonts (https://github.com/google/fonts)
+Bebas Neue, Bungee, Creepster, Henny Penny, Kalam, Kaushan Script, Stardos Stencil, UnifrakturCook :
+  SIL Open Font License, Version 1.1 (voir le fichier OFL.txt de chaque famille dans le dépôt Google Fonts).
+Permanent Marker : Apache License, Version 2.0 (voir LICENSE.txt de la famille dans le dépôt Google Fonts).
+
+--- v3.114 : polices Google Fonts attendues (à insérer dans la base ; aucune police propriétaire dans BrewCraft) ---
+Inter (SIL OFL 1.1) · Roboto Mono (Apache 2.0 / SIL OFL selon la version) · Playfair Display (SIL OFL 1.1) · Courier Prime (SIL OFL 1.1)
+Bowlby One (SIL OFL 1.1) · Caprasimo (SIL OFL 1.1) · Rock Salt (Apache 2.0)
+Vérifiez la licence affichée sur fonts.google.com pour la version téléchargée.

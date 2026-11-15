@@ -1,0 +1,8 @@
+{
+  "name": "openmaltforge-tests",
+  "private": true,
+  "description": "Tests de bout en bout d'OpenMaltForge (Playwright piloté contre le binaire Go, navigateur Chromium du système)",
+  "devDependencies": {
+    "playwright-core": "1.65.1"
+  }
+}

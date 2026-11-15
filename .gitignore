@@ -1,0 +1,18 @@
+# fichiers générés
+*.sqlite
+*.bak
+cmd/openmaltforge/rsrc_windows_amd64.syso
+node_modules/
+bin/*/*.zip
+bin/*/*.tar.gz
+
+# archive du dépôt fourni (importée dans l’historique)
+/BrewCraft_depot_*.tar.gz
+site/telechargements/
+site/img/
+site/icon.png
+site/favicon.png
+site/favicon.ico
+
+# page de présentation : gardée hors du dépôt public
+site/

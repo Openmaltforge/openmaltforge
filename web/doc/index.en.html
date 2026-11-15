@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OpenMaltForge documentation</title>
+    <style>
+      :root {
+        --bg: #2b3340;
+        --p: #222933;
+        --b: #3d4756;
+        --y: #ffe600;
+        --c: #20d6c7;
+        --t: #d9dee6;
+        --m: #8d98a8;
+        --code: #1b2028;
+      }
+      :root.light {
+        --bg: #f3f5f8;
+        --p: #ffffff;
+        --b: #d5dbe3;
+        --y: #b58900;
+        --c: #0f8f86;
+        --t: #1f2733;
+        --m: #5c6878;
+        --code: #eef1f5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--t);
+        font: 15px/1.6 Inter, 'LF Inter', system-ui, sans-serif;
+      }
+      .wrap {
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        max-height: 100vh;
+        overflow-y: auto;
+        padding: 22px 14px 22px 18px;
+        border-right: 1px solid var(--b);
+      }
+      nav b {
+        display: block;
+        margin: 0 0 10px;
+        color: var(--y);
+        font-size: 17px;
+      }
+      nav a {
+        display: block;
+        padding: 3px 8px;
+        border-radius: 5px;
+        color: var(--t);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      nav a.s {
+        padding-left: 20px;
+        color: var(--m);
+        font-size: 13px;
+      }
+      nav a:hover {
+        background: var(--p);
+        color: var(--y);
+      }
+      main {
+        padding: 18px 34px 80px;
+      }
+      h1 {
+        margin: 6px 0 4px;
+        color: var(--y);
+        font-size: 28px;
+      }
+      h2 {
+        margin: 44px 0 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--b);
+        color: var(--y);
+        font-size: 22px;
+      }
+      h3 {
+        margin: 26px 0 6px;
+        color: var(--c);
+        font-size: 17px;
+      }
+      p,
+      li {
+        max-width: 860px;
+      }
+      ul {
+        padding-left: 22px;
+      }
+      li {
+        margin: 3px 0;
+      }
+      .lead {
+        color: var(--m);
+        font-size: 16px;
+      }
+      kbd,
+      code {
+        padding: 1px 6px;
+        border: 1px solid var(--b);
+        border-radius: 4px;
+        background: var(--code);
+        font: 13px 'Roboto Mono', 'LF Roboto Mono', ui-monospace, monospace;
+      }
+      figure {
+        margin: 14px 0 22px;
+        max-width: 100%;
+      }
+      figure img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border: 1px solid var(--b);
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        cursor: zoom-in;
+      }
+      figure.half img {
+        max-width: 520px;
+      }
+      figcaption {
+        margin-top: 6px;
+        color: var(--m);
+        font-size: 13px;
+      }
+      .note {
+        max-width: 860px;
+        margin: 12px 0;
+        padding: 10px 14px;
+        border-left: 3px solid var(--c);
+        border-radius: 0 6px 6px 0;
+        background: var(--p);
+      }
+      table {
+        border-collapse: collapse;
+        margin: 10px 0 16px;
+        max-width: 860px;
+      }
+      th,
+      td {
+        padding: 5px 10px;
+        border: 1px solid var(--b);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--p);
+        color: var(--y);
+        font-weight: 600;
+      }
+      #zoom {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.82);
+        cursor: zoom-out;
+      }
+      #zoom.on {
+        display: flex;
+      }
+      #zoom img {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 6px;
+      }
+      @media (max-width: 900px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          position: static;
+          max-height: none;
+          border-right: 0;
+          border-bottom: 1px solid var(--b);
+        }
+        main {
+          padding: 14px 16px 60px;
+        }
+      }
+      @media print {
+        nav,
+        #zoom {
+          display: none !important;
+        }
+        .wrap {
+          display: block;
+        }
+        figure img {
+          box-shadow: none;
+        }
+      }
+    </style>
+    <script>
+      if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav aria-label="Contents">
+        <b>OpenMaltForge</b>
+        <a href="#demarrage">Getting started</a>
+        <a href="#interface">The interface</a>
+        <a href="#conception">Designing a recipe</a>
+        <a class="s" href="#c-recette">Recipe and targets</a>
+        <a class="s" href="#c-ingredients">Malts, hops, yeasts</a>
+        <a class="s" href="#c-eau">Water and minerals</a>
+        <a class="s" href="#c-divers">Ingredients and consumables</a>
+        <a class="s" href="#c-process">Rests, water, priming</a>
+        <a class="s" href="#c-bilan">Summary and costs</a>
+        <a class="s" href="#c-orga">Sensory analysis</a>
+        <a href="#formules">Mathematical expressions</a>
+        <a href="#courses">Shopping list and stock</a>
+        <a href="#bibliotheque">Library and imports</a>
+        <a href="#bases">Ingredient databases</a>
+        <a href="#html">HTML rendering</a>
+        <a href="#etiquettes">Labels</a>
+        <a href="#feuille">Brew sheet</a>
+        <a href="#parametres">Settings</a>
+        <a href="#donnees">Data and backups</a>
+        <a href="#astuces">Tips</a>
+      </nav>
+      <main>
+        <h1>OpenMaltForge documentation</h1>
+        <p class="lead">
+          OpenMaltForge (formerly OpenBrew, and BrewCraft before version 5.0.0) is a desktop application for designing beer recipes:
+          gravity, bitterness and colour calculations, water and minerals, brewing process, costs, stock and shopping list,
+          recipe library, printable labels and brew sheet.
+        </p>
+
+        <h2 id="demarrage">Getting started</h2>
+        <ul>
+          <li><b>Linux</b>: install the <code>openmaltforge_&lt;version&gt;_amd64.deb</code> package (“OpenMaltForge” menu entry) or run the <code>openmaltforge_&lt;version&gt;_linux_amd64</code> program directly.</li>
+          <li><b>Windows</b>: run <code>OpenMaltForge_&lt;version&gt;.exe</code>.</li>
+        </ul>
+        <p>
+          OpenMaltForge opens in its own window (engine of the Chrome, Chromium, Edge or Brave browser installed on the computer).
+          All the data is stored in a single file: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (home folder, <code>OpenMaltForge</code>
+          sub-folder). On first launch, the OpenBrew database (<code>~/OpenBrew/openbrew.sqlite</code>), or else the BrewCraft one (<code>~/BrewCraft/brewcraft.sqlite</code>), is taken over
+          automatically, or failing that a database from a 3.x version (<code>brewcraft_3.x.sqlite</code>); the old file is
+          not modified.
+        </p>
+        <p>OpenMaltForge always opens on the <b>Design</b> screen.</p>
+        <p>A new database is filled with the starter data: malts, hops, yeasts, BJCP 2021 styles, waters, ingredients, fonts.</p>
+
+        <h2 id="interface">The interface</h2>
+        <figure>
+          <img src="img/en/conception.jpg" alt="OpenMaltForge header and Design screen" />
+          <figcaption>Header: screen menu, “Save” button, database indicator, light / dark switch and documentation.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Menu</b>: Design, Library, the databases (Malts, Hops, Yeasts, Waters, Styles, Ingredients, Consumables), HTML, Labels, Brew sheet, Settings, then the <b>Documentation</b> icon (open book) that shows this page, and the <b>coffee</b> icon to support the development of OpenMaltForge with a donation: a “Buy me a coffee” window explains what the donation is for; its button opens the “Buy Me a Coffee” page in your usual browser.</li>
+          <li><b>Save</b>: immediately writes all the data to the database. An automatic save also takes place (every 5 minutes by default, adjustable in Settings › General settings).</li>
+          <li><b>“Database: openmaltforge.sqlite” indicator</b>: green when everything is saved. If there is a problem (program closed, write refused), an orange warning appears; a click retries the save.</li>
+          <li><b>Notification area</b> (under the menu): temporary messages in green (save, calculation), errors in red, persistent warnings in orange (for example a mash ratio too high for the tun). Several messages are shown side by side.</li>
+          <li><b>Theme</b>: the sun / moon switch, top right, toggles between the dark and light themes; the choice is remembered.</li>
+          <li><b>Footer</b>: licence (GNU GPL v3, click to read the text) and version number.</li>
+        </ul>
+
+        <h2 id="conception">Designing a recipe</h2>
+        <p>The <b>Design</b> screen holds the current recipe. Everything is recalculated as you type.</p>
+
+        <h3 id="c-recette">Recipe and targets</h3>
+        <ul>
+          <li><b>Recipe, Style</b> (BJCP 2021 styles), <b>Volume to bottle</b>, <b>Mash ratio (L/kg)</b>, brewing and bottling <b>dates</b>.</li>
+          <li><b>Target OG, Target IBU</b> and the <b>Calculate</b> button: adjusts the malt and hop quantities to reach the intended original gravity and bitterness, keeping the proportions.</li>
+          <li><b>＋ New recipe</b>: starts again from a blank recipe (targets and ratio take the default values from Settings); the shopping list is emptied.</li>
+          <li><b>Aroma radars</b> for malts, hops and yeasts: profile of the recipe, value shown when hovering over a point, enlarged on click (Esc to close), exported as an image with the <b>PNG</b> buttons (dark or light background).</li>
+        </ul>
+
+        <h3 id="c-ingredients">Malts, hops, yeasts</h3>
+        <figure>
+          <img src="img/en/conception-malts.jpg" alt="Recipe malts table" />
+          <figcaption>Recipe malts: name (autocompletion from 3 letters), weight or percentage, cost, cart and delete.</figcaption>
+        </figure>
+        <ul>
+          <li>The <b>＋</b> button in the title adds a row; the <b>red cross</b> deletes it.</li>
+          <li><b>Name</b>: type at least 3 letters to choose from the database (the maltster is shown after the malt name).</li>
+          <li><b>Weight or percentage</b>: enter the weights, or the percentages (the weight is then calculated; entering a weight again switches back to weight mode).</li>
+          <li><b>Hops</b>: weight, use (First Wort, Boil, Whirlpool, Hopstand, Dry hop) and time; IBUs are calculated with the Tinseth formula, weighted by the utilisation coefficients from Settings.</li>
+          <li><b>Yeasts</b>: number of sachets, attenuation and flocculation of the strain.</li>
+          <li><b>Cart</b> at the end of the row: adds the component to the shopping list (see <a href="#courses">Shopping list</a>). It is orange when the stock is not enough, green when the component is already in the list.</li>
+        </ul>
+        <figure>
+          <img src="img/en/conception-houblons.jpg" alt="Recipe hops table" />
+          <figcaption>Hops: use, time, IBU of each addition and cost.</figcaption>
+        </figure>
+
+        <h3 id="c-eau">Water and minerals</h3>
+        <figure>
+          <img src="img/en/conception-eau.jpg" alt="Water and minerals" />
+          <figcaption>Water blend (litres or %), resulting ion profile, mineral additions and expected ranges for the style.</figcaption>
+        </figure>
+        <ul>
+          <li>Choose one or more waters (“Waters” database) and their share, in litres or as a percentage.</li>
+          <li>The ions (Cl, SO4, Ca, Mg, Na, HCO3) of the blend are compared with the style ranges; the additions row (mg/L) calculates the mineral quantities, which are added automatically to the recipe ingredients (“— auto” rows).</li>
+        </ul>
+
+        <h3 id="c-divers">Ingredients and consumables</h3>
+        <figure>
+          <img src="img/en/conception-ingredients.jpg" alt="Recipe ingredients and consumables" />
+          <figcaption>Ingredients (in grams) and consumables (in their own unit: caps, bottles…).</figcaption>
+        </figure>
+
+        <h3 id="c-process">Rests, water quantities, priming</h3>
+        <figure class="half">
+          <img src="img/en/conception-paliers.jpg" alt="Mash rests" />
+          <figcaption>Mash rests: temperature and duration of each step; arrows to reorder, cross to delete.</figcaption>
+        </figure>
+        <figure class="half">
+          <img src="img/en/conception-eau-quantites.jpg" alt="Water quantities" />
+          <figcaption>Water quantities: mash, sparge, ice, wort temperature at the end of the transfer.</figcaption>
+        </figure>
+        <figure class="half">
+          <img src="img/en/conception-resucrage.jpg" alt="Priming and CO2" />
+          <figcaption>Priming: sugar (g/L), CO₂ after bottle conditioning and total quantity of sugar to prepare.</figcaption>
+        </figure>
+
+        <h3 id="c-bilan">Recipe summary and costs</h3>
+        <figure class="half">
+          <img src="img/en/conception-bilan.jpg" alt="Recipe summary" />
+          <figcaption>Summary: each parameter is placed on a coloured slider (green = within the style range, orange / red = outside).</figcaption>
+        </figure>
+        <p>
+          Original and final gravities, attenuation, flocculation, IBU, colour (EBC / SRM), alcohol, IBU / OG and RBR ratios, with
+          the expected range for the chosen style, then the estimated colour of the beer.
+        </p>
+        <figure class="half">
+          <img src="img/en/conception-couts.jpg" alt="Cost summary" />
+          <figcaption>Costs: malts, hops, yeasts, ingredients, electricity, water, consumables, total and cost per litre.</figcaption>
+        </figure>
+
+        <h3 id="c-orga">Sensory analysis</h3>
+        <figure>
+          <img src="img/en/conception-organoleptique.jpg" alt="Sensory analysis of the brew" />
+          <figcaption>Tasting sheet (BJCP scoresheet out of 50): visible as soon as the bottling date is filled in.</figcaption>
+        </figure>
+        <p>Tasting date, measured gravities, actual ABV, colour, clarity, head, carbonation, then notes and comments for each criterion (aroma, appearance, flavour, mouthfeel, overall impression).</p>
+
+        <h2 id="formules">Entering mathematical expressions</h2>
+        <p>
+          In <b>any input field</b>, a text starting with <kbd>=</kbd> is calculated. The result replaces the formula when you
+          confirm with <kbd>Enter</kbd> or leave the field, and it is taken into account like a normal entry.
+        </p>
+        <figure>
+          <img src="img/en/formule-saisie.jpg" alt="Entering a formula in the weight of a malt" />
+          <figcaption>Entry: <code>=4,5+0,25</code> in the weight (kg) of the first malt…</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/formule-resultat.jpg" alt="Result of the formula" />
+          <figcaption>… after <kbd>Enter</kbd>, the field contains the result (4.75) and the recipe is recalculated.</figcaption>
+        </figure>
+        <table>
+          <tr><th>Element</th><th>Syntax</th><th>Example</th><th>Result</th></tr>
+          <tr><td>Addition, subtraction</td><td><code>+</code> <code>-</code></td><td><code>=4.5+0.25</code></td><td>4.75</td></tr>
+          <tr><td>Multiplication, division</td><td><code>*</code> or <code>×</code>, <code>/</code> or <code>÷</code></td><td><code>=3*(2+1.5)/4</code></td><td>2.625</td></tr>
+          <tr><td>Power</td><td><code>^</code></td><td><code>=2^10</code></td><td>1024</td></tr>
+          <tr><td>Parentheses</td><td><code>( )</code></td><td><code>=(20-12)*1.5</code></td><td>12</td></tr>
+          <tr><td>Percentage</td><td><code>%</code> after a number (÷ 100)</td><td><code>=30*85%</code></td><td>25.5</td></tr>
+          <tr><td>Square root</td><td><code>sqrt( )</code></td><td><code>=sqrt(16)</code></td><td>4</td></tr>
+          <tr><td>Absolute value</td><td><code>abs( )</code></td><td><code>=abs(12-20)</code></td><td>8</td></tr>
+          <tr><td>Rounding</td><td><code>round( )</code></td><td><code>=round(40/3)</code></td><td>13</td></tr>
+          <tr><td>Negative number</td><td><code>-</code> in front</td><td><code>=-2+5</code></td><td>3</td></tr>
+        </table>
+        <ul>
+          <li>The <b>comma</b> or the <b>point</b> can be used as the decimal separator (<code>4,5</code> = <code>4.5</code>); spaces are ignored.</li>
+          <li>Usual precedence: parentheses, then power, then multiplication and division, then addition and subtraction.</li>
+          <li>In a numeric field, the <kbd>=</kbd> key (or pasting text that starts with <code>=</code>) switches the field to text entry while you type the formula.</li>
+          <li>An invalid formula (missing parenthesis, division by zero…) is not applied: the field flashes red and its tooltip says “Invalid formula”.</li>
+          <li>The result is rounded to 12 significant digits.</li>
+        </ul>
+        <div class="note">Useful examples: split 5.6 kg of malts into 80 / 15 / 5 % (<code>=5.6*80%</code>), convert 12 oz to grams (<code>=12*28.35</code>), complete a volume (<code>=30-4.2-1.5</code>).</div>
+
+        <h2 id="courses">Shopping list and stock</h2>
+        <figure>
+          <img src="img/en/conception-courses.jpg" alt="Shopping list" />
+          <figcaption>“Shopping” section of the Design screen: items to buy, grouped by category, with an estimated price.</figcaption>
+        </figure>
+        <h3>Automatic additions</h3>
+        <ul>
+          <li>A malt, hop, yeast, ingredient, consumable or <b>mineral water</b> <b>used in the current recipe</b> enters the list as soon as the recipe uses up its stock (quantity required ≥ stock); the suggested quantity is what is missing (or the quantity used when the stock falls exactly to zero). For waters, it is the litres of each mineral water in the blend; tap waters are never added.</li>
+          <li>It leaves the list automatically as soon as the stock is enough again (for example by lowering the quantity in the recipe).</li>
+          <li><b>Frozen quantities</b>: once an item is in the list, its quantity no longer changes by itself (“Calculate” button, changing a row…). If it becomes lower than what is missing, an <b>orange triangle</b> appears next to the quantity (its tooltip shows what is missing) and an orange notification lists the items concerned; correct the quantity to make them disappear.</li>
+          <li>Components not used by the recipe are never added, even with a stock of zero.</li>
+          <li><b>＋ New recipe</b> empties the shopping list (manual additions included); it then fills up again from the new recipe.</li>
+        </ul>
+        <h3>Manual additions</h3>
+        <ul>
+          <li><b>Cart</b> at the end of a recipe row: adds the component if it is not already in the list (missing quantity, otherwise the quantity used by the recipe).</li>
+          <li><b>Cart</b> in the database screens (Malts, Hops…, mineral waters): adds the item with the quantity missing for the recipe, or a default quantity.</li>
+          <li>An item added by hand, or whose quantity you change, is never removed automatically.</li>
+          <li>The <b>cross</b> removes an item; if it is still missing for the recipe, it is not put back as long as the stock remains used up.</li>
+          <li>The <b>printer</b> icon in the title prints the shopping list (or saves it as PDF).</li>
+        </ul>
+        <h3>Stock</h3>
+        <ul>
+          <li>Each database has a <b>stock</b> column (kg for malts, g for hops and ingredients, sachets for yeasts, units for consumables, litres for waters).</li>
+          <li>Waters database: <b>price/L</b> and <b>stock (L)</b> for mineral waters; their cost is included in the water cost of the recipe.</li>
+          <li>When the <b>bottling date</b> of the recipe is filled in, the brew is “achieved”: its components are deducted from the stock, once only. Clearing the date puts them back in stock.</li>
+        </ul>
+
+        <h2 id="bibliotheque">Library and imports</h2>
+        <figure>
+          <img src="img/en/bibliotheque.jpg" alt="Recipe library" />
+          <figcaption>Library: one row per saved recipe, with filters and sorting by column.</figcaption>
+        </figure>
+        <ul>
+          <li>“Save” in the Design screen stores the current recipe in the library (updated if it is already there).</li>
+          <li><b>Pencil</b>: opens the recipe in the Design screen. <b>Cross</b>: deletes it (after confirmation).</li>
+          <li>Columns: name, brewer, achieved, style, OG, FG, IBU, EBC, ABV, malts, hops, yeasts; a row of filters and sorting by clicking the header. The eraser button clears all the filters.</li>
+          <li><b>Card view</b>: display as cards with the colour of the beer.</li>
+          <li><b>Brew number</b>: <code>year#rank</code> (e.g. <code>2026#12</code>), rank by brewing date among the recipes of the year, imported recipes excluded. It appears on the labels and in the HTML.</li>
+          <li><b>Import beer.xml</b> (BeerXML 1.0) and <b>Import PDF</b> (printout of a Brewfather recipe, BeerSmith PDF export): imported recipes are read-only (copy them to edit them). Import beer.xml: an ingredient missing from the database is added with the data from the file. Import PDF: an “Ingredient matching” dialog offers to link each unknown ingredient to a database ingredient; otherwise it remains plain text in the recipe.</li>
+        </ul>
+        <figure>
+          <img src="img/en/bibliotheque-cartes.jpg" alt="Library in card view" />
+          <figcaption>Card view of the library.</figcaption>
+        </figure>
+
+        <h2 id="bases">Ingredient databases</h2>
+        <p><b>Malts, Hops, Yeasts, Waters, Styles, Ingredients, Consumables</b> screens: the reference database used by the recipes.</p>
+        <figure>
+          <img src="img/en/base-malts.jpg" alt="Malts database" />
+          <figcaption>Malts database: comparison of up to 5 malts on the radar, then the table (filters, sorting, pagination).</figcaption>
+        </figure>
+        <ul>
+          <li>A row of <b>filters</b> under the headers (text or number); sorting by clicking the header; <b>pagination</b> by 15 rows.</li>
+          <li>At the end of the row: <b>pencil</b> (edit the row, read-only otherwise), <b>duplicate</b>, <b>cart</b> (shopping list), <b>cross</b> (delete). The <b>＋</b> in the header adds a row.</li>
+          <li><b>Export CSV</b>, <b>Paste CSV</b> (import rows from a spreadsheet) and <b>Clear all</b>.</li>
+          <li>Aroma notes on a scale of 0 to 5; malts, hops and yeasts can be compared on a radar (up to 5 names).</li>
+          <li><b>Styles</b>: the 123 BJCP 2021 styles with description, ranges (IBU, SRM, OG, FG, ABV) and water profiles; <b>＋ Style</b> to add one.</li>
+        </ul>
+        <figure>
+          <img src="img/en/styles.jpg" alt="BJCP styles" />
+          <figcaption>BJCP 2021 styles.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/eaux.jpg" alt="Waters database" />
+          <figcaption>Waters: ion profiles, price per litre and stock (tap waters and mineral waters; only mineral waters have a cart).</figcaption>
+        </figure>
+
+        <h2 id="html">HTML rendering</h2>
+        <figure>
+          <img src="img/en/html.jpg" alt="HTML rendering of the recipe" />
+          <figcaption>HTML code of the recipe sheet, to copy (“Copy” button) for a website or a forum.</figcaption>
+        </figure>
+
+        <h2 id="etiquettes">Labels</h2>
+        <figure>
+          <img src="img/en/etiquettes.jpg" alt="Labels screen" />
+          <figcaption>Labels: settings at the top, preview of the A4 sheet in the centre, formats on the right.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Formats</b> (right-hand column): bands, rectangular and round labels, caps, neck labels, illustrated templates (gig poster, saloon, vinyl, reggae, romantic, soul, punk…), with their dimensions and the number per A4 sheet.</li>
+          <li><b>QR Code text</b> (an address or free text), <b>Volume (cl)</b>, <b>Number</b> of labels, colours of the <b>frame</b>, the <b>font</b> and the <b>background</b>.</li>
+          <li><b>Font</b>: drop-down list where each font is shown in its own style; type a few letters to filter, arrows and <kbd>Enter</kbd> to choose. The <b>A↑ / A↓</b> buttons enlarge or reduce the text.</li>
+          <li>The label logo is chosen in Settings › Label logo. The brew number is calculated automatically.</li>
+          <li><b>Print / PDF</b>: prints the sheet (or saves it as PDF).</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/etiquettes-polices.jpg" alt="Label font list" />
+          <figcaption>Font list: each name is rendered in its own font.</figcaption>
+        </figure>
+
+        <h2 id="feuille">Brew sheet</h2>
+        <figure>
+          <img src="img/en/feuille.jpg" alt="Brew sheet" />
+          <figcaption>Printable brew sheet (A4), with its layouts on the right.</figcaption>
+        </figure>
+        <ul>
+          <li>Five <b>layouts</b>: Classic, Form to fill in, Rock poster, Step by step, Brew log.</li>
+          <li>Colours of the frame / accent, the background and the font; choice of the font (each name shown in its own font).</li>
+          <li>You can <b>type directly in the sheet</b>: volumes, gravities and rests actually obtained, and brewing notes; everything is saved with the recipe.</li>
+          <li><b>Print / PDF</b>.</li>
+        </ul>
+
+        <h2 id="parametres">Settings</h2>
+        <figure>
+          <img src="img/en/parametres-equipement.jpg" alt="Equipment and process" />
+          <figcaption>Equipment &amp; process: characteristics of the equipment, then the “Default values” subsection.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/parametres-process.jpg" alt="Process" />
+          <figcaption>Process: phases and steps edited with the pencil, gravity calculated on every row.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Equipment &amp; process</b>: equipment name, volume to bottle, mash efficiency; <b>Default values</b>: boil time, evaporation, initial water temperature, heating rate, cooling, grain absorption, target OG and IBU, mash ratio (applied to each new recipe). The recipe’s mash ratio is entered in the Design screen.</li>
+          <li><b>Process — water losses and additions</b>: the process in phases (by default: mash → pre-sparge, sparge → ice, bottling), step by step, with the volume and the gravity calculated on every row. <b>＋ Phase</b> adds a phase, <b>＋</b> (at the head of the columns) adds a step to the phase; the <b>pencil</b> at the end of each row makes the phase name, or the step name, losses and additions, editable (<b>OK</b> or Enter to confirm); ▲ ▼ move a step (at the edge of a phase it moves into the neighbouring phase) or a phase; ✕ deletes (a phase that contains steps asks for confirmation). An empty box takes the automatic value from the Settings. The OG row follows the ice phase, the FG row ends the last phase. <b>↺ default</b> returns to the original process.</li>
+          <li><b>Brewing settings</b>: basic data, losses and additions, constraints and temperatures; an empty box takes the automatic value (recipe or equipment). A red field signals that a limit is exceeded (for example the maximum volume of the tun).</li>
+          <li><b>Electricity needs</b>: power and duration of each item, kWh and cost.</li>
+          <li><b>Hop utilisation coefficients</b> per use, applied to the Tinseth IBUs.</li>
+          <li><b>Label logo</b>: choose an image.</li>
+          <li><b>Fonts</b>: Google Fonts stored in the database; <b>Import</b> (several files at once), filter, preview on hover. The interface fonts, marked with a padlock, cannot be deleted; when another font is deleted, a dialog offers a replacement font.</li>
+          <li><b>Units</b>: section in preparation (disabled).</li>
+          <li><b>To look up</b> (shown only when needed): ingredients found during a PDF import and missing from the database. The <b>Copy the prompt</b> button copies a ready-made request, in the interface language, to send to an AI with web access: it looks up these ingredients and produces CSV files to paste into the Malts, Hops, Yeasts and Ingredients screens (“Paste CSV”).</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/parametres-reglages.jpg" alt="General settings" />
+          <figcaption>General settings: auto-save, language, database.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Auto-save</b>: on or off, and delay in minutes (0 = after each change). When it is off, only the “Save” button writes to the database.</li>
+          <li>Interface <b>language</b>: French, English, Spanish, Italian, Portuguese. The whole interface is translated, including the prompt of the “To look up” section and this documentation (in languages other than French, the screenshots show the English interface).</li>
+          <li><b>Export the database…</b>: downloads a copy <code>YYYYMMDD_openmaltforge.sqlite</code> of the displayed state.</li>
+          <li><b>Change database…</b>: replaces the database with the content of another <code>.sqlite</code> file; the file is checked and upgraded, and a copy of the current database is kept in <code>sauvegardes/</code>.</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/parametres-polices.jpg" alt="Fonts" />
+          <figcaption>Fonts: import, filter, protected fonts (padlock).</figcaption>
+        </figure>
+
+        <h2 id="donnees">Data and backups</h2>
+        <ul>
+          <li>Single database: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (a single file, which can be copied at any time).</li>
+          <li>Before any upgrade of the database structure, and before changing database, a copy is made in <code>~/OpenMaltForge/sauvegardes/</code>.</li>
+          <li>A database created by a more recent version of OpenMaltForge is refused (install the latest version).</li>
+          <li>Old databases (BrewCraft 1.x to 4.x) are recognised and converted; the OpenBrew 5.x database (<code>~/OpenBrew/openbrew.sqlite</code>), or else the BrewCraft 4.x one (<code>~/BrewCraft/brewcraft.sqlite</code>), is taken over on the first launch of OpenMaltForge.</li>
+        </ul>
+
+        <h2 id="astuces">Tips</h2>
+        <ul>
+          <li><b>Calculated fields</b> (darker background, read-only): hover over them for half a second to see how the value is calculated.</li>
+          <li><kbd>Esc</kbd> closes dialogs and enlarged views; <kbd>Enter</kbd> confirms.</li>
+          <li>Clicking in a field selects its content: what you type replaces it directly.</li>
+          <li>Formulas (<kbd>=</kbd>) work everywhere, including in the databases and the settings.</li>
+        </ul>
+        <p class="lead">OpenMaltForge — application licensed under GNU GPL v3. Lucide icons (ISC licence).</p>
+      </main>
+    </div>
+    <div id="zoom" role="dialog" aria-label="Enlarged screenshot"><img alt="" /></div>
+    <script>
+      /* click on a screenshot: enlarge; click or Esc to close */
+      const z = document.getElementById('zoom');
+      document.addEventListener('click', e => {
+        const i = e.target.closest('figure img');
+        if (i) {
+          z.querySelector('img').src = i.src;
+          z.querySelector('img').alt = i.alt;
+          z.classList.add('on');
+        } else if (e.target.closest('#zoom')) z.classList.remove('on');
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') z.classList.remove('on');
+      });
+    </script>
+  </body>
+</html>

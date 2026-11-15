@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RECIPES>
+  <RECIPE>
+    <NAME>Sierra Nevada Pale Ale v1</NAME>
+    <TYPE>All Grain</TYPE>
+    <BREWER>BYO Magazine</BREWER>
+    <STYLE>
+      <NAME>American Pale Ale</NAME>
+      <CATEGORY>Pale American Ale</CATEGORY>
+      <STYLE_GUIDE>BJCP 2015</STYLE_GUIDE>
+      <TYPE>Ale</TYPE>
+    </STYLE>
+    <VERSION>1</VERSION>
+    <BATCH_SIZE>25.0</BATCH_SIZE>
+    <BOIL_SIZE>34.96</BOIL_SIZE>
+    <BOIL_TIME>90</BOIL_TIME>
+    <EFFICIENCY>59.0</EFFICIENCY>
+    <EST_OG>1.054</EST_OG>
+    <EST_FG>1.012</EST_FG>
+    <EST_COLOR>19.5</EST_COLOR>
+    <IBU>40</IBU>
+    <EST_ABV>5.5</EST_ABV>
+    <NOTES>Recipe from Brew Your Own magazine. Clone recipe from BYO Magazine.&#13;
+Source : recette partagée sur Brewfather par @texastom.beerfactory — https://recipe.brewfather.app/8Clw6xnAugAOEDMP2O1U9qJqnLDb7F&#13;
+Équipement d’origine : BB60 NoSparge 25 litres (sans rinçage) ; eau d’empâtage = eau totale = 40,68 L ; densité pré-ébullition 1,044.&#13;
+Profil d’eau cible (mg/L) : Ca 65 · Mg 1 · Na 11 · Cl 53 · SO4 73 · HCO3 47.&#13;
+Levure : White Labs WLP001 California Ale, starter 1,1 L (108 g de DME).</NOTES>
+    <FERMENTATION_STAGES>1</FERMENTATION_STAGES>
+    <PRIMARY_AGE>14</PRIMARY_AGE>
+    <PRIMARY_TEMP>20.0</PRIMARY_TEMP>
+    <CARBONATION>2.4</CARBONATION>
+    <FERMENTABLES>
+      <FERMENTABLE>
+        <NAME>BEST Pale Ale</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>6.7</AMOUNT>
+        <COLOR>6</COLOR>
+        <YIELD>82.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <NAME>Weyermann Caramunich III</NAME>
+        <SUPPLIER>Weyermann</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.45</AMOUNT>
+        <COLOR>140</COLOR>
+        <YIELD>75.0</YIELD>
+      </FERMENTABLE>
+    </FERMENTABLES>
+    <HOPS>
+      <HOP><NAME>Magnum</NAME><AMOUNT>0.005</AMOUNT><ALPHA>12.0</ALPHA><USE>Boil</USE><TIME>60</TIME><FORM>Pellet</FORM></HOP>
+      <HOP><NAME>Perle</NAME><AMOUNT>0.005</AMOUNT><ALPHA>7.0</ALPHA><USE>Boil</USE><TIME>60</TIME><FORM>Pellet</FORM></HOP>
+      <HOP><NAME>Cascade</NAME><AMOUNT>0.075</AMOUNT><ALPHA>5.5</ALPHA><USE>Boil</USE><TIME>30</TIME><FORM>Pellet</FORM></HOP>
+      <HOP><NOTES>Flameout (0 min)</NOTES><NAME>Cascade</NAME><AMOUNT>0.075</AMOUNT><ALPHA>5.5</ALPHA><USE>Aroma</USE><TIME>0</TIME><FORM>Pellet</FORM></HOP>
+    </HOPS>
+    <MISCS>
+      <MISC><NAME>Calcium Chloride</NAME><TYPE>Water Agent</TYPE><USE>Mash</USE><AMOUNT>0.004</AMOUNT><AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT><TIME>60</TIME></MISC>
+      <MISC><NAME>Gypsum (Calcium Sulfate)</NAME><TYPE>Water Agent</TYPE><USE>Mash</USE><AMOUNT>0.005</AMOUNT><AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT><TIME>60</TIME></MISC>
+      <MISC><NAME>Lactic Acid 80% (ml)</NAME><TYPE>Water Agent</TYPE><USE>Mash</USE><AMOUNT>0.004</AMOUNT><AMOUNT_IS_WEIGHT>FALSE</AMOUNT_IS_WEIGHT><TIME>60</TIME></MISC>
+      <MISC><NAME>Yeast Nutrients</NAME><TYPE>Other</TYPE><USE>Boil</USE><AMOUNT>0.001</AMOUNT><AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT><TIME>15</TIME></MISC>
+      <MISC><NAME>Whirlfloc (0,5 tablette)</NAME><TYPE>Fining</TYPE><USE>Boil</USE><AMOUNT>0.0</AMOUNT><AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT><TIME>5</TIME></MISC>
+    </MISCS>
+    <YEASTS>
+      <YEAST>
+        <NAME>WLP001 California Ale</NAME>
+        <LABORATORY>White Labs</LABORATORY>
+        <PRODUCT_ID>WLP001</PRODUCT_ID>
+        <FORM>Liquid</FORM>
+        <AMOUNT>0.035</AMOUNT>
+        <AMOUNT_IS_WEIGHT>FALSE</AMOUNT_IS_WEIGHT>
+        <ATTENUATION>80.0</ATTENUATION>
+      </YEAST>
+    </YEASTS>
+    <MASH>
+      <NAME>BB60 NoSparge 25liter</NAME>
+      <NOTES>Empâtage avec 40,68 L à 71,4 °C (température initiale). Mash out : chauffer le moût jusqu’à 76 °C.</NOTES>
+      <MASH_STEPS>
+        <MASH_STEP><NAME>Saccharification</NAME><TYPE>Infusion</TYPE><INFUSE_AMOUNT>40.68</INFUSE_AMOUNT><INFUSE_TEMP>71.4</INFUSE_TEMP><STEP_TIME>60</STEP_TIME><STEP_TEMP>68</STEP_TEMP></MASH_STEP>
+        <MASH_STEP><NAME>Mash Out</NAME><TYPE>Temperature</TYPE><STEP_TIME>5</STEP_TIME><STEP_TEMP>76</STEP_TEMP></MASH_STEP>
+      </MASH_STEPS>
+    </MASH>
+  </RECIPE>
+</RECIPES>

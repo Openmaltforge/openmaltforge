@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<RECIPES>
+  <RECIPE>
+    <NAME>Triple Belge</NAME>
+    <TYPE>All Grain</TYPE>
+    <STYLE>
+      <NAME>Belgian Tripel</NAME>
+      <CATEGORY>Trappist Ale</CATEGORY>
+      <CATEGORY_NUMBER>26</CATEGORY_NUMBER>
+      <STYLE_LETTER>C</STYLE_LETTER>
+      <STYLE_GUIDE>BJCP 2015</STYLE_GUIDE>
+      <TYPE>Ale</TYPE>
+      <OG_MIN>1.075</OG_MIN>
+      <OG_MAX>1.085</OG_MAX>
+      <FG_MIN>1.008</FG_MIN>
+      <FG_MAX>1.014</FG_MAX>
+      <IBU_MIN>20</IBU_MIN>
+      <IBU_MAX>40</IBU_MAX>
+      <COLOR_MIN>8</COLOR_MIN>
+      <COLOR_MAX>13</COLOR_MAX>
+      <CARB_MIN>2.5</CARB_MIN>
+      <CARB_MAX>3.4</CARB_MAX>
+      <ABV_MIN>7.5</ABV_MIN>
+      <ABV_MAX>9.5</ABV_MAX>
+      <EXAMPLES>Affligem Tripel, Chimay Cinq Cents, La Rulles Tripel, La Trappe Tripel, St. Bernardus Tripel, Unibroue La Fin Du Monde, Val-Dieu Triple, Watou Tripel, Westmalle Tripel</EXAMPLES>
+    </STYLE>
+    <VERSION>1</VERSION>
+    <BATCH_SIZE>20.0</BATCH_SIZE>
+    <BOIL_SIZE>25.0</BOIL_SIZE>
+    <BOIL_TIME>60</BOIL_TIME>
+    <EFFICIENCY>72.0</EFFICIENCY>
+    <EST_OG>1.075</EST_OG>
+    <EST_FG>1.014</EST_FG>
+    <EST_COLOR>9</EST_COLOR>
+    <IBU>32</IBU>
+    <EST_ABV>8.0</EST_ABV>
+    <NOTES>Historiquement la bi&#232;re triple &#233;tait brass&#233;e dans les monast&#232;res et &#233;tait r&#233;serv&#233;e aux convives et aux h&#244;tes de passage.&#13;
+&#13;
+L&#8217;appellation &#171; triple &#187; fait r&#233;f&#233;rence &#224; sa force et &#224; sa teneur en alcool par rapport &#224; la bi&#232;re simple de base. En effet les moines avaient pris l&#8217;habitude de classer leurs bi&#232;res par les d&#233;nominations suivantes : simple, double, triple et quadruple. La Triple Belge fut ensuite popularis&#233;e par les moines trappistes de l&#8217;abbaye de Westmalle.&#13;
+&#13;
+Comme le veut la tradition, la quantit&#233; de malt devra &#234;tre augment&#233;e et un ajout de sucre suppl&#233;mentaire peut &#234;tre envisag&#233; pour augmenter le taux d&#8217;alcool et ainsi se rapprocher des 9%. La levure et les houblons utilis&#233;s devront apporter de d&#233;licieux ar&#244;mes fruit&#233;s et &#233;pic&#233;s avec une amertume franche. La bi&#232;re triple se veut &#233;galement un peu trompeuse, son caract&#232;re doux, malt&#233; et rond saura cacher la pr&#233;sence d&#8217;alcool. En effet sa chaleur ne doit pas &#234;tre ressentie.&#13;
+&#13;
+Pour r&#233;aliser cette recette nous avons donc utilis&#233; les houblons Styrian Golding et Saaz qui se pr&#234;tent bien au style souhait&#233;, avec une base de malt clair Pilsen. Le malt de froment apportera un peu de corps, mais surtout une meilleure formation et tenue de la mousse gr&#226;ce &#224; ses prot&#233;ines.</NOTES>
+    <FERMENTATION_STAGES>1</FERMENTATION_STAGES>
+    <PRIMARY_AGE>21</PRIMARY_AGE>
+    <PRIMARY_TEMP>19.0</PRIMARY_TEMP>
+    <AGE>30</AGE>
+    <AGE_TEMP>18.0</AGE_TEMP>
+    <PRIMING_SUGAR_NAME></PRIMING_SUGAR_NAME>
+    <FERMENTABLES>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>2 EBC</DISPLAY_COLOR>
+        <NAME>Malt Pilsner</NAME>
+        <SUPPLIER></SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>5.8</AMOUNT>
+        <COLOR>2</COLOR>
+        <YIELD>78.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>4 EBC</DISPLAY_COLOR>
+        <NAME>Malt de froment</NAME>
+        <SUPPLIER></SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.5</AMOUNT>
+        <COLOR>4</COLOR>
+        <YIELD>84.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>35 EBC</DISPLAY_COLOR>
+        <NAME>Malt Carabelge</NAME>
+        <SUPPLIER></SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.3</AMOUNT>
+        <COLOR>35</COLOR>
+        <YIELD>75.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>1 EBC</DISPLAY_COLOR>
+        <NAME>Sucre de table</NAME>
+        <SUPPLIER></SUPPLIER>
+        <TYPE>Sugar</TYPE>
+        <AMOUNT>0.28</AMOUNT>
+        <COLOR>1</COLOR>
+        <YIELD>100.0</YIELD>
+      </FERMENTABLE>
+    </FERMENTABLES>
+    <HOPS>
+      <HOP>
+        <NAME>Styrian Goldings</NAME>
+        <AMOUNT>0.1</AMOUNT>
+        <ALPHA>2.0</ALPHA>
+        <USE>Boil</USE>
+        <TIME>60</TIME>
+        <FORM>Leaf</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Styrian Goldings</NAME>
+        <AMOUNT>0.05</AMOUNT>
+        <ALPHA>2.0</ALPHA>
+        <USE>Boil</USE>
+        <TIME>30</TIME>
+        <FORM>Leaf</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Saaz</NAME>
+        <AMOUNT>0.03</AMOUNT>
+        <ALPHA>2.2</ALPHA>
+        <USE>Boil</USE>
+        <TIME>10</TIME>
+        <FORM>Leaf</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Styrian Goldings</NAME>
+        <AMOUNT>0.02</AMOUNT>
+        <ALPHA>2.0</ALPHA>
+        <USE>Boil</USE>
+        <TIME>10</TIME>
+        <FORM>Leaf</FORM>
+      </HOP>
+    </HOPS>
+    <YEASTS>
+      <YEAST>
+        <NAME>Belgian Tripel</NAME>
+        <AMOUNT>0.022</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <FORM>Dry</FORM>
+        <PRODUCT_ID>M31</PRODUCT_ID>
+        <LABORATORY>Mangrove Jack&#039;s</LABORATORY>
+        <ATTENUATION>81.5</ATTENUATION>
+      </YEAST>
+    </YEASTS>
+    <MASH>
+      <NAME></NAME>
+      <NOTES></NOTES>
+      <PH>5.4</PH>
+      <SPARGE_TEMP>75.0</SPARGE_TEMP>
+      <MASH_STEPS>
+        <MASH_STEP>
+          <NAME>Palier prot&#233;inique</NAME>
+          <TYPE>Infusion</TYPE>
+          <INFUSE_AMOUNT>17.0</INFUSE_AMOUNT>
+          <INFUSE_TEMP>54.0</INFUSE_TEMP>
+          <STEP_TIME>15</STEP_TIME>
+          <STEP_TEMP>50</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+        <MASH_STEP>
+          <NAME>Saccharification</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>60</STEP_TIME>
+          <STEP_TEMP>67</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+        <MASH_STEP>
+          <NAME>Mash Out</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>10</STEP_TIME>
+          <STEP_TEMP>75</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+      </MASH_STEPS>
+    </MASH>
+  </RECIPE>
+</RECIPES>

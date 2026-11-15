@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<RECIPES>
+  <RECIPE>
+    <NAME>Chipotle Porter</NAME>
+    <TYPE>All Grain</TYPE>
+    <STYLE>
+      <NAME>American Porter</NAME>
+      <CATEGORY>American Porter and Stout</CATEGORY>
+      <CATEGORY_NUMBER>20</CATEGORY_NUMBER>
+      <STYLE_LETTER>A</STYLE_LETTER>
+      <STYLE_GUIDE>BJCP 2015</STYLE_GUIDE>
+      <TYPE>Ale</TYPE>
+      <OG_MIN>1.05</OG_MIN>
+      <OG_MAX>1.07</OG_MAX>
+      <FG_MIN>1.012</FG_MIN>
+      <FG_MAX>1.018</FG_MAX>
+      <IBU_MIN>25</IBU_MIN>
+      <IBU_MAX>50</IBU_MAX>
+      <COLOR_MIN>43</COLOR_MIN>
+      <COLOR_MAX>78</COLOR_MAX>
+      <CARB_MIN>2.3</CARB_MIN>
+      <CARB_MAX>2.9</CARB_MAX>
+      <ABV_MIN>4.8</ABV_MIN>
+      <ABV_MAX>6.5</ABV_MAX>
+      <EXAMPLES>Anchor Porter, Boulevard Bully! Porter, Deschutes Black Butte Porter, Founders Porter, Great Lakes Edmund Fitzgerald Porter, Smuttynose Robust Porter, Sierra Nevada Porter</EXAMPLES>
+    </STYLE>
+    <VERSION>1</VERSION>
+    <BATCH_SIZE>21.0</BATCH_SIZE>
+    <BOIL_SIZE>26.0</BOIL_SIZE>
+    <BOIL_TIME>60</BOIL_TIME>
+    <EFFICIENCY>72.0</EFFICIENCY>
+    <EST_OG>1.052</EST_OG>
+    <EST_FG>1.013</EST_FG>
+    <EST_COLOR>65</EST_COLOR>
+    <IBU>26</IBU>
+    <EST_ABV>5.1</EST_ABV>
+    <NOTES></NOTES>
+    <FERMENTATION_STAGES>1</FERMENTATION_STAGES>
+    <PRIMARY_AGE>14</PRIMARY_AGE>
+    <PRIMARY_TEMP>20.0</PRIMARY_TEMP>
+    <CARBONATION>2.3</CARBONATION>
+    <CARBONATION_TEMP>18.0</CARBONATION_TEMP>
+    <PRIMING_SUGAR_NAME></PRIMING_SUGAR_NAME>
+    <FERMENTABLES>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>6 EBC</DISPLAY_COLOR>
+        <NAME>BEST Pale Ale</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>4.0</AMOUNT>
+        <COLOR>6</COLOR>
+        <YIELD>82.8</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>240 EBC</DISPLAY_COLOR>
+        <NAME>Malt Medium Crystal (Crystal 240)</NAME>
+        <SUPPLIER>Crisp</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.5</AMOUNT>
+        <COLOR>240</COLOR>
+        <YIELD>76.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>350 EBC</DISPLAY_COLOR>
+        <NAME>BEST Special X</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.25</AMOUNT>
+        <COLOR>350</COLOR>
+        <YIELD>79.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>900 EBC</DISPLAY_COLOR>
+        <NAME>BEST Chocolate</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.25</AMOUNT>
+        <COLOR>900</COLOR>
+        <YIELD>77.0</YIELD>
+      </FERMENTABLE>
+    </FERMENTABLES>
+    <HOPS>
+      <HOP>
+        <NAME>Fuggle</NAME>
+        <AMOUNT>0.03</AMOUNT>
+        <ALPHA>6.1</ALPHA>
+        <USE>Boil</USE>
+        <TIME>60</TIME>
+        <FORM>Pellet</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Fuggle</NAME>
+        <AMOUNT>0.02</AMOUNT>
+        <ALPHA>6.1</ALPHA>
+        <USE>Boil</USE>
+        <TIME>5</TIME>
+        <FORM>Pellet</FORM>
+      </HOP>
+    </HOPS>
+    <MISCS>
+      <MISC>
+        <NAME>Servomyces</NAME>
+        <TYPE>Other</TYPE>
+        <USE>Boil</USE>
+        <AMOUNT>0.0</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <TIME>10</TIME>
+        <NOTES></NOTES>
+      </MISC>
+      <MISC>
+        <NAME>Protafloc</NAME>
+        <TYPE>Fining</TYPE>
+        <USE>Boil</USE>
+        <AMOUNT>0.0</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <TIME>10</TIME>
+        <NOTES></NOTES>
+      </MISC>
+      <MISC>
+        <NAME>Piment chipotle en rondelle</NAME>
+        <TYPE>Spice</TYPE>
+        <USE>Boil</USE>
+        <AMOUNT>0.0</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <TIME>5</TIME>
+        <NOTES></NOTES>
+      </MISC>
+    </MISCS>
+    <YEASTS>
+      <YEAST>
+        <NAME>SafAle English Ale</NAME>
+        <AMOUNT>0.001</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <FORM>Dry</FORM>
+        <PRODUCT_ID>S-04</PRODUCT_ID>
+        <LABORATORY>Fermentis</LABORATORY>
+        <ATTENUATION>77.0</ATTENUATION>
+      </YEAST>
+    </YEASTS>
+    <MASH>
+      <NAME></NAME>
+      <NOTES></NOTES>
+      <PH>5.4</PH>
+      <SPARGE_TEMP>75.0</SPARGE_TEMP>
+      <MASH_STEPS>
+        <MASH_STEP>
+          <NAME>Saccharification</NAME>
+          <TYPE>Infusion</TYPE>
+          <INFUSE_AMOUNT>29.0</INFUSE_AMOUNT>
+          <INFUSE_TEMP>71.3</INFUSE_TEMP>
+          <STEP_TIME>60</STEP_TIME>
+          <STEP_TEMP>68</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+      </MASH_STEPS>
+    </MASH>
+  </RECIPE>
+</RECIPES>

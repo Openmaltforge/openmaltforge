@@ -1,0 +1,15 @@
+Package: openmaltforge
+Version: @VERSION@
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: OpenMaltForge <openmaltforge@pm.me>
+Replaces: brewcraft, openbrew
+Conflicts: brewcraft, openbrew
+Recommends: google-chrome-stable | chromium | chromium-browser | brave-browser
+Description: OpenMaltForge - feuille de calcul de brassage
+ Application de bureau de conception de recettes de bière, base SQLite
+ embarquée (~/OpenMaltForge/openmaltforge.sqlite). Fenêtre autonome (moteur
+ Chromium du système). Nouveau nom d'OpenBrew (ex-BrewCraft) : remplace les
+ paquets openbrew et brewcraft ; la base ~/OpenBrew/openbrew.sqlite (sinon
+ ~/BrewCraft/brewcraft.sqlite) est reprise au premier lancement.

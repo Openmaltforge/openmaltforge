@@ -1,0 +1,67 @@
+﻿name;alpha_min;alpha_max;citrus;tropical_fruit;stone_fruit;berry;floral;grassy;herbal;spice;resin_pin;prix_g;source
+Admiral;13;16.2;5;0;0;0;0;4;2;0;2;;https://beermaverick.com/hop/admiral/
+Apollo;15;20.5;5;0;0;0;0;0;0;0;2;;https://beermaverick.com/hop/apollo/
+Agnus;9;14;2;0;0;0;5;0;4;2;0;;https://beermaverick.com/hop/agnus/
+Belma;8.5;12.1;5;4;0;3;0;0;0;0;0;;https://beermaverick.com/hop/belma/
+Boadicea;7.5;10;0;0;3;0;5;0;0;0;0;;https://beermaverick.com/hop/boadicea/
+Bobek;3.5;9.3;0;0;0;0;4;0;0;0;5;;https://beermaverick.com/hop/bobek/
+Bravo;13;18;5;0;2;0;3;0;0;4;0;;https://beermaverick.com/hop/bravo/
+Bullion;5.3;12.5;0;0;0;5;0;0;0;4;0;;https://beermaverick.com/hop/bullion/
+Caliente;14;16;5;0;4;0;0;0;0;0;3;;https://beermaverick.com/hop/caliente/
+Callista;2;5;2;3;5;2;0;0;0;0;2;;https://beermaverick.com/hop/callista/
+Celeia;3;6;0;0;0;0;4;0;2;2;0;;https://beermaverick.com/hop/celeia/
+Cluster;5.5;9;0;0;0;0;5;0;4;0;0;;https://beermaverick.com/hop/cluster/
+Columbus;14;18;2;0;0;0;2;0;5;4;2;;https://beermaverick.com/hop/columbus/
+Delta;5.5;7;5;4;0;0;0;0;0;3;0;;https://beermaverick.com/hop/delta/
+Sultana (Denali);13;16;4;5;0;0;0;0;0;2;3;;https://beermaverick.com/hop/denali/
+Hallertau (US);3.5;6.5;0;0;0;0;4;0;3;5;0;;https://beermaverick.com/hop/hallertau/
+Endeavour;5;10.6;2;0;0;5;0;0;0;3;0;;https://beermaverick.com/hop/endeavour/
+Galena;12;15.5;2;3;5;2;0;0;2;2;0;;https://beermaverick.com/hop/galena/
+Glacier;3.3;9.7;0;0;5;4;0;0;3;0;0;;https://beermaverick.com/hop/glacier/
+Hallertau Tradition;4.6;7;0;0;2;0;0;4;5;0;0;;https://beermaverick.com/hop/hallertau-tradition/
+Harmonie;4;8;0;5;2;0;0;3;0;0;0;;https://beermaverick.com/hop/harmonie/
+Hersbrucker;1.5;5;3;0;0;0;0;4;2;0;0;;https://beermaverick.com/hop/hersbrucker/
+Horizon;8.8;12;4;0;0;0;5;0;0;3;0;;https://beermaverick.com/hop/horizon/
+Idaho Gem;11;14;2;5;4;2;0;0;2;2;0;;https://beermaverick.com/hop/idaho-gem/
+Liberty;3;6.5;2;0;0;0;4;0;3;2;0;;https://beermaverick.com/hop/liberty/
+Loral;10;17;3;0;2;0;5;0;0;4;0;;https://beermaverick.com/hop/loral/
+Lubelska;3;5;0;0;0;0;4;0;0;5;0;;https://beermaverick.com/hop/lublin/
+Magnat;11;16;2;0;0;0;5;0;2;0;0;;https://beermaverick.com/hop/magnat/
+Marynka;7.5;12;3;0;0;0;0;5;2;4;0;;https://beermaverick.com/hop/marynka/
+Marco Polo;12;13;0;0;0;5;3;0;4;0;0;;https://beermaverick.com/hop/marco-polo/
+Monroe;2.5;2.9;2;2;2;3;0;0;0;0;0;;https://beermaverick.com/hop/monroe/
+Medusa;3;5;3;5;2;0;0;2;0;0;0;;https://beermaverick.com/hop/medusa/
+Meridian;5;7;5;2;0;3;0;0;2;0;0;;https://beermaverick.com/hop/meridian/
+Merkur;12;16.2;2;4;0;0;0;0;3;0;0;;https://beermaverick.com/hop/merkur/
+Millennium;14.5;18.5;0;0;5;0;3;0;2;0;2;;https://beermaverick.com/hop/millennium/
+Mount Hood;3.9;8;0;0;0;0;0;0;4;2;0;;https://beermaverick.com/hop/mount-hood/
+Mount Rainier;5;9.4;2;0;0;0;3;0;0;4;0;;https://beermaverick.com/hop/mount-rainier/
+Newport;10.5;17;3;0;0;5;0;0;2;0;4;;https://beermaverick.com/hop/newport/
+Northdown;7;10;0;0;0;2;5;0;3;2;4;;https://beermaverick.com/hop/northdown/
+Olympic;10.6;13.8;5;0;0;0;0;0;0;4;0;;https://beermaverick.com/hop/olympic/
+Opal;5;14;4;0;0;0;2;0;2;5;0;;https://beermaverick.com/hop/opal/
+Relax;0.3;4;0;5;0;0;2;0;2;0;0;;https://beermaverick.com/hop/relax/
+Vital;9;16;0;0;5;0;4;0;0;3;0;;https://beermaverick.com/hop/vital/
+Palisade;5.5;10;5;2;2;0;2;0;0;0;0;;https://beermaverick.com/hop/palisade/
+Pekko;13;16;3;2;0;0;4;2;2;0;0;;https://beermaverick.com/hop/pekko/
+Phoenix;8;13.5;0;0;0;0;2;0;0;3;2;;https://beermaverick.com/hop/phoenix/
+Pilot;8;11.5;5;0;0;0;0;0;0;4;0;;https://beermaverick.com/hop/pilot/
+Pioneer;8;10.5;4;0;0;0;0;0;5;0;0;;https://beermaverick.com/hop/pioneer/
+Pride of Ringwood;7;11;0;0;0;0;0;0;5;0;4;;https://beermaverick.com/hop/pride-of-ringwood/
+Progress;5;7.5;0;0;2;2;2;5;4;0;0;;https://beermaverick.com/hop/progress/
+Riwaka;4.5;6.5;3;5;0;0;0;0;0;0;0;;https://beermaverick.com/hop/riwaka/
+Santiam;5;8.5;0;0;0;0;5;0;0;4;0;;https://beermaverick.com/hop/santiam/
+Strata;11;12.5;4;3;0;2;0;0;2;0;5;;https://beermaverick.com/hop/strata/
+Smaragd;4;6;0;0;4;0;5;0;2;3;0;;https://beermaverick.com/hop/smaragd/
+Sovereign;4.5;6.5;0;0;4;0;3;2;5;0;0;;https://beermaverick.com/hop/sovereign/
+Spalt;2.5;5.7;0;0;0;0;2;0;4;0;0;;https://beermaverick.com/hop/spalt/
+Spalter Select;3;6.5;0;0;0;0;0;4;0;5;0;;https://beermaverick.com/hop/spalter-select/
+Sterling;5.5;8.5;0;0;0;0;2;0;4;3;0;;https://beermaverick.com/hop/sterling/
+Sticklebract;12;15;4;0;0;0;0;0;0;0;5;;https://beermaverick.com/hop/sticklebract/
+Styrian Golding;3.5;6.5;0;0;0;0;0;0;5;4;3;;https://beermaverick.com/hop/styrian-golding/
+Summer;5.6;6.4;2;4;5;0;0;3;0;0;0;;https://beermaverick.com/hop/summer/
+Super Galena;13;16;2;2;3;2;0;5;0;4;2;;https://beermaverick.com/hop/super-galena/
+Super Pride;12.5;16.3;0;0;4;0;0;0;0;0;5;;https://beermaverick.com/hop/super-pride/
+Sussex;4.3;5.8;2;0;0;0;0;4;5;2;0;;https://beermaverick.com/hop/sussex/
+Sybilla;6;8;4;0;0;0;5;0;2;2;3;;https://beermaverick.com/hop/sybilla/
+Sylva;4;7.3;0;0;0;0;5;0;4;0;0;;https://beermaverick.com/hop/sylva/

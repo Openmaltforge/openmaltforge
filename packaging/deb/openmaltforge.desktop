@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=OpenMaltForge
+Comment=Feuille de calcul de brassage
+Exec=openmaltforge
+Terminal=false
+Icon=openmaltforge
+StartupWMClass=openmaltforge
+StartupNotify=true
+Categories=Utility;

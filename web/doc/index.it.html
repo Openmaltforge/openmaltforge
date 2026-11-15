@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Documentazione di OpenMaltForge</title>
+    <style>
+      :root {
+        --bg: #2b3340;
+        --p: #222933;
+        --b: #3d4756;
+        --y: #ffe600;
+        --c: #20d6c7;
+        --t: #d9dee6;
+        --m: #8d98a8;
+        --code: #1b2028;
+      }
+      :root.light {
+        --bg: #f3f5f8;
+        --p: #ffffff;
+        --b: #d5dbe3;
+        --y: #b58900;
+        --c: #0f8f86;
+        --t: #1f2733;
+        --m: #5c6878;
+        --code: #eef1f5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--t);
+        font: 15px/1.6 Inter, 'LF Inter', system-ui, sans-serif;
+      }
+      .wrap {
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        max-height: 100vh;
+        overflow-y: auto;
+        padding: 22px 14px 22px 18px;
+        border-right: 1px solid var(--b);
+      }
+      nav b {
+        display: block;
+        margin: 0 0 10px;
+        color: var(--y);
+        font-size: 17px;
+      }
+      nav a {
+        display: block;
+        padding: 3px 8px;
+        border-radius: 5px;
+        color: var(--t);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      nav a.s {
+        padding-left: 20px;
+        color: var(--m);
+        font-size: 13px;
+      }
+      nav a:hover {
+        background: var(--p);
+        color: var(--y);
+      }
+      main {
+        padding: 18px 34px 80px;
+      }
+      h1 {
+        margin: 6px 0 4px;
+        color: var(--y);
+        font-size: 28px;
+      }
+      h2 {
+        margin: 44px 0 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--b);
+        color: var(--y);
+        font-size: 22px;
+      }
+      h3 {
+        margin: 26px 0 6px;
+        color: var(--c);
+        font-size: 17px;
+      }
+      p,
+      li {
+        max-width: 860px;
+      }
+      ul {
+        padding-left: 22px;
+      }
+      li {
+        margin: 3px 0;
+      }
+      .lead {
+        color: var(--m);
+        font-size: 16px;
+      }
+      kbd,
+      code {
+        padding: 1px 6px;
+        border: 1px solid var(--b);
+        border-radius: 4px;
+        background: var(--code);
+        font: 13px 'Roboto Mono', 'LF Roboto Mono', ui-monospace, monospace;
+      }
+      figure {
+        margin: 14px 0 22px;
+        max-width: 100%;
+      }
+      figure img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border: 1px solid var(--b);
+        border-radius: 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        cursor: zoom-in;
+      }
+      figure.half img {
+        max-width: 520px;
+      }
+      figcaption {
+        margin-top: 6px;
+        color: var(--m);
+        font-size: 13px;
+      }
+      .note {
+        max-width: 860px;
+        margin: 12px 0;
+        padding: 10px 14px;
+        border-left: 3px solid var(--c);
+        border-radius: 0 6px 6px 0;
+        background: var(--p);
+      }
+      table {
+        border-collapse: collapse;
+        margin: 10px 0 16px;
+        max-width: 860px;
+      }
+      th,
+      td {
+        padding: 5px 10px;
+        border: 1px solid var(--b);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: var(--p);
+        color: var(--y);
+        font-weight: 600;
+      }
+      #zoom {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.82);
+        cursor: zoom-out;
+      }
+      #zoom.on {
+        display: flex;
+      }
+      #zoom img {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 6px;
+      }
+      @media (max-width: 900px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          position: static;
+          max-height: none;
+          border-right: 0;
+          border-bottom: 1px solid var(--b);
+        }
+        main {
+          padding: 14px 16px 60px;
+        }
+      }
+      @media print {
+        nav,
+        #zoom {
+          display: none !important;
+        }
+        .wrap {
+          display: block;
+        }
+        figure img {
+          box-shadow: none;
+        }
+      }
+    </style>
+    <script>
+      if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav aria-label="Sommario">
+        <b>OpenMaltForge</b>
+        <a href="#demarrage">Per iniziare</a>
+        <a href="#interface">L’interfaccia</a>
+        <a href="#conception">Progettare una ricetta</a>
+        <a class="s" href="#c-recette">Ricetta e obiettivi</a>
+        <a class="s" href="#c-ingredients">Malti, luppoli, lieviti</a>
+        <a class="s" href="#c-eau">Acqua e minerali</a>
+        <a class="s" href="#c-divers">Ingredienti e materiali di consumo</a>
+        <a class="s" href="#c-process">Soste, acqua, priming</a>
+        <a class="s" href="#c-bilan">Riepilogo e costi</a>
+        <a class="s" href="#c-orga">Analisi sensoriale</a>
+        <a href="#formules">Espressioni matematiche</a>
+        <a href="#courses">Lista della spesa e scorte</a>
+        <a href="#bibliotheque">Libreria e importazioni</a>
+        <a href="#bases">Database degli ingredienti</a>
+        <a href="#html">Resa HTML</a>
+        <a href="#etiquettes">Etichette</a>
+        <a href="#feuille">Scheda di cotta</a>
+        <a href="#parametres">Impostazioni</a>
+        <a href="#donnees">Dati e copie di sicurezza</a>
+        <a href="#astuces">Suggerimenti</a>
+      </nav>
+      <main>
+        <h1>Documentazione di OpenMaltForge</h1>
+        <p class="lead">
+          OpenMaltForge (in precedenza OpenBrew, e BrewCraft prima della versione 5.0.0) è un’applicazione desktop per progettare ricette di birra:
+          calcolo della densità, dell’amaro e del colore, acqua e minerali, processo di cotta, costi, scorte e lista della
+          spesa, libreria di ricette, etichette e scheda di cotta stampabili.
+        </p>
+
+        <h2 id="demarrage">Per iniziare</h2>
+        <ul>
+          <li><b>Linux</b>: installa il pacchetto <code>openmaltforge_&lt;versione&gt;_amd64.deb</code> (menu «OpenMaltForge») oppure avvia direttamente il programma <code>openmaltforge_&lt;versione&gt;_linux_amd64</code>.</li>
+          <li><b>Windows</b>: avvia <code>OpenMaltForge_&lt;versione&gt;.exe</code>.</li>
+        </ul>
+        <p>
+          OpenMaltForge si apre in una finestra propria (motore del browser Chrome, Chromium, Edge o Brave installato sul computer).
+          Tutti i dati sono salvati in un unico file: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (cartella personale, sottocartella
+          <code>OpenMaltForge</code>). Al primo avvio viene ripreso automaticamente il database di OpenBrew
+          (<code>~/OpenBrew/openbrew.sqlite</code>), altrimenti quello di BrewCraft (<code>~/BrewCraft/brewcraft.sqlite</code>), o, in mancanza, un database di una versione 3.x
+          (<code>brewcraft_3.x.sqlite</code>); il vecchio file non viene modificato.
+        </p>
+        <p>OpenMaltForge si apre sempre sulla schermata <b>Progettazione</b>.</p>
+        <p>Un database nuovo viene riempito con i dati iniziali: malti, luppoli, lieviti, stili BJCP 2021, acque, ingredienti, caratteri.</p>
+
+        <h2 id="interface">L’interfaccia</h2>
+        <figure>
+          <img src="img/en/conception.jpg" alt="Intestazione di OpenMaltForge e schermata Progettazione" />
+          <figcaption>Intestazione: menu delle schermate, pulsante «Salva», spia del database, interruttore chiaro / scuro e documentazione.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Menu</b>: Progettazione, Libreria, i database (Malti, Luppoli, Lieviti, Acque, Stili, Ingredienti, Consumabili), HTML, Etichette, Scheda di cotta, Impostazioni, poi l’icona <b>Documentazione</b> (libro aperto) che mostra questa pagina, e l’icona del <b>caffè</b> per sostenere lo sviluppo di OpenMaltForge con una donazione: una finestra «Offrimi un caffè» spiega a cosa serve la donazione; il suo pulsante apre la pagina «Buy Me a Coffee» nel tuo browser abituale).</li>
+          <li><b>Salva</b>: scrive subito tutti i dati nel database. Avviene anche un salvataggio automatico (ogni 5 minuti per impostazione predefinita, regolabile in Impostazioni › Preferenze).</li>
+          <li><b>Spia «Database: openmaltforge.sqlite»</b>: verde quando tutto è salvato. In caso di problema (programma chiuso, scrittura rifiutata) compare un avviso arancione; un clic ritenta il salvataggio.</li>
+          <li><b>Area delle notifiche</b> (sotto il menu): messaggi temporanei in verde (salvataggio, calcolo), errori in rosso, avvisi persistenti in arancione (per esempio un rapporto d’ammostamento troppo alto per il tino). Più messaggi vengono mostrati uno accanto all’altro.</li>
+          <li><b>Tema</b>: l’interruttore sole / luna, in alto a destra, passa dal tema scuro a quello chiaro; la scelta viene ricordata.</li>
+          <li><b>Piè di pagina</b>: licenza (GNU GPL v3, clic per leggere il testo) e numero di versione.</li>
+        </ul>
+
+        <h2 id="conception">Progettare una ricetta</h2>
+        <p>La schermata <b>Progettazione</b> raccoglie la ricetta in corso. Tutto viene ricalcolato a ogni inserimento.</p>
+
+        <h3 id="c-recette">Ricetta e obiettivi</h3>
+        <ul>
+          <li><b>Ricetta, Stile</b> (stili BJCP 2021), <b>Volume da imbottigliare</b>, <b>Rapporto d’ammostamento (L/kg)</b>, <b>date</b> di cotta e di imbottigliamento.</li>
+          <li><b>DI target, IBU target</b> e pulsante <b>Calcola</b>: regola le quantità di malti e luppoli per raggiungere la densità iniziale e l’amaro desiderati, mantenendo le proporzioni.</li>
+          <li><b>＋ Nuova ricetta</b>: riparte da una ricetta vuota (obiettivi e rapporto riprendono i valori predefiniti delle Impostazioni); la lista della spesa viene svuotata.</li>
+          <li><b>Radar aromatici</b> di malti, luppoli e lieviti: profilo della ricetta, valore mostrato al passaggio su un punto, ingrandimento al clic (Esc per chiudere), esportazione come immagine con i pulsanti <b>PNG</b> (sfondo scuro o chiaro).</li>
+        </ul>
+
+        <h3 id="c-ingredients">Malti, luppoli, lieviti</h3>
+        <figure>
+          <img src="img/en/conception-malts.jpg" alt="Tabella dei malti della ricetta" />
+          <figcaption>Malti della ricetta: nome (completamento automatico da 3 lettere), peso o percentuale, costo, carrello ed eliminazione.</figcaption>
+        </figure>
+        <ul>
+          <li>Il pulsante <b>＋</b> del titolo aggiunge una riga; la <b>croce rossa</b> la elimina.</li>
+          <li><b>Nome</b>: digita almeno 3 lettere per scegliere nel database (la malteria è indicata dopo il nome dei malti).</li>
+          <li><b>Peso o percentuale</b>: inserisci i pesi, oppure le percentuali (il peso viene allora calcolato; reinserire un peso torna alla modalità peso).</li>
+          <li><b>Luppoli</b>: peso, uso (First Wort, Bollitura, Whirlpool, Hopstand, Dry hop) e tempo; gli IBU sono calcolati con la formula di Tinseth, ponderata dai coefficienti di utilizzo delle Impostazioni.</li>
+          <li><b>Lieviti</b>: numero di bustine, attenuazione e flocculazione del ceppo.</li>
+          <li><b>Carrello</b> a fine riga: aggiunge il componente alla lista della spesa (vedi <a href="#courses">Lista della spesa</a>). È arancione quando le scorte non bastano, verde quando il componente è già nella lista.</li>
+        </ul>
+        <figure>
+          <img src="img/en/conception-houblons.jpg" alt="Tabella dei luppoli della ricetta" />
+          <figcaption>Luppoli: uso, tempo, IBU di ogni aggiunta e costo.</figcaption>
+        </figure>
+
+        <h3 id="c-eau">Acqua e minerali</h3>
+        <figure>
+          <img src="img/en/conception-eau.jpg" alt="Acqua e minerali" />
+          <figcaption>Miscela di acque (litri o %), profilo ionico ottenuto, aggiunte di minerali e intervalli attesi per lo stile.</figcaption>
+        </figure>
+        <ul>
+          <li>Scegli una o più acque (database «Acque») e la loro quota, in litri o in percentuale.</li>
+          <li>Gli ioni (Cl, SO4, Ca, Mg, Na, HCO3) della miscela sono confrontati con gli intervalli dello stile; la riga delle aggiunte (mg/L) calcola le quantità di minerali, aggiunte automaticamente agli ingredienti della ricetta (righe «— auto»).</li>
+        </ul>
+
+        <h3 id="c-divers">Ingredienti e materiali di consumo</h3>
+        <figure>
+          <img src="img/en/conception-ingredients.jpg" alt="Ingredienti e materiali di consumo della ricetta" />
+          <figcaption>Ingredienti (in grammi) e materiali di consumo (nella loro unità: tappi, bottiglie…).</figcaption>
+        </figure>
+
+        <h3 id="c-process">Soste, quantità d’acqua, priming</h3>
+        <figure class="half">
+          <img src="img/en/conception-paliers.jpg" alt="Soste di ammostamento" />
+          <figcaption>Soste di ammostamento: temperatura e durata di ogni fase; frecce per riordinare, croce per eliminare.</figcaption>
+        </figure>
+        <figure class="half">
+          <img src="img/en/conception-eau-quantites.jpg" alt="Quantità d’acqua" />
+          <figcaption>Quantità d’acqua: ammostamento, risciacquo, ghiaccio, temperatura del mosto a fine travaso.</figcaption>
+        </figure>
+        <figure class="half">
+          <img src="img/en/conception-resucrage.jpg" alt="Priming e CO2" />
+          <figcaption>Priming: zucchero (g/L), CO₂ dopo la rifermentazione e quantità totale di zucchero da preparare.</figcaption>
+        </figure>
+
+        <h3 id="c-bilan">Riepilogo della ricetta e costi</h3>
+        <figure class="half">
+          <img src="img/en/conception-bilan.jpg" alt="Riepilogo della ricetta" />
+          <figcaption>Riepilogo: ogni parametro è posto su un cursore colorato (verde = nell’intervallo dello stile, arancione / rosso = fuori).</figcaption>
+        </figure>
+        <p>
+          Densità iniziale e finale, attenuazione, flocculazione, IBU, colore (EBC / SRM), alcol, rapporti IBU / DI e RBR, con
+          l’intervallo atteso per lo stile scelto, poi il colore stimato della birra.
+        </p>
+        <figure class="half">
+          <img src="img/en/conception-couts.jpg" alt="Riepilogo dei costi" />
+          <figcaption>Costi: malti, luppoli, lieviti, ingredienti, elettricità, acqua, materiali di consumo, totale e costo al litro.</figcaption>
+        </figure>
+
+        <h3 id="c-orga">Analisi sensoriale</h3>
+        <figure>
+          <img src="img/en/conception-organoleptique.jpg" alt="Analisi sensoriale della cotta" />
+          <figcaption>Scheda di degustazione (scheda BJCP su 50): visibile non appena la data di imbottigliamento è inserita.</figcaption>
+        </figure>
+        <p>Data di degustazione, densità misurate, ABV reale, colore, limpidezza, schiuma, carbonazione, poi note e commenti per criterio (aroma, aspetto, sapore, sensazione in bocca, impressione generale).</p>
+
+        <h2 id="formules">Inserimento di espressioni matematiche</h2>
+        <p>
+          In <b>qualsiasi campo di inserimento</b>, un testo che inizia con <kbd>=</kbd> viene calcolato. Il risultato sostituisce
+          la formula quando confermi con <kbd>Invio</kbd> o lasci il campo, e viene considerato come un normale inserimento.
+        </p>
+        <figure>
+          <img src="img/en/formule-saisie.jpg" alt="Inserimento di una formula nel peso di un malto" />
+          <figcaption>Inserimento: <code>=4,5+0,25</code> nel peso (kg) del primo malto…</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/formule-resultat.jpg" alt="Risultato della formula" />
+          <figcaption>… dopo <kbd>Invio</kbd>, il campo contiene il risultato (4,75) e la ricetta viene ricalcolata.</figcaption>
+        </figure>
+        <table>
+          <tr><th>Elemento</th><th>Scrittura</th><th>Esempio</th><th>Risultato</th></tr>
+          <tr><td>Addizione, sottrazione</td><td><code>+</code> <code>-</code></td><td><code>=4,5+0,25</code></td><td>4,75</td></tr>
+          <tr><td>Moltiplicazione, divisione</td><td><code>*</code> o <code>×</code>, <code>/</code> o <code>÷</code></td><td><code>=3*(2+1,5)/4</code></td><td>2,625</td></tr>
+          <tr><td>Potenza</td><td><code>^</code></td><td><code>=2^10</code></td><td>1024</td></tr>
+          <tr><td>Parentesi</td><td><code>( )</code></td><td><code>=(20-12)*1,5</code></td><td>12</td></tr>
+          <tr><td>Percentuale</td><td><code>%</code> dopo un numero (÷ 100)</td><td><code>=30*85%</code></td><td>25,5</td></tr>
+          <tr><td>Radice quadrata</td><td><code>sqrt( )</code></td><td><code>=sqrt(16)</code></td><td>4</td></tr>
+          <tr><td>Valore assoluto</td><td><code>abs( )</code></td><td><code>=abs(12-20)</code></td><td>8</td></tr>
+          <tr><td>Arrotondamento</td><td><code>round( )</code></td><td><code>=round(40/3)</code></td><td>13</td></tr>
+          <tr><td>Numero negativo</td><td><code>-</code> davanti</td><td><code>=-2+5</code></td><td>3</td></tr>
+        </table>
+        <ul>
+          <li>La <b>virgola</b> o il <b>punto</b> fungono da separatore decimale (<code>4,5</code> = <code>4.5</code>); gli spazi vengono ignorati.</li>
+          <li>Priorità abituali: parentesi, poi potenza, poi moltiplicazione e divisione, poi addizione e sottrazione.</li>
+          <li>In un campo numerico, il tasto <kbd>=</kbd> (o incollare un testo che inizia con <code>=</code>) passa il campo all’inserimento di testo per il tempo della formula.</li>
+          <li>Una formula non valida (parentesi mancante, divisione per zero…) non viene applicata: il campo lampeggia in rosso e il suo suggerimento indica «Formula non valida».</li>
+          <li>Il risultato è arrotondato a 12 cifre significative.</li>
+        </ul>
+        <div class="note">Esempi utili: ripartire 5,6 kg di malti in 80 / 15 / 5 % (<code>=5,6*80%</code>), convertire 12 oz in grammi (<code>=12*28,35</code>), completare un volume (<code>=30-4,2-1,5</code>).</div>
+
+        <h2 id="courses">Lista della spesa e scorte</h2>
+        <figure>
+          <img src="img/en/conception-courses.jpg" alt="Lista della spesa" />
+          <figcaption>Sezione «Spesa» della Progettazione: articoli da comprare, raggruppati per categoria, con una stima del prezzo.</figcaption>
+        </figure>
+        <h3>Aggiunta automatica</h3>
+        <ul>
+          <li>Un malto, luppolo, lievito, ingrediente, materiale di consumo o un’<b>acqua minerale</b> <b>usato nella ricetta in corso</b> entra nella lista non appena la ricetta esaurisce le sue scorte (quantità richiesta ≥ scorte); la quantità proposta è ciò che manca (o la quantità usata quando le scorte arrivano esattamente a zero). Per le acque, sono i litri di ogni acqua minerale della miscela; le acque di rete non vengono mai aggiunte.</li>
+          <li>Esce automaticamente non appena le scorte tornano a bastare (per esempio diminuendo la quantità nella ricetta).</li>
+          <li><b>Quantità fisse</b>: una volta che un articolo è nella lista, la sua quantità non cambia più da sola (pulsante «Calcola», modifica di una riga…). Se diventa inferiore a ciò che manca, compare un <b>triangolo arancione</b> accanto alla quantità (il suo suggerimento indica ciò che manca) e una notifica arancione segnala gli articoli interessati; correggi la quantità per farli sparire.</li>
+          <li>I componenti non usati dalla ricetta non vengono mai aggiunti, nemmeno con scorte a zero.</li>
+          <li><b>＋ Nuova ricetta</b> svuota la lista della spesa (aggiunte manuali comprese); poi si riempie in base alla nuova ricetta.</li>
+        </ul>
+        <h3>Aggiunta manuale</h3>
+        <ul>
+          <li><b>Carrello</b> a fine riga della ricetta: aggiunge il componente se non è già nella lista (quantità mancante, altrimenti la quantità usata dalla ricetta).</li>
+          <li><b>Carrello</b> delle schermate dei database (Malti, Luppoli…, acque minerali): aggiunge l’articolo con la quantità che manca per la ricetta, o una quantità predefinita.</li>
+          <li>Un articolo aggiunto a mano, o di cui modifichi la quantità, non viene mai rimosso automaticamente.</li>
+          <li>La <b>croce</b> rimuove un articolo; se manca ancora per la ricetta, non viene rimesso finché le scorte restano esaurite.</li>
+          <li>L’icona della <b>stampante</b> nel titolo stampa la lista della spesa (o la salva in PDF).</li>
+        </ul>
+        <h3>Scorte</h3>
+        <ul>
+          <li>Ogni database ha una colonna <b>scorte</b> (stock: kg per i malti, g per luppoli e ingredienti, bustine per i lieviti, unità per i materiali di consumo, litri per le acque).</li>
+          <li>Database Acque: <b>prezzo/L</b> e <b>scorte (L)</b> per le acque minerali; il loro costo entra nel costo dell’acqua della ricetta.</li>
+          <li>Quando la <b>data di imbottigliamento</b> della ricetta è inserita, la cotta è «realizzata»: i suoi componenti vengono detratti dalle scorte, una sola volta. Cancellare la data li rimette in scorta.</li>
+        </ul>
+
+        <h2 id="bibliotheque">Libreria e importazioni</h2>
+        <figure>
+          <img src="img/en/bibliotheque.jpg" alt="Libreria di ricette" />
+          <figcaption>Libreria: una riga per ricetta salvata, con filtri e ordinamento per colonna.</figcaption>
+        </figure>
+        <ul>
+          <li>«Salva» nella Progettazione registra la ricetta in corso nella libreria (aggiornata se c’è già).</li>
+          <li><b>Matita</b>: apre la ricetta nella Progettazione. <b>Croce</b>: la elimina (dopo conferma).</li>
+          <li>Colonne: nome, birraio, realizzato, stile, DI, DF, IBU, EBC, ABV, malti, luppoli, lieviti; una riga di filtri e l’ordinamento con un clic sull’intestazione. Il pulsante gomma cancella tutti i filtri.</li>
+          <li><b>Vista schede</b>: visualizzazione a schede con il colore della birra.</li>
+          <li><b>Numero di cotta</b>: <code>anno#posizione</code> (es. <code>2026#12</code>), posizione per data di cotta tra le ricette dell’anno, escluse le ricette importate. Compare sulle etichette e nell’HTML.</li>
+          <li><b>Importa beer.xml</b> (BeerXML 1.0) e <b>Importa PDF</b> (stampa di una ricetta Brewfather, esportazione PDF di BeerSmith): le ricette importate sono in sola lettura (da copiare per modificarle). Importa beer.xml: un ingrediente assente dal database vi viene aggiunto con i dati del file. Importa PDF: una finestra «Corrispondenza degli ingredienti» propone di collegare ogni ingrediente sconosciuto a un ingrediente del database; altrimenti resta come semplice testo nella ricetta.</li>
+        </ul>
+        <figure>
+          <img src="img/en/bibliotheque-cartes.jpg" alt="Libreria in vista schede" />
+          <figcaption>Vista schede della libreria.</figcaption>
+        </figure>
+
+        <h2 id="bases">Database degli ingredienti</h2>
+        <p>Schermate <b>Malti, Luppoli, Lieviti, Acque, Stili, Ingredienti, Consumabili</b>: il database di riferimento usato dalle ricette.</p>
+        <figure>
+          <img src="img/en/base-malts.jpg" alt="Database dei malti" />
+          <figcaption>Database dei malti: confronto di fino a 5 malti sul radar, poi la tabella (filtri, ordinamento, paginazione).</figcaption>
+        </figure>
+        <ul>
+          <li>Una riga di <b>filtri</b> sotto le intestazioni (testo o numero); ordinamento con un clic sull’intestazione; <b>paginazione</b> di 15 righe.</li>
+          <li>A fine riga: <b>matita</b> (modificare la riga, altrimenti in sola lettura), <b>duplicare</b>, <b>carrello</b> (lista della spesa), <b>croce</b> (eliminare). Il <b>＋</b> dell’intestazione aggiunge una riga.</li>
+          <li><b>Esporta CSV</b>, <b>Incolla CSV</b> (importare righe da un foglio di calcolo) e <b>Cancella tutto</b>.</li>
+          <li>Note aromatiche su una scala da 0 a 5; malti, luppoli e lieviti si confrontano su un radar (fino a 5 nomi).</li>
+          <li><b>Stili</b>: i 123 stili BJCP 2021 con descrizione, intervalli (IBU, SRM, OG, FG, ABV) e profili dell’acqua; <b>＋ Stile</b> per aggiungerne uno.</li>
+        </ul>
+        <figure>
+          <img src="img/en/styles.jpg" alt="Stili BJCP" />
+          <figcaption>Stili BJCP 2021.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/eaux.jpg" alt="Database delle acque" />
+          <figcaption>Acque: profili ionici, prezzo al litro e scorte (acque di rete e acque minerali; solo le acque minerali hanno un carrello).</figcaption>
+        </figure>
+
+        <h2 id="html">Resa HTML</h2>
+        <figure>
+          <img src="img/en/html.jpg" alt="Resa HTML della ricetta" />
+          <figcaption>Codice HTML della scheda della ricetta, da copiare (pulsante «Copia») per un sito o un forum.</figcaption>
+        </figure>
+
+        <h2 id="etiquettes">Etichette</h2>
+        <figure>
+          <img src="img/en/etiquettes.jpg" alt="Schermata Etichette" />
+          <figcaption>Etichette: impostazioni in alto, anteprima del foglio A4 al centro, formati a destra.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Formati</b> (colonna di destra): fasce, etichette rettangolari, rotonde, tappi, collarini, modelli illustrati (locandina di concerto, saloon, vinile, reggae, romantico, soul, punk…), con le loro dimensioni e il numero per foglio A4.</li>
+          <li><b>Testo del codice QR</b> (un indirizzo o un testo libero), <b>Volume (cl)</b>, <b>Numero</b> di etichette, colori della <b>cornice</b>, del <b>carattere</b> e dello <b>sfondo</b>.</li>
+          <li><b>Carattere</b>: elenco a discesa in cui ogni carattere è mostrato nel proprio stile; digita qualche lettera per filtrare, frecce e <kbd>Invio</kbd> per scegliere. I pulsanti <b>A↑ / A↓</b> ingrandiscono o riducono il testo.</li>
+          <li>Il logo delle etichette si sceglie in Impostazioni › Logo delle etichette. Il numero di cotta è calcolato automaticamente.</li>
+          <li><b>Stampa / PDF</b>: stampa del foglio (o salvataggio in PDF).</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/etiquettes-polices.jpg" alt="Elenco dei caratteri delle etichette" />
+          <figcaption>Elenco dei caratteri: ogni nome è mostrato nel proprio carattere.</figcaption>
+        </figure>
+
+        <h2 id="feuille">Scheda di cotta</h2>
+        <figure>
+          <img src="img/en/feuille.jpg" alt="Scheda di cotta" />
+          <figcaption>Scheda di cotta stampabile (A4), con le sue presentazioni a destra.</figcaption>
+        </figure>
+        <ul>
+          <li>Cinque <b>presentazioni</b>: Classico, Scheda da compilare, Locandina rock, Passo dopo passo, Diario di cotta.</li>
+          <li>Colori della cornice / accento, dello sfondo e del carattere; scelta del carattere (ogni nome mostrato nel proprio carattere).</li>
+          <li>Si può <b>scrivere direttamente nella scheda</b>: volumi, densità e soste realmente ottenuti, e note di cotta; tutto viene salvato con la ricetta.</li>
+          <li><b>Stampa / PDF</b>.</li>
+        </ul>
+
+        <h2 id="parametres">Impostazioni</h2>
+        <figure>
+          <img src="img/en/parametres-equipement.jpg" alt="Attrezzatura e processo" />
+          <figcaption>Attrezzatura e processo: caratteristiche dell’attrezzatura, poi la sottosezione «Valori predefiniti».</figcaption>
+        </figure>
+        <figure>
+          <img src="img/en/parametres-process.jpg" alt="Processo" />
+          <figcaption>Processo: fasi e passaggi modificabili con la matita, densità calcolata a ogni riga.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Attrezzatura e processo</b>: nome dell’attrezzatura, volume da imbottigliare, resa d’ammostamento; <b>Valori predefiniti</b>: durata della bollitura, evaporazione, temperatura iniziale dell’acqua, riscaldamento, raffreddamento, assorbimento delle trebbie, DI e IBU target, rapporto d’ammostamento (applicati a ogni nuova ricetta). Il rapporto d’ammostamento della ricetta si inserisce nella Progettazione.</li>
+          <li><b>Processo — perdite e aggiunte d’acqua</b>: il processo in fasi (per impostazione predefinita: ammostamento → pre-risciacquo, risciacquo → ghiaccio, imbottigliamento), passo dopo passo, con il volume e la densità calcolati a ogni riga. <b>＋ Fase</b> aggiunge una fase, <b>＋</b> (in testa alle colonne) aggiunge un passaggio alla fase; la <b>matita</b> a fine riga rende modificabili il nome della fase oppure il nome, le perdite e le aggiunte del passaggio (<b>OK</b> o Invio per confermare); ▲ ▼ spostano un passaggio (al bordo di una fase passa nella fase vicina) o una fase; ✕ elimina (una fase che contiene passaggi chiede conferma). Una casella vuota riprende il valore automatico delle Impostazioni. La riga OG segue la fase del ghiaccio, la riga FG chiude l’ultima fase. <b>↺ predefinito</b> torna al processo originale.</li>
+          <li><b>Impostazioni di cotta</b>: dati di base, perdite e aggiunte, vincoli e temperature; una casella vuota prende il valore automatico (ricetta o attrezzatura). Un campo rosso segnala un superamento (per esempio il volume massimo del tino).</li>
+          <li><b>Fabbisogno di elettricità</b>: potenza e durata di ogni voce, kWh e costo.</li>
+          <li><b>Coefficienti di utilizzo del luppolo</b> per uso, applicati agli IBU di Tinseth.</li>
+          <li><b>Logo delle etichette</b>: scegliere un’immagine.</li>
+          <li><b>Caratteri</b>: caratteri Google Fonts salvati nel database; <b>Importa</b> (più file alla volta), filtro, anteprima al passaggio del mouse. I caratteri dell’interfaccia, segnati da un lucchetto, non possono essere eliminati; quando si elimina un altro carattere, una finestra propone un carattere sostitutivo.</li>
+          <li><b>Unità</b>: sezione in preparazione (disattivata).</li>
+          <li><b>Da cercare</b> (visibile solo se necessario): ingredienti trovati durante un’importazione PDF e assenti dal database. Il pulsante <b>Copia il prompt</b> copia una richiesta pronta, nella lingua dell’interfaccia, da inviare a un’IA con accesso al web: cerca questi ingredienti e produce file CSV da incollare nelle schermate Malti, Luppoli, Lieviti e Ingredienti («Incolla CSV»).</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/parametres-reglages.jpg" alt="Preferenze" />
+          <figcaption>Preferenze: salvataggio automatico, lingua, database.</figcaption>
+        </figure>
+        <ul>
+          <li><b>Salvataggio automatico</b>: attivo o no, e intervallo in minuti (0 = dopo ogni modifica). Se disattivato, solo il pulsante «Salva» scrive nel database.</li>
+          <li><b>Lingua</b> dell’interfaccia: francese, inglese, spagnolo, italiano, portoghese. Tutta l’interfaccia è tradotta, compreso il prompt della sezione «Da cercare» e questa documentazione (nelle lingue diverse dal francese, le schermate mostrano l’interfaccia in inglese).</li>
+          <li><b>Esporta il database…</b>: scarica una copia <code>AAAAMMGG_openmaltforge.sqlite</code> dello stato visualizzato.</li>
+          <li><b>Cambia database…</b>: sostituisce il database con il contenuto di un altro file <code>.sqlite</code>; il file viene verificato e aggiornato, e una copia del database attuale viene conservata in <code>sauvegardes/</code>.</li>
+        </ul>
+        <figure class="half">
+          <img src="img/en/parametres-polices.jpg" alt="Caratteri" />
+          <figcaption>Caratteri: importazione, filtro, caratteri protetti (lucchetto).</figcaption>
+        </figure>
+
+        <h2 id="donnees">Dati e copie di sicurezza</h2>
+        <ul>
+          <li>Database unico: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (un solo file, copiabile in qualsiasi momento).</li>
+          <li>Prima di ogni aggiornamento della struttura del database, e prima di un cambio di database, viene fatta una copia in <code>~/OpenMaltForge/sauvegardes/</code>.</li>
+          <li>Un database creato da una versione più recente di OpenMaltForge viene rifiutato (installa l’ultima versione).</li>
+          <li>I vecchi database (BrewCraft da 1.x a 4.x) vengono riconosciuti e convertiti; il database di OpenBrew 5.x (<code>~/OpenBrew/openbrew.sqlite</code>), altrimenti quello di BrewCraft 4.x (<code>~/BrewCraft/brewcraft.sqlite</code>), viene ripreso al primo avvio di OpenMaltForge.</li>
+        </ul>
+
+        <h2 id="astuces">Suggerimenti</h2>
+        <ul>
+          <li><b>Campi calcolati</b> (sfondo più scuro, in sola lettura): passaci sopra con il mouse per mezzo secondo per vedere come viene calcolato il valore.</li>
+          <li><kbd>Esc</kbd> chiude le finestre di dialogo e gli ingrandimenti; <kbd>Invio</kbd> conferma.</li>
+          <li>Un clic in un campo ne seleziona il contenuto: ciò che digiti lo sostituisce direttamente.</li>
+          <li>Le formule (<kbd>=</kbd>) funzionano ovunque, anche nei database e nelle impostazioni.</li>
+        </ul>
+        <p class="lead">OpenMaltForge — applicazione con licenza GNU GPL v3. Icone Lucide (licenza ISC).</p>
+      </main>
+    </div>
+    <div id="zoom" role="dialog" aria-label="Schermata ingrandita"><img alt="" /></div>
+    <script>
+      /* clic su una schermata: ingrandimento; clic o Esc per chiudere */
+      const z = document.getElementById('zoom');
+      document.addEventListener('click', e => {
+        const i = e.target.closest('figure img');
+        if (i) {
+          z.querySelector('img').src = i.src;
+          z.querySelector('img').alt = i.alt;
+          z.classList.add('on');
+        } else if (e.target.closest('#zoom')) z.classList.remove('on');
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') z.classList.remove('on');
+      });
+    </script>
+  </body>
+</html>

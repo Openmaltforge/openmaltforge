@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<RECIPES>
+  <RECIPE>
+    <NAME>J&#039;ai Dans&#233; sur le Rhin - K&#246;lsch Style</NAME>
+    <TYPE>All Grain</TYPE>
+    <STYLE>
+      <NAME>K&#246;lsch</NAME>
+      <CATEGORY>Pale Bitter European Beer</CATEGORY>
+      <CATEGORY_NUMBER>5</CATEGORY_NUMBER>
+      <STYLE_LETTER>B</STYLE_LETTER>
+      <STYLE_GUIDE>BJCP 2015</STYLE_GUIDE>
+      <TYPE>Ale</TYPE>
+      <OG_MIN>1.044</OG_MIN>
+      <OG_MAX>1.05</OG_MAX>
+      <FG_MIN>1.007</FG_MIN>
+      <FG_MAX>1.011</FG_MAX>
+      <IBU_MIN>18</IBU_MIN>
+      <IBU_MAX>30</IBU_MAX>
+      <COLOR_MIN>6</COLOR_MIN>
+      <COLOR_MAX>9</COLOR_MAX>
+      <CARB_MIN>2.4</CARB_MIN>
+      <CARB_MAX>3.1</CARB_MAX>
+      <ABV_MIN>4.4</ABV_MIN>
+      <ABV_MAX>5.2</ABV_MAX>
+      <EXAMPLES>Fr&#252;h K&#246;lsch, Gaffel K&#246;lsch, M&#252;hlen K&#246;lsch, Reissdorf K&#246;lsch, Sion K&#246;lsch, S&#252;nner K&#246;lsch</EXAMPLES>
+    </STYLE>
+    <VERSION>1</VERSION>
+    <BATCH_SIZE>21.5</BATCH_SIZE>
+    <BOIL_SIZE>25.0</BOIL_SIZE>
+    <BOIL_TIME>60</BOIL_TIME>
+    <EFFICIENCY>82.0</EFFICIENCY>
+    <EST_OG>1.047</EST_OG>
+    <EST_FG>1.009</EST_FG>
+    <EST_COLOR>7</EST_COLOR>
+    <IBU>21</IBU>
+    <EST_ABV>5.0</EST_ABV>
+    <NOTES>Tous les d&#233;tails de la recette sont disponibles au lien suivant : https://fauvebiere.com/blogs/news/recette-de-jai-danse-sur-le-rhin-kolsch-version-homebrewing-brassage-amateur&#13;
+&#13;
+Pour aller plus loin, tous les clones de recettes des bi&#232;res Fauve en version brassage amateur sont disponibles sur le lien suivant : https://fauvebiere.com/pages/recettes-biere-fauve-brassage-amateur-homebrewing&#13;
+&#13;
+Pour toute question relative au brassage amateur, on r&#233;pond sur brassam@fauvebiere.com !</NOTES>
+    <FERMENTATION_STAGES>1</FERMENTATION_STAGES>
+    <PRIMARY_AGE>21</PRIMARY_AGE>
+    <PRIMARY_TEMP>16.0</PRIMARY_TEMP>
+    <CARBONATION>2.4</CARBONATION>
+    <CARBONATION_TEMP>18.0</CARBONATION_TEMP>
+    <PRIMING_SUGAR_NAME></PRIMING_SUGAR_NAME>
+    <FERMENTABLES>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>3 EBC</DISPLAY_COLOR>
+        <NAME>BEST Pilsen Malt</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>2.5</AMOUNT>
+        <COLOR>3</COLOR>
+        <YIELD>83.0</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>9 EBC</DISPLAY_COLOR>
+        <NAME>BEST Vienna</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>1.25</AMOUNT>
+        <COLOR>9</COLOR>
+        <YIELD>82.5</YIELD>
+      </FERMENTABLE>
+      <FERMENTABLE>
+        <DISPLAY_COLOR>4 EBC</DISPLAY_COLOR>
+        <NAME>BEST Wheat Malt</NAME>
+        <SUPPLIER>BESTMALZ</SUPPLIER>
+        <TYPE>Grain</TYPE>
+        <AMOUNT>0.17</AMOUNT>
+        <COLOR>4</COLOR>
+        <YIELD>83.5</YIELD>
+      </FERMENTABLE>
+    </FERMENTABLES>
+    <HOPS>
+      <HOP>
+        <NAME>Hallertau Magnum</NAME>
+        <AMOUNT>0.006</AMOUNT>
+        <ALPHA>11.0</ALPHA>
+        <USE>Boil</USE>
+        <TIME>60</TIME>
+        <FORM>Pellet</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Aramis</NAME>
+        <AMOUNT>0.025</AMOUNT>
+        <ALPHA>8.1</ALPHA>
+        <USE>Boil</USE>
+        <TIME>10</TIME>
+        <FORM>Pellet</FORM>
+      </HOP>
+      <HOP>
+        <NAME>Strisslespalt</NAME>
+        <AMOUNT>0.025</AMOUNT>
+        <ALPHA>4.0</ALPHA>
+        <USE>Boil</USE>
+        <TIME>10</TIME>
+        <FORM>Pellet</FORM>
+      </HOP>
+    </HOPS>
+    <YEASTS>
+      <YEAST>
+        <NAME>Koln Kolsch Style Ale Yeast</NAME>
+        <AMOUNT>0.002</AMOUNT>
+        <AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>
+        <FORM>Dry</FORM>
+        <PRODUCT_ID>-</PRODUCT_ID>
+        <LABORATORY>Lallemand (LalBrew)</LABORATORY>
+        <ATTENUATION>80.0</ATTENUATION>
+      </YEAST>
+    </YEASTS>
+    <MASH>
+      <NAME></NAME>
+      <NOTES>- Emp&#226;tez avec 20 litres d&#8217;eau et maintenez &#224; 55&#176;C pendant 10 minutes, l&#8217;id&#233;e &#233;tant de faire un court palier prot&#233;inique pour gagner en limpidit&#233; sur le produit final.&#13;
+- Montez ensuite la temp&#233;rature &#224; 62&#176;C et maintenez pendant 45 min.&#13;
+- Montez ensuite la temp&#233;rature &#224; 73&#176;C et maintenez 30 min.&#13;
+- Proc&#233;dez ensuite &#224; la recirculation jusqu&#8217;&#224; ce que voter mout soit clair, puis, rincez avec 9L d&#8217;eau.&#13;
+- Avant &#233;bullition, vous devriez avoir autour de 27 litres d&#8217;eau et une densit&#233; de 1,046/10&#176;Plato.&#13;
+- Incorporez &#233;tape par &#233;tape le houblon pendant l&#8217;&#233;bullition, pour jouer entre amertume et ar&#244;mes.&#13;
+- Montez ensuite la temp&#233;rature &#224; 78&#176;C pour votre mash-out.&#13;
+- Proc&#233;dez ensuite &#224; la recirculation jusqu&#8217;&#224; ce que votre mo&#251;t soit clair, puis, rincez avec 9L d&#8217;eau.&#13;
+- Avant &#233;bullition, vous devriez avoir autour de 27 litres d&#8217;eau et une densit&#233; de 1,046/10&#176;Plato.</NOTES>
+      <PH>5.4</PH>
+      <SPARGE_TEMP>75.0</SPARGE_TEMP>
+      <MASH_STEPS>
+        <MASH_STEP>
+          <NAME>Palier Prot&#233;ique</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>10</STEP_TIME>
+          <STEP_TEMP>55</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+        <MASH_STEP>
+          <NAME>Saccharification</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>45</STEP_TIME>
+          <STEP_TEMP>62</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+        <MASH_STEP>
+          <NAME>Saccharification</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>30</STEP_TIME>
+          <STEP_TEMP>73</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+        <MASH_STEP>
+          <NAME>Mash-Out</NAME>
+          <TYPE>Temperature</TYPE>
+          <STEP_TIME>10</STEP_TIME>
+          <STEP_TEMP>78</STEP_TEMP>
+          <WATER_GRAIN_RATIO></WATER_GRAIN_RATIO>
+        </MASH_STEP>
+      </MASH_STEPS>
+    </MASH>
+  </RECIPE>
+</RECIPES>
