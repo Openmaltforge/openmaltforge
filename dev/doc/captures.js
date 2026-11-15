@@ -19,9 +19,18 @@ const CHROME =
     fs.existsSync(f)
   );
 
+/* dossiers temporaires créés par le script : effacés à la fin (même après une erreur ou Ctrl+C) */
+const TMPDIRS = [];
+const mkTmp = prefix => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  TMPDIRS.push(d);
+  return d;
+};
+process.on('exit', () => TMPDIRS.forEach(d => fs.rmSync(d, { recursive: true, force: true })));
+['SIGINT', 'SIGTERM'].forEach(s => process.on(s, () => process.exit(130)));
 function binary() {
   if (process.env.OPENMALTFORGE_BIN) return process.env.OPENMALTFORGE_BIN;
-  const bin = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bc-doc-')), 'openmaltforge');
+  const bin = path.join(mkTmp('bc-doc-'), 'openmaltforge');
   const go = process.env.GO || [path.join(os.homedir(), 'sdk/go1.24.13/bin/go')].find(f => fs.existsSync(f)) || 'go';
   const r = spawnSync(go, ['build', '-o', bin, './cmd/openmaltforge'], {
     cwd: ROOT,
@@ -34,7 +43,7 @@ function binary() {
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bc-doc-data-'));
+  const dir = mkTmp('bc-doc-data-');
   const srv = spawn(binary(), ['--no-browser', '--port', '0', '--dossier', dir]);
   const url = await new Promise((res, rej) => {
     srv.stdout.on('data', d => {

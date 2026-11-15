@@ -276,5 +276,11 @@ document.addEventListener('change', e => {
       S.kv.equip.lang = t.value;
       save();
     }
+    /* écran redessiné : noms d'étapes / de phases, paliers, cellules des bases… (valeurs de champs) dans la nouvelle langue */
+    if (typeof show === 'function' && typeof CURSCR !== 'undefined') {
+      const y = scrollY;
+      show(CURSCR);
+      scrollTo(0, y);
+    }
   }
 });

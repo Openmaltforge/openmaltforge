@@ -126,8 +126,8 @@ const LFONTS = [
   { id: 'pirata', n: 'Pirata One — gothique', f: "'LF Pirata'", up: 'none', ls: '.01em', w: 400 },
   {
     id: 'scratchy',
-    n: 'Rock Salt — gribouillé',
-    f: "'Rock Salt','LF Bangers'",
+    n: 'Covered By Your Grace — manuscrit',
+    f: "'LF Covered','Rock Salt','LF Bangers'",
     up: 'none',
     ls: '.01em',
     w: 400
@@ -2178,12 +2178,12 @@ window.addEventListener('scroll', () => { const t = document.getElementById('fti
 /* polices de départ (js/fonts_seed.js) : copiées dans la table « polices » de la base au premier lancement */
 function fontsSeed() {
   const E = S.kv.equip;
-  if ((E.fontsdir1 && E.fontsdir2 && E.fontsdir3 && E.fontsdir4) || typeof FONTS_SEED === 'undefined') return;
+  if ((E.fontsdir1 && E.fontsdir2 && E.fontsdir3 && E.fontsdir4 && E.fontsdir5 && E.noscratchy) || typeof FONTS_SEED === 'undefined') return;
   E.fonts = E.fonts || [];
   let n = 0;
   /* v1 : polices de départ (une seule fois) ; v2 : polices de l'interface, ajoutées une fois aux bases existantes */
   FONTS_SEED.forEach(f => {
-    if ((f.v === 4 ? E.fontsdir4 : f.v === 3 ? E.fontsdir3 : f.v === 2 ? E.fontsdir2 : E.fontsdir1) || E.fonts.some(x => x.n === f.n)) return;
+    if ((f.v === 5 ? E.fontsdir5 : f.v === 4 ? E.fontsdir4 : f.v === 3 ? E.fontsdir3 : f.v === 2 ? E.fontsdir2 : E.fontsdir1) || E.fonts.some(x => x.n === f.n)) return;
     E.fonts.push({ n: f.n, d: f.d, b: 1 });
     n++;
   });
@@ -2191,6 +2191,16 @@ function fontsSeed() {
   E.fontsdir2 = 1;
   E.fontsdir3 = 1;
   E.fontsdir4 = 1;
+  E.fontsdir5 = 1;
+  /* 6.3.0 : Superscratchy (licence non libre) supprimée de la base ; ses usages passent à Covered By Your Grace */
+  if (!E.noscratchy) {
+    for (let i = E.fonts.length - 1; i >= 0; i--)
+      if (/^superscratchy/i.test(E.fonts[i].n)) {
+        fontDelete(i, 'CoveredByYourGrace-Regular');
+        n++;
+      }
+    E.noscratchy = 1;
+  }
   if (n) saveNow();
   lblRegFonts();
   fontsRefresh();

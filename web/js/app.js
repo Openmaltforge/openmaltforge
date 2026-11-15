@@ -3535,7 +3535,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.2.0',
+const VER = '6.3.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4293,7 +4293,10 @@ function biblio() {
 }
 SCR.html[1] = htmlScreen;
 SCR.sheet[1] = sheetScreen;
+/* écran affiché (réaffiché au changement de langue : les valeurs traduites par tx() dans les champs ne le sont pas par le DOM) */
+let CURSCR = 'conception';
 function show(s) {
+  CURSCR = s;
   bxUnlock();
   $('#nav').innerHTML = Object.entries(SCR)
     .map(([k, [l]]) =>

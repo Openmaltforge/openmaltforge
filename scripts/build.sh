@@ -81,20 +81,23 @@ for z in 16 32 48 64 128 256 512; do cp "dev/icon/icon$z.png" "$OUT/icone/openma
 echo "== Archives"
 (cd "$OUT" && zip -q "OpenMaltForge_${VER}_windows.zip" "OpenMaltForge_${VER}.exe" &&
   tar czf "openmaltforge_${VER}_linux_amd64.tar.gz" --mode='a+rx,go-w' "openmaltforge_${VER}_linux_amd64")
-echo "== Site web (site/) : binaires à télécharger et icône"
-mkdir -p site/telechargements
-rm -f site/telechargements/*
-cp "$OUT/OpenMaltForge_$VER.exe" "$OUT/OpenMaltForge_${VER}_windows.zip" "$OUT/openmaltforge_${VER}_linux_amd64" \
-  "$OUT/openmaltforge_${VER}_linux_amd64.tar.gz" "$OUT/openmaltforge_${VER}_amd64.deb" \
-  "$OUT/OpenMaltForge_${VER}_macos_apple_silicon.zip" "$OUT/OpenMaltForge_${VER}_macos_intel.zip" site/telechargements/
-mkdir -p site/img/fr site/img/en
-for f in conception; do
-  cp "web/doc/img/$f.jpg" site/img/fr/ && cp "web/doc/img/en/$f.jpg" site/img/en/
-done
-cp dev/icon/icon256.png site/icon.png
-cp dev/icon/icon32.png site/favicon.png
-cp dev/icon/openmaltforge.ico site/favicon.ico
-sed -i "s/\(const VERSION = '\)[^']*'/\1$VER'/" site/index.html
-grep -q "const VERSION = '$VER'" site/index.html || { echo "site/index.html : version non mise à jour" >&2; exit 1; }
+if [ -f site/index.html ]; then
+  echo "== Site web (site/) : binaires à télécharger et icône"
+  mkdir -p site/telechargements
+  rm -f site/telechargements/*
+  cp "$OUT/OpenMaltForge_$VER.exe" "$OUT/OpenMaltForge_${VER}_windows.zip" "$OUT/openmaltforge_${VER}_linux_amd64" \
+    "$OUT/openmaltforge_${VER}_linux_amd64.tar.gz" "$OUT/openmaltforge_${VER}_amd64.deb" \
+    "$OUT/OpenMaltForge_${VER}_macos_apple_silicon.zip" "$OUT/OpenMaltForge_${VER}_macos_intel.zip" site/telechargements/
+  mkdir -p site/img/fr site/img/en
+  for f in conception; do
+    cp "web/doc/img/$f.jpg" site/img/fr/ && cp "web/doc/img/en/$f.jpg" site/img/en/
+  done
+  rm -rf site/doc && cp -r web/doc site/doc # documentation en ligne (5 langues, captures comprises)
+  cp dev/icon/icon256.png site/icon.png
+  cp dev/icon/icon32.png site/favicon.png
+  cp dev/icon/openmaltforge.ico site/favicon.ico
+  sed -i "s/\(const VERSION = '\)[^']*'/\1$VER'/" site/index.html
+  grep -q "const VERSION = '$VER'" site/index.html || { echo "site/index.html : version non mise à jour" >&2; exit 1; }
+fi
 
 ls -la "$OUT"

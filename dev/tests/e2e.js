@@ -24,8 +24,17 @@ const check = (name, ok, detail) => {
   if (!ok) fails++;
   console.log((ok ? '  ✔ ' : '  ✘ ') + name + (ok ? '' : '   ← ' + (detail ?? '')));
 };
+/* dossiers temporaires créés par le script : effacés à la fin (même après une erreur ou Ctrl+C) */
+const TMPDIRS = [];
+const mkTmp = prefix => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  TMPDIRS.push(d);
+  return d;
+};
+process.on('exit', () => TMPDIRS.forEach(d => fs.rmSync(d, { recursive: true, force: true })));
+['SIGINT', 'SIGTERM'].forEach(s => process.on(s, () => process.exit(130)));
 /* dossier de données vide (équivalent de ~/OpenMaltForge au premier lancement) */
-const freshCopy = () => fs.mkdtempSync(path.join(os.tmpdir(), 'bc-'));
+const freshCopy = () => mkTmp('bc-');
 let SQLJS;
 const sqlOpen = async f => {
   SQLJS = SQLJS || (await require('./lib/sql-wasm.js')({ locateFile: f => path.join(__dirname, 'lib', f) }));
@@ -48,7 +57,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 let BIN = process.env.OPENMALTFORGE_BIN || '';
 function buildBin() {
   if (BIN) return { status: 0 };
-  BIN = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'bc-bin-')), 'openmaltforge');
+  BIN = path.join(mkTmp('bc-bin-'), 'openmaltforge');
   const go = process.env.GO || [path.join(os.homedir(), 'sdk/go1.24.13/bin/go')].find(f => fs.existsSync(f)) || 'go';
   return spawnSync(go, ['build', '-o', BIN, './cmd/openmaltforge'], {
     cwd: ROOT,
@@ -896,11 +905,13 @@ async function scenarioApp(label) {
       'Process : ✕ d’une phase vide la supprime sans confirmation',
       await page.evaluate(() => S.kv.equip.proc3.length === 3 && S.kv.equip.proc3[2].rows.some(r => r.n === 'Prélèvements'))
     );
+    await page.evaluate(() => (window.__bcManual = true)); /* boîte non validée automatiquement par le banc de test */
     await page.click('button[data-pdel="2"]');
     await page.waitForSelector('.bcdlg', { timeout: 3000 }).catch(() => {});
     const cdlg = await page.evaluate(() => /Supprimer cette phase/.test(document.body.innerText));
     await page.keyboard.press('Escape');
     await wait(150);
+    await page.evaluate(() => (window.__bcManual = false));
     check(
       'Process : ✕ d’une phase qui a des étapes demande confirmation (Échap = rien n’est supprimé)',
       cdlg && (await page.evaluate(() => S.kv.equip.proc3.length === 3))
@@ -1295,7 +1306,7 @@ async function scenarioApp(label) {
       JSON.stringify({ ...lb, txt: lb.txt.slice(0, 80) })
     );
     check(
-      'format « Bandeau oblique » : 188 × 34 mm, en tête de liste, police par défaut Rock Salt (gribouillé, police libre Google), logo en gris',
+      'format « Bandeau oblique » : 188 × 34 mm, en tête de liste, police par défaut Covered By Your Grace (manuscrit, police libre Google), logo en gris',
       await page.evaluate(() => {
         const f = LF[0];
         S.kv.recipe.etq.fmt = 'bandeauxl';
@@ -1304,7 +1315,7 @@ async function scenarioApp(label) {
           f.id === 'bandeauxl' &&
           f.n === 'Bandeau oblique' &&
           f.font === 'scratchy' &&
-          /^'Rock Salt'/.test(lblFont(f.font).f) &&
+          /^'LF Covered'/.test(lblFont(f.font).f) &&
           f.w === 188 &&
           f.h === 34 &&
           f.shape === 'para2' &&
@@ -3803,7 +3814,7 @@ check(
       })
     );
     check(
-      'étiquette Excel : texte vertical (« année#brassin … IBU », % alcool, volume) et police Rock Salt',
+      'étiquette Excel : texte vertical (« année#brassin … IBU », % alcool, volume) et police Covered By Your Grace',
       await page.evaluate(async () => {
         const Q = S.kv.recipe.etq;
         Q.fnt = 'auto';
@@ -3823,7 +3834,7 @@ check(
           v.some(x => /IBU/.test(x.t) && x.t.includes(brewNo(S.kv.recipe).code)) &&
           v.some(x => /%/.test(x.t)) &&
           v.some(x => /cl/.test(x.t)) &&
-          /Rock Salt/.test(getComputedStyle(n).fontFamily)
+          /LF Covered/.test(getComputedStyle(n).fontFamily)
         );
       })
     );
@@ -3857,7 +3868,7 @@ check(
           ff: [...document.fonts].map(f => f.family + ':' + f.status).filter(x => /rock salt/i.test(x)),
           o: [...document.querySelectorAll('select[data-q="fnt"] option')]
             .map(o => o.textContent)
-            .filter(t => /rock ?salt/i.test(t) && !/gribouill/i.test(t)) /* hors modèle « Rock Salt — gribouillé » */
+            .filter(t => /rock ?salt/i.test(t))
         };
       });
       check(
@@ -5299,11 +5310,11 @@ check(
     );
     await nav(page, 'params');
     check(
-      'paramètres : aucun champ en lecture seule en cyan',
+      'paramètres : aucun champ en lecture seule en cyan (noms de phase du Process en jaune, voulu)',
       await page.evaluate(() =>
-        [...document.querySelectorAll('#main input[readonly]')].every(
+        [...document.querySelectorAll('#main input[readonly]:not(.phn)')].every(
           x => getComputedStyle(x).color === 'rgb(201, 206, 214)'
-        )
+        ) && [...document.querySelectorAll('#main input.phn')].every(x => getComputedStyle(x).color === 'rgb(255, 230, 0)')
       )
     );
     await nav(page, 'malts');
@@ -7171,8 +7182,53 @@ async function scenarioI18n() {
         return ok || JSON.stringify(o);
       })
     );
+    {
+      const r = await page.evaluate(() => {
+          const E = S.kv.equip,
+            d = E.fonts.find(x => x.n === 'CoveredByYourGrace-Regular').d;
+          E.fonts.push({ n: 'Superscratchy', d, b: 1 });
+          const i = E.fonts.length - 1,
+            f0 = S.kv.recipe.etq.fnt;
+          S.kv.recipe.etq.fnt = 'u' + i;
+          delete E.noscratchy;
+          fontsSeed();
+          const j = E.fonts.findIndex(x => x.n === 'CoveredByYourGrace-Regular'),
+            ok = !E.fonts.some(x => /scratchy/i.test(x.n)) && E.noscratchy === 1 && (E.fontmap || {}).Superscratchy === 'CoveredByYourGrace-Regular' && S.kv.recipe.etq.fnt === 'u' + j;
+          S.kv.recipe.etq.fnt = f0;
+          return ok || JSON.stringify({ fnt: S.kv.recipe.etq.fnt, j, map: E.fontmap });
+        });
+      check(
+        'base qui contenait Superscratchy : police supprimée au lancement, remplacée par Covered By Your Grace (étiquettes comprises)',
+        r === true,
+        r
+      );
+    }
+    {
+      const r = await page.evaluate(async () => {
+          show('params');
+          await new Promise(r => setTimeout(r, 200));
+          const sel = l => {
+              const x = document.getElementById('langsel');
+              x.value = l;
+              x.dispatchEvent(new Event('change', { bubbles: true }));
+            },
+            v = () => document.querySelector('input.nm[data-pn="0"][data-i="0"]').value + ' | ' + document.querySelector('input.phn').value;
+          sel('it');
+          await new Promise(r => setTimeout(r, 200));
+          const it = v();
+          sel('fr');
+          await new Promise(r => setTimeout(r, 200));
+          const fr = v();
+          return (/Acqua/.test(it) && /^Eau d’empâtage/.test(fr) && /^Phase 1 — Empâtage/.test(fr.split(' | ')[1])) || it + ' / ' + fr;
+        });
+      check(
+        'changement de langue (italien puis français) : noms des phases et étapes du Process redessinés dans la langue choisie',
+        r === true,
+        r
+      );
+    }
     check(
-      'Superscratchy (licence non libre) retirée : absente des polices de départ, plus verrouillée ; « Bandeau oblique » en Rock Salt (Google Fonts), chargée',
+      'Superscratchy (licence non libre) retirée : absente des polices de départ et de la base, plus verrouillée ; « Bandeau oblique » en Covered By Your Grace (Google Fonts), en base, verrouillée, chargée',
       await page.evaluate(async () => {
         await document.fonts.ready;
         lblRegFonts();
@@ -7183,9 +7239,11 @@ async function scenarioI18n() {
           !FONTS_SEED.some(x => /scratchy/i.test(x.n)) &&
           !f.some(x => /scratchy/i.test(x.n)) &&
           !fontLocked('Superscratchy') &&
-          fs.some(x => /^Rock Salt\|/.test(x)) &&
+          f.some(x => x.n === 'CoveredByYourGrace-Regular' && x.b) &&
+          fontLocked('CoveredByYourGrace-Regular') &&
+          fs.some(x => /^LF Covered\|/.test(x)) &&
           LF.find(x => x.id === 'bandeauxl').font === 'scratchy' &&
-          lblFont('scratchy').f.startsWith("'Rock Salt'")
+          lblFont('scratchy').f.startsWith("'LF Covered'")
         );
       })
     );
@@ -7528,10 +7586,10 @@ async function scenarioI18n() {
         kv = db.exec("select count(*) from parametres where cle='fonts'")[0].values[0][0];
       db.close();
       check(
-        'table « polices » : polices intégrées (30 = 9 + 9 + 13 − Anton supprimée ci-dessus ; Superscratchy retirée en 6.2.0) (nom, format, données) et plus de clé « fonts » dans parametres',
+        'table « polices » : polices intégrées (31 = 9 + 9 + 13 + Covered By Your Grace − Anton supprimée ci-dessus ; Superscratchy retirée) (nom, format, données) et plus de clé « fonts » dans parametres',
         r.length >= 8 &&
           r.every(x => x[1] === 'ttf' && x[3] > 1000) &&
-          r.filter(x => x[2] === 1).length === 30 &&
+          r.filter(x => x[2] === 1).length === 31 &&
           kv === 0,
         JSON.stringify(r.slice(0, 2))
       );

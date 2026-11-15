@@ -38,7 +38,7 @@ This Font Software is licensed under the SIL Open Font License, Version 1.1.
 Toutes ces polices (Google Fonts) sont publiées sous SIL Open Font License 1.1 — https://openfontlicense.org
 Utilisation libre, y compris commerciale, embarquement autorisé.
 
-Note 6.2.0 : Superscratchy (dafont.com, licence propre à son auteur) n'est plus fournie ; le « Bandeau oblique » utilise Rock Salt (Google Fonts, licence Apache 2.0). Chacun peut importer Superscratchy depuis l'écran Paramètres › Polices.
+Note 6.2.0 : Superscratchy (dafont.com, licence propre à son auteur) n'est plus fournie ; le « Bandeau oblique » utilise Covered By Your Grace (Google Fonts, depuis la 6.3.0). Chacun peut importer Superscratchy depuis l'écran Paramètres › Polices.
 Impact, Chiller, Jokerman, Stencil, Old English Text MT, Ink Free, Bauhaus 93 : polices système/Office, non embarquées.
 
 === Polices de l'interface (ajoutées en v3.113.0) — fichiers issus du dépôt Google Fonts (https://github.com/google/fonts)
@@ -50,3 +50,7 @@ Permanent Marker : Apache License, Version 2.0 (voir LICENSE.txt de la famille d
 Inter (SIL OFL 1.1) · Roboto Mono (Apache 2.0 / SIL OFL selon la version) · Playfair Display (SIL OFL 1.1) · Courier Prime (SIL OFL 1.1)
 Bowlby One (SIL OFL 1.1) · Caprasimo (SIL OFL 1.1) · Rock Salt (Apache 2.0)
 Vérifiez la licence affichée sur fonts.google.com pour la version téléchargée.
+
+=== 6.3.0 : Covered By Your Grace (Google Fonts), police du « Bandeau oblique »
+Copyright (c) 2010, Kimberly Geswein (kimberlygeswein.com)
+This Font Software is licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).

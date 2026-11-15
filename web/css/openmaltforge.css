@@ -5558,3 +5558,31 @@ main {
 #contactp .cmail button {
   margin-left: auto;
 }
+
+/* 6.3.0 — Process : noms de phase en jaune (thèmes clair et sombre, malgré les règles générales des champs en lecture
+   seule) ; ligne en modification (crayon ✎) : les champs prennent l'aspect « modifiable », jusqu'au clic sur OK */
+.ptab input.phn,
+.ptab input.phn[readonly],
+.light .ptab input.phn,
+.light .ptab input.phn[readonly] {
+  color: var(--y) !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+}
+.ptab tr.ped input:not(.ro),
+.ptab tr.ped input.pi:not(.ro),
+.ptab tr.ped input.pi.auto:not(.ro),
+.ptab tr.ped input.phn {
+  background: var(--in) !important;
+  border: 1px solid var(--y) !important;
+  color: var(--t) !important;
+  font-style: normal !important;
+  cursor: text !important;
+}
+.light .ptab tr.ped input:not(.ro),
+.light .ptab tr.ped input.pi:not(.ro),
+.light .ptab tr.ped input.pi.auto:not(.ro),
+.light .ptab tr.ped input.phn {
+  background: #fff !important;
+  color: var(--t) !important;
+}
