@@ -13,6 +13,12 @@ hdr=struct.pack('<HHH',0,1,len(sizes)); off=6+16*len(sizes); ent=b''; data=b''
 for s in sizes:
     d=pngs[s]; ent+=struct.pack('<BBBBHHII',s%256,s%256,0,0,1,32,len(d),off+len(data)); data+=d
 open('openmaltforge.ico','wb').write(hdr+ent+data)
+# .icns (macOS) : entrées PNG ic07 (128), ic08 (256), ic09 (512)
+ic=b''
+for typ,sz in ((b'ic07',128),(b'ic08',256),(b'ic09',512)):
+    d=pngs[sz] if sz in pngs else open('icon512.png','rb').read()
+    ic+=typ+struct.pack('>I',len(d)+8)+d
+open('openmaltforge.icns','wb').write(b'icns'+struct.pack('>I',len(ic)+8)+ic)
 # .syso (ressources Windows : RT_ICON + RT_GROUP_ICON) — COFF amd64
 def u16(x):return struct.pack('<H',x)
 def u32(x):return struct.pack('<I',x)

@@ -268,7 +268,8 @@ type Info struct {
 	Version      string `json:"version"`
 	Reprise      string `json:"reprise,omitempty"`
 	NbSauvegarde int    `json:"nbSauvegardes"`
-	Don          bool   `json:"don"` // page de don (config.DonURL) renseignée
+	Don          bool   `json:"don"`              // page de don (config.DonURL) renseignée
+	DonURL       string `json:"donUrl,omitempty"` // son adresse, affichée dans la fenêtre « Offrir un café »
 }
 
 func (s *Server) info(w http.ResponseWriter, r *http.Request) {
@@ -276,7 +277,7 @@ func (s *Server) info(w http.ResponseWriter, r *http.Request) {
 	v, _ := db.SchemaVersion(s.db)
 	s.mu.Unlock()
 	in := Info{Nom: FileName, Chemin: s.path, Dossier: s.dir, Sauvegardes: s.backups, Structure: v,
-		Version: config.Version, Reprise: filepath.Base(s.Imported), Don: config.DonURL != ""}
+		Version: config.Version, Reprise: filepath.Base(s.Imported), Don: config.DonURL != "", DonURL: config.DonURL}
 	if s.Imported == "" {
 		in.Reprise = ""
 	}

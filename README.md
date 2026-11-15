@@ -1,4 +1,4 @@
-# OpenMaltForge v6.0.0
+# OpenMaltForge v6.1.0
 
 Application de bureau de conception de recettes de bière : un binaire Go unique qui embarque l'interface
 (JavaScript sans framework) et gère la base SQLite, affichée dans une fenêtre d'application Chromium
@@ -8,6 +8,8 @@ Application de bureau de conception de recettes de bière : un binaire Go unique
 
 - **Linux** : installer `openmaltforge_<version>_amd64.deb` (menu « OpenMaltForge »), ou lancer directement `openmaltforge_<version>_linux_amd64`.
 - **Windows** : lancer `OpenMaltForge_<version>.exe`.
+- **macOS** : décompresser `OpenMaltForge_<version>_macos_apple_silicon.zip` (ou `_macos_intel.zip`), glisser
+  `OpenMaltForge.app` dans Applications ; premier lancement par clic droit › Ouvrir (application non signée).
 
 La base est le fichier unique `~/OpenMaltForge/openmaltforge.sqlite`. Au premier lancement, la base d'OpenBrew 5.x
 (`~/OpenBrew/openbrew.sqlite`), sinon celle de BrewCraft 4.x (`~/BrewCraft/brewcraft.sqlite`), est reprise automatiquement, sinon la plus récente d'une version 3.x

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Construit les livrables d'OpenMaltForge dans bin/<version>/ :
-#   OpenMaltForge_<v>.exe, openmaltforge_<v>_linux_amd64, openmaltforge_<v>_amd64.deb (+ archives .zip / .tar.gz)
+#   OpenMaltForge_<v>.exe, openmaltforge_<v>_linux_amd64, openmaltforge_<v>_amd64.deb (+ archives .zip / .tar.gz),
+#   OpenMaltForge_<v>_macos_apple_silicon.zip et OpenMaltForge_<v>_macos_intel.zip (application .app)
 # Copie aussi l'icône à part (bin/<v>/icone/) et prépare le site de présentation (site/, binaires dans
 # site/telechargements/). La version est lue dans web/js/app.js (const VER). Rien n'est livré si une vérification échoue.
 # Variables : GO (commande go ; défaut ~/sdk/go1.24.13/bin/go s'il existe).
@@ -42,6 +43,20 @@ GOOS=linux GOARCH=amd64 "$GO" build -trimpath -ldflags "$LD" -o "$OUT/openmaltfo
 v=$("$OUT/openmaltforge_${VER}_linux_amd64" --version)
 [ "$v" = "OpenMaltForge $VER" ] || { echo "version du binaire : $v" >&2; exit 1; }
 
+echo "== macOS (application OpenMaltForge.app, Apple Silicon et Intel)"
+for A in arm64 amd64; do
+  N=$([ "$A" = arm64 ] && echo apple_silicon || echo intel)
+  M=$(mktemp -d)
+  APP="$M/OpenMaltForge.app/Contents"
+  mkdir -p "$APP/MacOS" "$APP/Resources"
+  GOOS=darwin GOARCH=$A "$GO" build -trimpath -ldflags "$LD" -o "$APP/MacOS/openmaltforge" ./cmd/openmaltforge
+  cp dev/icon/openmaltforge.icns "$APP/Resources/openmaltforge.icns"
+  sed "s/@VERSION@/$VER/g" packaging/macos/Info.plist > "$APP/Info.plist"
+  cp packaging/macos/LISEZMOI.txt "$M/LISEZMOI.txt"
+  (cd "$M" && zip -qry "$ROOT/$OUT/OpenMaltForge_${VER}_macos_${N}.zip" OpenMaltForge.app LISEZMOI.txt)
+  rm -rf "$M"
+done
+
 echo "== Paquet .deb"
 D=$(mktemp -d)
 P=$D/openmaltforge_${VER}_amd64
@@ -60,7 +75,7 @@ rm -rf "$D"
 
 echo "== Icône de l'application (à part des binaires)"
 mkdir -p "$OUT/icone"
-cp dev/icon/openmaltforge.ico "$OUT/icone/openmaltforge.ico"
+cp dev/icon/openmaltforge.ico dev/icon/openmaltforge.icns "$OUT/icone/"
 for z in 16 32 48 64 128 256 512; do cp "dev/icon/icon$z.png" "$OUT/icone/openmaltforge_${z}.png"; done
 
 echo "== Archives"
@@ -70,9 +85,10 @@ echo "== Site web (site/) : binaires à télécharger et icône"
 mkdir -p site/telechargements
 rm -f site/telechargements/*
 cp "$OUT/OpenMaltForge_$VER.exe" "$OUT/OpenMaltForge_${VER}_windows.zip" "$OUT/openmaltforge_${VER}_linux_amd64" \
-  "$OUT/openmaltforge_${VER}_linux_amd64.tar.gz" "$OUT/openmaltforge_${VER}_amd64.deb" site/telechargements/
+  "$OUT/openmaltforge_${VER}_linux_amd64.tar.gz" "$OUT/openmaltforge_${VER}_amd64.deb" \
+  "$OUT/OpenMaltForge_${VER}_macos_apple_silicon.zip" "$OUT/OpenMaltForge_${VER}_macos_intel.zip" site/telechargements/
 mkdir -p site/img/fr site/img/en
-for f in conception etiquettes feuille bibliotheque-cartes; do
+for f in conception; do
   cp "web/doc/img/$f.jpg" site/img/fr/ && cp "web/doc/img/en/$f.jpg" site/img/en/
 done
 cp dev/icon/icon256.png site/icon.png

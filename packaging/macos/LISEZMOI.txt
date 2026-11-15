@@ -1,0 +1,21 @@
+OpenMaltForge pour macOS
+========================
+
+1. Glissez OpenMaltForge.app dans le dossier Applications.
+2. Premier lancement : l'application n'est pas signée par Apple. Faites un clic droit (ou Ctrl + clic) sur
+   OpenMaltForge.app, choisissez « Ouvrir », puis confirmez « Ouvrir ».
+   Si macOS refuse toujours : Réglages Système > Confidentialité et sécurité > « Ouvrir quand même »,
+   ou dans le Terminal : xattr -dr com.apple.quarantine /Applications/OpenMaltForge.app
+3. Prérequis : Google Chrome, Microsoft Edge, Brave ou Chromium installé (OpenMaltForge s'ouvre dans sa propre fenêtre).
+Vos données sont rangées dans le dossier OpenMaltForge de votre dossier personnel.
+
+OpenMaltForge for macOS
+=======================
+
+1. Drag OpenMaltForge.app into the Applications folder.
+2. First launch: the application is not signed by Apple. Right-click (or Ctrl-click) OpenMaltForge.app, choose
+   "Open", then confirm "Open".
+   If macOS still refuses: System Settings > Privacy & Security > "Open Anyway",
+   or in Terminal: xattr -dr com.apple.quarantine /Applications/OpenMaltForge.app
+3. Requirement: Google Chrome, Microsoft Edge, Brave or Chromium installed (OpenMaltForge opens in its own window).
+Your data is stored in the OpenMaltForge folder of your home folder.

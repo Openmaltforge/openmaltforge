@@ -297,19 +297,23 @@ func TestDon(t *testing.T) {
 	_, ts := newServer(t, t.TempDir())
 	var opened []string
 	OpenURL = func(u string) error { opened = append(opened, u); return nil }
-	defer func() { OpenURL = desktop.OpenURL; config.DonURL = "" }()
+	d0 := config.DonURL
+	defer func() { OpenURL = desktop.OpenURL; config.DonURL = d0 }()
+	if d0 != "https://ko-fi.com/openmaltforge" {
+		t.Errorf("adresse de don : %q", d0)
+	}
 	config.DonURL = ""
 	if r, b := do(t, "POST", ts.URL+"/api/don", nil, map[string]string{"X-OpenMaltForge": "1"}); r.StatusCode != 404 || !strings.Contains(string(b), "pas encore renseignée") {
 		t.Errorf("adresse vide : %d %s", r.StatusCode, b)
 	}
-	config.DonURL = "https://buymeacoffee.com/exemple"
+	config.DonURL = "https://ko-fi.com/exemple"
 	if r, _ := do(t, "POST", ts.URL+"/api/don", nil, nil); r.StatusCode != 403 {
 		t.Errorf("sans en-tête : %d", r.StatusCode)
 	}
 	if r, _ := do(t, "POST", ts.URL+"/api/don?url=https://autre.example", nil, map[string]string{"X-OpenMaltForge": "1"}); r.StatusCode != 204 {
 		t.Errorf("ouverture : %d", r.StatusCode)
 	}
-	if len(opened) != 1 || opened[0] != "https://buymeacoffee.com/exemple" {
+	if len(opened) != 1 || opened[0] != "https://ko-fi.com/exemple" {
 		t.Errorf("adresse ouverte : %v", opened)
 	}
 }

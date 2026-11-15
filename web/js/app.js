@@ -688,6 +688,20 @@ async function useState() {
   fontsSeed();
 }
 /* Paramètres › Base de données : fichier réellement ouvert par le navigateur et tables qu'il contient (relues sur le disque) */
+/* Paramètres › Contactez-moi : adresse de contact du développeur (lien mailto + copie dans le presse-papiers) */
+const CONTACT = 'openmaltforge@pm.me';
+function contactPanel() {
+  return `<div class="panel" id="contactp"><h3>Contactez-moi</h3><p class="ctxt">Une question, une idée, un problème ? Écrivez-moi :</p><p class="cmail"><span class="cic">${ic('mail')}</span><a href="mailto:${CONTACT}" data-nt>${CONTACT}</a><button data-ccopy="1" title="Copier l’adresse">Copier</button></p></div>`;
+}
+document.addEventListener('click', async e => {
+  if (!e.target.closest || !e.target.closest('[data-ccopy]')) return;
+  try {
+    await navigator.clipboard.writeText(CONTACT);
+    notify('contact', '✔ Adresse copiée dans le presse-papiers.', 'ok');
+  } catch (_) {
+    notify('contact', '⚠ Copie impossible : sélectionnez l’adresse à la main.', 'err');
+  }
+});
 /* Paramètres › Réglages : sauvegarde automatique, langue, base de données */
 const reglagesPanel = () => {
   setTimeout(dbInfo, 0);
@@ -2735,7 +2749,7 @@ function params() {
   main.innerHTML =
     `<div class="pg">` +
     main.innerHTML +
-    `<div class="col2">${procPanel()}${coefPanel()}${reglagesPanel()}${unitsPanel()}${logoPanel()}</div><div class="col2">${waterPanel()}<div class="panel"><h3>Besoins en électricité<button data-al="elec">＋</button></h3><table><tr><th>Désignation</th><th>Puissance (W)</th><th>Durée (min)</th><th>kWh</th><th>Coût (€)</th><th></th></tr>${elecSync()
+    `<div class="col2">${procPanel()}${coefPanel()}${reglagesPanel()}${contactPanel()}${unitsPanel()}${logoPanel()}</div><div class="col2">${waterPanel()}<div class="panel"><h3>Besoins en électricité<button data-al="elec">＋</button></h3><table><tr><th>Désignation</th><th>Puissance (W)</th><th>Durée (min)</th><th>kWh</th><th>Coût (€)</th><th></th></tr>${elecSync()
       .map(({ i, line }) => {
         const l = S.elec[i];
         return `<tr class="ea" data-ek="${line.kind}"><td><input class="nm" readonly tabindex="-1" value="${esc(l.name)}"></td>${L('elec', i, 'w', l.w)}<td><input type="number" readonly tabindex="-1" id="em${i}"></td><td class="pc" id="pk${i}"></td><td class="pc" id="ec${i}"></td><td></td></tr>`;
@@ -3465,14 +3479,25 @@ const SCR = {
   params: ['Paramètres', params],
   doc: ['Documentation', docScreen]
 };
-/* don : fenêtre « Offrir un café » (pourquoi donner, ce que finance le don) ; le bouton ouvre la page Buy Me a Coffee
-   dans le navigateur habituel (le serveur n'ouvre que l'adresse prévue, config.DonURL) */
-async function donDialog() {
-  let on = false;
+/* don : fenêtre « Offrir un café » (pourquoi donner, ce que finance le don), au lancement et au clic sur l'icône café ;
+   le bouton (ou le lien) ouvre la page Ko-fi dans le navigateur habituel (le serveur n'ouvre que config.DonURL) */
+async function donOpen() {
   try {
-    on = !!(await (await api('api/info')).json()).don;
+    await api('api/don', { method: 'POST', headers: { 'X-OpenMaltForge': '1' } });
+    notify('don', '✔ Merci ! La page de don s’ouvre dans votre navigateur.', 'ok');
+  } catch (err) {
+    notify('don', /pas encore renseignée/.test(err.message) ? 'La page de don n’est pas encore disponible.' : '⚠ ' + err.message, 'err');
+  }
+}
+async function donDialog() {
+  if (document.querySelector('.bcdlg.dondlg')) return;
+  let info = {};
+  try {
+    info = await (await api('api/info')).json();
   } catch (_) {}
-  const p = t => `<p>${esc(tx(t))}</p>`,
+  const on = !!info.don,
+    url = String(info.donUrl || '').replace(/^https?:\/\//, ''),
+    p = t => `<p>${esc(tx(t))}</p>`,
     ok = await bcAsk('OpenMaltForge est gratuit et libre (licence GNU GPL v3), sans publicité ni abonnement.', {
       title: 'Offrir un café',
       ico: ic('coffee'),
@@ -3481,23 +3506,26 @@ async function donDialog() {
         p('Il est développé sur le temps libre d’un brasseur, pour les brasseurs.') +
         p('Un café offert aide à financer le temps de développement, les nouvelles fonctions et les traductions.') +
         (on
-          ? p('Le paiement se fait sur Buy Me a Coffee, dans votre navigateur ; aucune donnée de l’application n’est transmise.')
+          ? p('Le paiement se fait sur Ko-fi, dans votre navigateur ; aucune donnée de l’application n’est transmise.') +
+            `<p class="donurl" data-nt><a href="#" data-donopen="1">${esc(url)}</a></p>`
           : `<p class="donoff">${esc(tx('La page de don n’est pas encore disponible : revenez dans une prochaine version.'))}</p>`) +
         `<p class="donmerci">${esc(tx('Merci pour votre soutien !'))} ${ic('heart')}</p>`,
       alert: !on,
       ok: on ? 'Offrir un café' : 'Fermer',
       cancel: 'Plus tard'
     });
-  if (!ok || !on) return;
-  try {
-    await api('api/don', { method: 'POST', headers: { 'X-OpenMaltForge': '1' } });
-    notify('don', '✔ Merci ! La page de don s’ouvre dans votre navigateur.', 'ok');
-  } catch (err) {
-    notify('don', /pas encore renseignée/.test(err.message) ? 'La page de don n’est pas encore disponible.' : '⚠ ' + err.message, 'err');
-  }
+  if (ok && on) donOpen();
 }
 document.addEventListener('click', e => {
-  if (e.target.closest && e.target.closest('#navdon')) donDialog();
+  if (!e.target.closest) return;
+  if (e.target.closest('#navdon')) donDialog();
+  const l = e.target.closest('[data-donopen]');
+  if (l) {
+    e.preventDefault();
+    const d = l.closest('.bcdlg');
+    if (d) d.querySelector('button.no')?.click();
+    donOpen();
+  }
 });
 /* Documentation (web/doc/index.html), affichée dans l'application ; même thème que l'interface */
 function docScreen() {
@@ -3507,7 +3535,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.0.0',
+const VER = '6.1.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4274,7 +4302,7 @@ function show(s) {
         : `<button data-s="${k}"${k === s ? ' class="on"' : ''}>${l}</button>`
     )
     .join('') +
-    `<button id="navdon" class="navdoc navdon" title="Offrir un café au développeur (Buy Me a Coffee)" aria-label="Offrir un café au développeur (Buy Me a Coffee)">${ic('coffee')}</button>`;
+    `<button id="navdon" class="navdoc navdon" title="Offrir un café au développeur (Ko-fi)" aria-label="Offrir un café au développeur (Ko-fi)">${ic('coffee')}</button>`;
   applyTheme();
   const pg = document.getElementById('pgstyle');
   if (pg && s !== 'labels' && s !== 'sheet') pg.remove();
@@ -4740,6 +4768,8 @@ load()
     ensureMash();
     recalcMalts();
     show('conception') /* au lancement : toujours l'écran de conception */;
+    /* au lancement : fenêtre « Offrir un café » (pas dans les navigateurs pilotés : tests, captures) */
+    if (!navigator.webdriver) setTimeout(donDialog, 700);
   });
 
 window.addEventListener &&

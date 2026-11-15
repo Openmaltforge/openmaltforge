@@ -5526,3 +5526,35 @@ main {
   vertical-align: -2px;
   color: #e5302a;
 }
+.dondlg .donurl {
+  font-weight: 600;
+}
+.dondlg .donurl a {
+  color: var(--y);
+}
+
+/* 6.1.0 — Paramètres › Contactez-moi */
+#contactp .ctxt {
+  margin: 4px 0 8px;
+  color: var(--m);
+}
+#contactp .cmail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+#contactp .cmail a {
+  color: var(--y);
+}
+#contactp .cic svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  color: var(--y);
+}
+#contactp .cmail button {
+  margin-left: auto;
+}

@@ -6060,11 +6060,13 @@ check(
           !!dd &&
           /Offrir un café/.test(dd.textContent) &&
           /GNU GPL v3/.test(dd.textContent) &&
-          /pas encore disponible/.test(dd.textContent) &&
+          /Ko-fi/.test(dd.textContent) &&
+          dd.querySelector('[data-donopen]')?.textContent === 'ko-fi.com/openmaltforge' &&
           !!dd.querySelector('.bcico svg') &&
-          !dd.querySelector('button.no') &&
-          dd.querySelector('button.ok').textContent === 'Fermer';
-        if (dd) dd.querySelector('button.ok').click();
+          dd.querySelector('button.no')?.textContent === 'Plus tard' &&
+          dd.querySelector('button.ok').textContent === 'Offrir un café';
+        /* « Plus tard » : rien n'est ouvert (le bouton principal ouvrirait la vraie page Ko-fi) */
+        if (dd) dd.querySelector('button.no').click();
         await w(150);
         o.donClosed = !document.querySelector('.bcdlg');
         window.__bcManual = false;
@@ -6072,10 +6074,38 @@ check(
         return o;
       });
       check(
-        'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, fenêtre « Offrir un café »',
+        'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, fenêtre « Offrir un café » avec le lien Ko-fi',
         Object.values(c5).every(Boolean),
         JSON.stringify(c5)
       );
+      /* 6.1.0 : Paramètres › Contactez-moi ; fenêtre du café prévue au lancement (hors navigateur piloté) */
+      const ct = await page.evaluate(async () => {
+        show('params');
+        await new Promise(r => setTimeout(r, 300));
+        const p = document.getElementById('contactp'),
+          a = p && p.querySelector('a[href="mailto:openmaltforge@pm.me"]');
+        return {
+          p: !!p && /Contactez-moi/.test(p.querySelector('h3').textContent),
+          a: !!a && a.textContent === 'openmaltforge@pm.me',
+          copy: !!p.querySelector('button[data-ccopy]'),
+          en: await (async () => {
+            /* fenêtre du café traduite (anglais), puis fermée par « Later » */
+            const l0 = LANG;
+            setLang('en');
+            window.__bcManual = true;
+            donDialog();
+            for (let k = 0; k < 20 && !document.querySelector('.bcdlg.dondlg'); k++) await new Promise(r => setTimeout(r, 100));
+            const d = document.querySelector('.bcdlg.dondlg'),
+              t = d ? d.innerText : '';
+            if (d) d.querySelector('button.no').click();
+            window.__bcManual = false;
+            setLang(l0);
+            return /free and open source/.test(t) && /Ko-fi/.test(t) && !/gratuit|Merci|Plus tard/.test(t);
+          })(),
+          launch: /navigator\.webdriver\) setTimeout\(donDialog/.test(document.querySelector('script[src*="app.js"]') ? await (await fetch(document.querySelector('script[src*="app.js"]').src)).text() : '')
+        };
+      });
+      check('Paramètres : section « Contactez-moi » (openmaltforge@pm.me, lien et copie) ; fenêtre « Offrir un café » au lancement', Object.values(ct).every(Boolean), JSON.stringify(ct));
       /* internationalisation : aucun texte d'interface resté en français (anglais), prompt « À rechercher » traduit */
       const tr = await page.evaluate(async () => {
         const w = ms => new Promise(r => setTimeout(r, ms)),
