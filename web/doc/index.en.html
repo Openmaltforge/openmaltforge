@@ -416,6 +416,7 @@
           <li><b>Frozen quantities</b>: once an item is in the list, its quantity no longer changes by itself (“Calculate” button, changing a row…). If it becomes lower than what is missing, an <b>orange triangle</b> appears next to the quantity (its tooltip shows what is missing) and an orange notification lists the items concerned; correct the quantity to make them disappear.</li>
           <li>Components not used by the recipe are never added, even with a stock of zero.</li>
           <li><b>＋ New recipe</b> empties the shopping list (manual additions included); it then fills up again from the new recipe.</li>
+          <li><b>Component removed from the recipe</b>: when you delete a component from the recipe (or replace it with another), it also leaves the shopping list — including the malt, hop and yeast proposed by default in a new recipe, and an item added with the recipe cart. Only items added from the database screens (Malts, Hops…) stay.</li>
         </ul>
         <h3>Manual additions</h3>
         <ul>
@@ -424,6 +425,10 @@
           <li>An item added by hand, or whose quantity you change, is never removed automatically.</li>
           <li>The <b>cross</b> removes an item; if it is still missing for the recipe, it is not put back as long as the stock remains used up.</li>
           <li>The <b>printer</b> icon in the title prints the shopping list (or saves it as PDF).</li>
+        </ul>
+        <h3>Info button</h3>
+        <ul>
+          <li>The <b>ⓘ</b> button at the end of an item’s row gives the <b>stock status</b> of the component: hold the mouse over it for <b>one second</b> (or click) to see the current stock, the need of the current recipe, the stock <b>after purchase</b> (current stock + quantity to buy) and what will remain <b>after brewing</b> (in red if something is still missing). If the recipe is already brewed, the bubble reminds you that its consumption is already deducted from stock; an item missing from the database has no known stock.</li>
         </ul>
         <h3>Stock</h3>
         <ul>
@@ -526,7 +531,14 @@
           <li><b>Fonts</b>: Google Fonts stored in the database; <b>Import</b> (several files at once), filter, preview on hover. The interface fonts, marked with a padlock, cannot be deleted; when another font is deleted, a dialog offers a replacement font.</li>
           <li><b>Contact me</b>: the developer’s address, <code>openmaltforge@pm.me</code> (click = new message in your mail application, <b>Copy</b> = address to the clipboard), for a question, an idea or a problem.</li>
           <li><b>Units</b>: section in preparation (disabled).</li>
-          <li><b>To look up</b> (shown only when needed): ingredients found during a PDF import and missing from the database. The <b>Copy the prompt</b> button copies a ready-made request, in the interface language, to send to an AI with web access: it looks up these ingredients and produces CSV files to paste into the Malts, Hops, Yeasts and Ingredients screens (“Paste CSV”).</li>
+          <li><b>To look up</b> (only shown when needed): ingredients found during an import (Brewfather / BeerSmith PDF) that are missing from the database. Each ingredient is a chip (its cross removes it; <b>Clear all</b> empties the list); an ingredient disappears by itself as soon as it exists in the database. <b>How the prompt is generated</b>: the text shown is built automatically, in the interface language (it is regenerated when you change language):
+            <ul>
+              <li>an introduction that states the task (look up each ingredient’s data on the Internet and produce CSV files);</li>
+              <li>one section per category concerned (malts, hops, yeasts, miscellaneous ingredients), with the expected CSV file name (<code>malts_nouveaux.csv</code>, <code>houblons_nouveaux.csv</code>, <code>levures_nouvelles.csv</code>, <code>ingredients_nouveaux.csv</code>) and the list of ingredients, each with the data found in the imported recipe and the recipes where it appears;</li>
+              <li>the common CSV rules (UTF-8 encoding, semicolon separator, decimal comma…);</li>
+              <li>for each file: the exact column headers of your database, the meaning of each column (units, aroma scales from 0 to 5…) and an example line taken from your database to show the format.</li>
+            </ul>
+            The <b>Copy the prompt</b> button copies it: paste it into an AI with web access, then paste the CSV files you get into the Malts, Hops, Yeasts and Ingredients screens (“Paste CSV”).</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-reglages.jpg" alt="General settings" />

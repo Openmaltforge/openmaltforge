@@ -416,6 +416,7 @@
           <li><b>Quantités figées</b> : une fois un article dans la liste, sa quantité ne change plus d’elle-même (bouton « Calculer », modification d’une ligne…). Si elle devient inférieure à ce qui manque, un <b>triangle orange</b> apparaît à côté de la quantité (son infobulle indique ce qui manque) et une notification orange signale les articles concernés ; corrigez la quantité pour les faire disparaître.</li>
           <li>Les composants non utilisés par la recette ne sont jamais ajoutés, même avec un stock à zéro.</li>
           <li><b>＋ Nouvelle recette</b> vide la liste de courses (ajouts manuels compris) ; elle se remplit ensuite d’après la nouvelle recette.</li>
+          <li><b>Composant retiré de la recette</b> : quand vous supprimez un composant de la recette (ou le remplacez par un autre), il sort aussi de la liste de courses — y compris le malt, le houblon et la levure proposés par défaut dans une nouvelle recette, et un article ajouté par le caddie de la recette. Seuls restent les articles ajoutés depuis les écrans de base (Malts, Houblons…).</li>
         </ul>
         <h3>Ajout manuel</h3>
         <ul>
@@ -424,6 +425,10 @@
           <li>Un article ajouté à la main, ou dont vous modifiez la quantité, n’est jamais retiré automatiquement.</li>
           <li>La <b>croix</b> retire un article ; s’il manque toujours pour la recette, il n’est pas remis tant que le stock reste épuisé.</li>
           <li>L’icône <b>imprimante</b> du titre imprime la liste de courses (ou l’enregistre en PDF).</li>
+        </ul>
+        <h3>Bouton info</h3>
+        <ul>
+          <li>Le bouton <b>ⓘ</b> en fin de ligne d’un article donne l’<b>état du stock</b> du composant : laissez la souris dessus <b>une seconde</b> (ou cliquez) pour voir le stock actuel, le besoin de la recette en cours, le stock <b>après achat</b> (stock actuel + quantité à acheter) et ce qui restera <b>après brassage</b> (en rouge s’il manque encore). Si la recette est déjà réalisée, la bulle rappelle que sa consommation est déjà déduite du stock ; un article absent de la base n’a pas de stock connu.</li>
         </ul>
         <h3>Stock</h3>
         <ul>
@@ -526,7 +531,14 @@
           <li><b>Polices de caractères</b> : polices Google Fonts stockées dans la base ; <b>Importer</b> (plusieurs fichiers à la fois), filtre, aperçu au survol. Les polices de l’interface, marquées d’un cadenas, ne peuvent pas être supprimées ; à la suppression d’une autre police, une fenêtre propose une police de remplacement.</li>
           <li><b>Contactez-moi</b> : l’adresse du développeur, <code>openmaltforge@pm.me</code> (clic = nouveau message dans votre messagerie, <b>Copier</b> = adresse dans le presse-papiers), pour une question, une idée ou un problème.</li>
           <li><b>Unités</b> : section en préparation (désactivée).</li>
-          <li><b>À rechercher</b> (visible seulement si nécessaire) : ingrédients rencontrés lors d’un import PDF et absents de la base. Le bouton <b>Copier le prompt</b> copie une demande toute prête, dans la langue de l’interface, à envoyer à une IA ayant accès au web : elle recherche ces ingrédients et produit des fichiers CSV à coller dans les écrans Malts, Houblons, Levures et Ingrédients (« Coller CSV »).</li>
+          <li><b>À rechercher</b> (visible seulement si nécessaire) : ingrédients rencontrés lors d’un import (PDF Brewfather / BeerSmith) et absents de la base. Chaque ingrédient est une pastille (sa croix le retire ; <b>Tout effacer</b> vide la liste) ; un ingrédient disparaît de lui-même dès qu’il existe dans la base. <b>Génération du prompt</b> : le texte affiché est construit automatiquement, dans la langue de l’interface (il est régénéré quand vous changez de langue) :
+            <ul>
+              <li>une introduction qui présente la mission (rechercher les données de chaque ingrédient sur Internet et produire des fichiers CSV) ;</li>
+              <li>une rubrique par catégorie concernée (malts, houblons, levures, ingrédients divers), avec le nom du fichier CSV attendu (<code>malts_nouveaux.csv</code>, <code>houblons_nouveaux.csv</code>, <code>levures_nouvelles.csv</code>, <code>ingredients_nouveaux.csv</code>) et la liste des ingrédients, chacun avec les données trouvées dans la recette importée et les recettes où il apparaît ;</li>
+              <li>les règles communes des CSV (encodage UTF-8, séparateur point-virgule, virgule décimale…) ;</li>
+              <li>pour chaque fichier : les en-têtes exacts des colonnes de votre base, la signification de chaque colonne (unités, échelles des arômes de 0 à 5…) et une ligne d’exemple prise dans votre base pour montrer le format.</li>
+            </ul>
+            Le bouton <b>Copier le prompt</b> le copie : collez-le dans une IA ayant accès au web, puis collez les CSV obtenus dans les écrans Malts, Houblons, Levures et Ingrédients (« Coller CSV »).</li>
         </ul>
         <figure class="half">
           <img src="img/parametres-reglages.jpg" alt="Réglages" />

@@ -416,6 +416,7 @@
           <li><b>Quantidades fixas</b>: quando um artigo está na lista, a sua quantidade deixa de mudar sozinha (botão «Calcular», modificação de uma linha…). Se ficar inferior ao que falta, aparece um <b>triângulo laranja</b> ao lado da quantidade (a sua dica indica o que falta) e uma notificação laranja assinala os artigos em causa; corrija a quantidade para os fazer desaparecer.</li>
           <li>Os componentes não usados pela receita nunca são acrescentados, mesmo com stock a zero.</li>
           <li><b>＋ Nova receita</b> esvazia a lista de compras (adições manuais incluídas); depois volta a preencher-se segundo a nova receita.</li>
+          <li><b>Componente retirado da receita</b>: quando elimina um componente da receita (ou o substitui por outro), ele também sai da lista de compras — incluindo o malte, o lúpulo e a levedura propostos por omissão numa receita nova, e um artigo adicionado com o carrinho da receita. Só ficam os artigos adicionados a partir dos ecrãs de base (Maltes, Lúpulos…).</li>
         </ul>
         <h3>Adição manual</h3>
         <ul>
@@ -424,6 +425,10 @@
           <li>Um artigo acrescentado à mão, ou cuja quantidade modifique, nunca é retirado automaticamente.</li>
           <li>A <b>cruz</b> retira um artigo; se continuar em falta para a receita, não volta a ser posto enquanto o stock continuar esgotado.</li>
           <li>O ícone da <b>impressora</b> no título imprime a lista de compras (ou guarda-a em PDF).</li>
+        </ul>
+        <h3>Botão info</h3>
+        <ul>
+          <li>O botão <b>ⓘ</b> no fim da linha de um artigo dá o <b>estado do stock</b> do componente: deixe o rato por cima durante <b>um segundo</b> (ou clique) para ver o stock atual, a necessidade da receita atual, o stock <b>após a compra</b> (stock atual + quantidade a comprar) e o que restará <b>após a brassagem</b> (a vermelho se ainda faltar). Se a receita já estiver realizada, a bolha lembra que o seu consumo já foi descontado; um artigo ausente da base não tem stock conhecido.</li>
         </ul>
         <h3>Stock</h3>
         <ul>
@@ -526,7 +531,14 @@
           <li><b>Tipos de letra</b>: tipos de letra Google Fonts guardados na base; <b>Importar</b> (vários ficheiros de uma vez), filtro, pré-visualização ao passar o rato. Os tipos de letra da interface, marcados com um cadeado, não podem ser eliminados; ao eliminar outro tipo de letra, uma janela propõe um tipo de letra de substituição.</li>
           <li><b>Contacte-me</b>: o endereço do programador, <code>openmaltforge@pm.me</code> (clique = nova mensagem no seu correio, <b>Copiar</b> = endereço na área de transferência), para uma pergunta, uma ideia ou um problema.</li>
           <li><b>Unidades</b>: secção em preparação (desativada).</li>
-          <li><b>A pesquisar</b> (visível só quando necessário): ingredientes encontrados numa importação PDF e ausentes da base. O botão <b>Copiar o prompt</b> copia um pedido pronto, na língua da interface, a enviar a uma IA com acesso à web: pesquisa esses ingredientes e produz ficheiros CSV a colar nos ecrãs Maltes, Lúpulos, Leveduras e Ingredientes («Colar CSV»).</li>
+          <li><b>A pesquisar</b> (visível só quando necessário): ingredientes encontrados numa importação (PDF Brewfather / BeerSmith) e ausentes da base. Cada ingrediente é uma etiqueta (a sua cruz retira-o; <b>Apagar tudo</b> esvazia a lista); um ingrediente desaparece sozinho assim que existe na base. <b>Geração do prompt</b>: o texto mostrado é construído automaticamente, na língua da interface (é regenerado quando muda de língua):
+            <ul>
+              <li>uma introdução que apresenta a tarefa (pesquisar na Internet os dados de cada ingrediente e produzir ficheiros CSV);</li>
+              <li>uma secção por categoria em causa (maltes, lúpulos, leveduras, ingredientes diversos), com o nome do ficheiro CSV esperado (<code>malts_nouveaux.csv</code>, <code>houblons_nouveaux.csv</code>, <code>levures_nouvelles.csv</code>, <code>ingredients_nouveaux.csv</code>) e a lista de ingredientes, cada um com os dados encontrados na receita importada e as receitas onde aparece;</li>
+              <li>as regras comuns dos CSV (codificação UTF-8, separador ponto e vírgula, vírgula decimal…);</li>
+              <li>para cada ficheiro: os cabeçalhos exatos das colunas da sua base, o significado de cada coluna (unidades, escalas de aromas de 0 a 5…) e uma linha de exemplo tirada da sua base para mostrar o formato.</li>
+            </ul>
+            O botão <b>Copiar o prompt</b> copia-o: cole-o numa IA com acesso à web e depois cole os CSV obtidos nos ecrãs Maltes, Lúpulos, Leveduras e Ingredientes («Colar CSV»).</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-reglages.jpg" alt="Preferências" />

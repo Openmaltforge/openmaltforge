@@ -93,7 +93,14 @@ const HFR = {
   spice: 'épicé',
   resin_pin: 'résine / pin',
   alpha_min: 'alpha mini',
-  alpha_max: 'alpha maxi'
+  alpha_max: 'alpha maxi',
+  /* 6.6.0 : arômes des malts et des levures, accentués à l'affichage (radars, en-têtes) ; les clés en base ne changent pas */
+  cereale: 'céréale',
+  malte: 'malté',
+  cafe: 'café',
+  toaste: 'toasté',
+  fume: 'fumé',
+  alcoolise: 'alcoolisé'
 };
 const EIL = { cl: 'Cl', so4: 'SO4', ca: 'Ca', mg: 'Mg', na: 'Na', hco3: 'HCO3', so4cl: 'Ratio SO4/Cl' },
   IONS = ['cl', 'so4', 'ca', 'mg', 'na', 'hco3'],
@@ -1209,6 +1216,15 @@ function courSync() {
     ch = true;
     if (!Object.keys(c.r).length) L.splice(j, 1);
   }
+  /* 6.6.0 : composant sorti de la recette en cours → son ajout au caddie pour cette recette est retiré aussi
+     (les ajouts manuels des écrans de base, « manuel », restent) */
+  for (let j = L.length - 1; j >= 0; j--) {
+    const c = L[j];
+    if (!c.r || c.r[rk] === undefined || need[c.t + '|' + c.n] !== undefined) continue;
+    delete c.r[rk];
+    ch = true;
+    if (!Object.keys(c.r).length) L.splice(j, 1);
+  }
   return ch;
 }
 /* manque actuel de chaque composant de la recette en cours (unité du stock), recette réalisée recomptée */
@@ -1333,13 +1349,73 @@ function coursesBox() {
           .filter(([c]) => c.t === t)
           .map(
             ([c, i]) =>
-              `<tr><td>${esc(c.n)}</td><td class="cqc"><input class="rin" type="number" min="0" step="any" data-cq="${i}" value="${c.q}"><span class="cwarn" data-ci="${i}" hidden>⚠</span></td><td class="un">${CUN[t]}</td><td class="pc" id="cpx${i}">${nf(courPrice(c), 2)}</td><td class="xc"><button class="cart" tabindex="-1" aria-hidden="true" hidden>🛒</button><button class="x" data-cdel="${i}" title="Retirer de la liste">✕</button></td></tr>`
+              `<tr><td>${esc(c.n)}</td><td class="cqc"><input class="rin" type="number" min="0" step="any" data-cq="${i}" value="${c.q}"><span class="cwarn" data-ci="${i}" hidden>⚠</span></td><td class="un">${CUN[t]}</td><td class="pc" id="cpx${i}">${nf(courPrice(c), 2)}</td><td class="xc"><button class="cinfo" data-cinfo="${i}" aria-label="État du stock">${ic('info')}</button><button class="x" data-cdel="${i}" title="Retirer de la liste">✕</button></td></tr>`
           )
           .join('')
     )
     .join('');
   return `<div class="panel"><h3>🛒 Courses<button id="cpp" title="Imprimer la liste de courses">🖨</button></h3><table class="rvt cour"><tr><th>Article</th><th>À acheter</th><th>Unité</th><th>Estimation (€)</th><th></th></tr>${rows}</table><div class="ctot">Total estimé : <b id="ctot">${nf(courTot(), 2)}</b> €</div></div>`;
 }
+/* 6.6.0 : bouton info d'un article des courses — après 1 s de survol (ou au clic), état du stock du composant :
+   stock actuel, besoin de la recette en cours, stock après achat, puis après brassage */
+function courInfo(i) {
+  const c = courList()[i];
+  if (!c) return '';
+  const R = S.kv.recipe,
+    d = find(c.t, c.n),
+    u = tx(CUN[c.t]),
+    v = x => cfr(x) + ' ' + u,
+    need = stockUse(R)
+      .filter(([t, n]) => t === c.t && n === (d || {}).name)
+      .reduce((a, x) => a + x[2], 0),
+    st = d ? +d.stock || 0 : 0,
+    after = stkR(st + (+c.q || 0)),
+    row = (l, x, cl) => `<tr${cl ? ` class="${cl}"` : ''}><td>${esc(tx(l))}</td><td>${x}</td></tr>`;
+  let h = `<b>${esc(c.n)}</b><table>`;
+  if (!d) return h + row('Composant absent de la base : stock inconnu.', '') + '</table>';
+  h += row('Stock actuel', v(st));
+  if (R.stk && R.stk.length) h += row('Recette déjà réalisée : sa consommation est déjà déduite du stock.', '');
+  else if (need > 0) h += row('Besoin de la recette en cours', v(stkR(need)));
+  h += row('Après achat', v(after), 'ok');
+  if (!(R.stk && R.stk.length) && need > 0) {
+    const rest = stkR(after - need);
+    h += row('Après brassage', v(rest), rest < 0 ? 'bad' : '');
+  }
+  return h + '</table>';
+}
+let cinfoT = null;
+const cinfoHide = () => {
+  clearTimeout(cinfoT);
+  cinfoT = null;
+  document.getElementById('cinfo')?.remove();
+};
+function cinfoShow(b) {
+  cinfoHide();
+  const t = document.createElement('div');
+  t.id = 'cinfo';
+  t.innerHTML = courInfo(+b.dataset.cinfo);
+  document.body.appendChild(t);
+  const r = b.getBoundingClientRect(),
+    w = t.offsetWidth;
+  t.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w)) + 'px';
+  t.style.top = r.bottom + 6 + 'px';
+}
+document.addEventListener('mouseover', e => {
+  const b = e.target.closest && e.target.closest('[data-cinfo]');
+  if (!b || (e.relatedTarget && b.contains(e.relatedTarget))) return;
+  cinfoHide();
+  cinfoT = setTimeout(() => cinfoShow(b), 1000);
+});
+document.addEventListener('mouseout', e => {
+  const b = e.target.closest && e.target.closest('[data-cinfo]');
+  if (b && !(e.relatedTarget && b.contains(e.relatedTarget))) cinfoHide();
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-cinfo]');
+  if (b) cinfoShow(b);
+  else cinfoHide();
+});
+window.addEventListener('scroll', cinfoHide, true);
 /* feuille imprimable : même esprit que la fiche recette (verre, pastilles, tuiles chiffrées, cartes par rubrique), A4 */
 function coursesHtml() {
   const L = courList(),
@@ -2570,7 +2646,7 @@ function dbScreen(t, ed = -1) {
     calc = c => t === 'malts' && (c === 'ppg' || c === 'b46'),
     fmt = csv ? 'CSV' : 'JSON';
   main.innerHTML = `<div class="panel" style="margin:10px 12px">${RK[t] ? rvBlock(t) : ''}<h3>${TITLES[t]} (${S[t].length}) ${['malts', 'hops', 'yeasts'].includes(t) ? '<small>notes aromatiques : échelle 0 à 5</small>' : ''}<button id="exj">Exporter ${fmt}</button><button id="csvp" title="Coller des données au format CSV dans une zone de texte">📋 Coller CSV</button><button id="clr" class="dng">Tout effacer</button></h3>
-<div class="scr"><table class="db">${fltRow(t, cols, TXT)}<tr class="hd">${cols.map(c => `<th class="srt" data-sort="${c}">${{ prix_g: 'prix/g', prix_kg: 'prix/kg', prix_sachet: 'prix/sachet', prix_l: 'prix/L', unite: 'unité', prix: 'prix (€)', stock: 'stock ' + STU[t] }[c] || (c === 'name' ? 'nom' : (t === 'hops' && HFR[c]) || (t === 'eaux' && EIL[c])) || c.replace(/_/g, ' ')}${arrow(t, c)}</th>`).join('')}<th class="addc"><button id="add" title="Ajouter une ligne">＋</button></th></tr>${dbRows(t, ed)}</table></div><div class="pager noprint" id="pager"></div></div>`;
+<div class="scr"><table class="db">${fltRow(t, cols, TXT)}<tr class="hd">${cols.map(c => `<th class="srt" data-sort="${c}">${{ prix_g: 'prix/g', prix_kg: 'prix/kg', prix_sachet: 'prix/sachet', prix_l: 'prix/L', unite: 'unité', prix: 'prix (€)', stock: 'stock ' + STU[t] }[c] || (c === 'name' ? 'nom' : HFR[c] || (t === 'eaux' && EIL[c])) || c.replace(/_/g, ' ')}${arrow(t, c)}</th>`).join('')}<th class="addc"><button id="add" title="Ajouter une ligne">＋</button></th></tr>${dbRows(t, ed)}</table></div><div class="pager noprint" id="pager"></div></div>`;
   fltApply(t);
   updCart();
   drawRv(t);
@@ -3533,7 +3609,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.5.0',
+const VER = '6.6.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4302,8 +4378,7 @@ function show(s) {
         ? `<button data-s="doc" class="navdoc${k === s ? ' on' : ''}" title="Documentation" aria-label="Documentation">${ic('bookopen')}</button>`
         : `<button data-s="${k}"${k === s ? ' class="on"' : ''}>${l}</button>`
     )
-    .join('') +
-    KOFI_BTN('navdon');
+    .join('');
   applyTheme();
   const pg = document.getElementById('pgstyle');
   if (pg && s !== 'labels' && s !== 'sheet') pg.remove();

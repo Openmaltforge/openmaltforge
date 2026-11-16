@@ -4209,17 +4209,17 @@ check(
         S.biblio.pop();
         SORT.biblio = undefined;
         const nav = [...document.querySelectorAll('#nav button, #nav a.kofi')].map(x => x.textContent || x.dataset.s || x.id);
-        return { a, d, og, nav: nav.slice(-4) };
+        return { a, d, og, nav: nav.slice(-4), kofi: document.getElementById('dbst').nextElementSibling?.id === 'navdon' };
       });
       check(
         'bibliothèque : tri (nom croissant par défaut, 1er clic sur Nom = décroissant) sur chaque colonne ; Paramètres en dernier onglet (suivi de l’icône Documentation)',
         so.a !== 'AAA tri' &&
           so.d === 'AAA tri' &&
           so.og === 12 &&
-          so.nav[3] === 'navdon' &&
-          so.nav[2] === 'doc' &&
-          so.nav[1] === 'Paramètres' &&
-          so.nav[0] === 'Feuille de brassage',
+          so.nav[3] === 'doc' &&
+          so.nav[2] === 'Paramètres' &&
+          so.nav[1] === 'Feuille de brassage' &&
+          so.kofi,
         JSON.stringify(so)
       );
     }
@@ -5917,7 +5917,7 @@ check(
         const w = ms => new Promise(r => setTimeout(r, ms)),
           b = [...document.querySelectorAll('#nav button, #nav a.kofi')],
           i = b.findIndex(x => x.dataset.s === 'doc'),
-          o = { pos: b[i - 1].dataset.s === 'params' && b[i + 1].id === 'navdon', icon: !!(b[i] && b[i].querySelector('svg.fa-bookopen')) };
+          o = { pos: b[i - 1].dataset.s === 'params' && i === b.length - 1, icon: !!(b[i] && b[i].querySelector('svg.fa-bookopen')) };
         b[i].click();
         await w(1200);
         const f = document.getElementById('docf'),
@@ -6067,13 +6067,16 @@ check(
         const nb = [...document.querySelectorAll('#nav button, #nav a.kofi')],
           di = nb.findIndex(x => x.id === 'navdon');
         /* 6.4.0 : bouton Ko-fi (image intégrée) à droite de la documentation ; jamais cliqué ici (ouvrirait la vraie page) */
+        /* 6.6.0 : bouton Ko-fi dans l'en-tête, juste après le nom de la base */
+        const kb = document.getElementById('navdon');
         o.don =
-          di === nb.length - 1 &&
-          nb[di - 1].dataset.s === 'doc' &&
-          nb[di].tagName === 'A' &&
-          nb[di].href === 'https://ko-fi.com/G7U82APSVO' &&
-          !!nb[di].querySelector('img[src="lib/kofi6.png"]') &&
-          nb[di].querySelector('img').naturalWidth > 0;
+          di === -1 &&
+          kb.closest('header') &&
+          kb.previousElementSibling.id === 'dbst' &&
+          kb.tagName === 'A' &&
+          kb.href === 'https://ko-fi.com/G7U82APSVO' &&
+          !!kb.querySelector('img[src="lib/kofi6.png"]') &&
+          kb.querySelector('img').naturalWidth > 0;
         window.__bcManual = true;
         donDialog(); /* fenêtre du lancement */
         for (let k = 0; k < 20 && !document.querySelector('.bcdlg.dondlg'); k++) await w(100);
@@ -6101,6 +6104,61 @@ check(
         'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, bouton Ko-fi (image) dans l’en-tête et dans la fenêtre « Offrir un café » (seulement au lancement)',
         Object.values(c5).every(Boolean),
         JSON.stringify(c5)
+      );
+      /* 6.6.0 : courses — bouton info (stock actuel / après achat / après brassage, après 1 s de survol) ; article ajouté
+         au caddie de la recette retiré quand le composant sort de la recette ; arômes accentués ; Process : espace crayon */
+      const c66 = await page.evaluate(async () => {
+        const w = ms => new Promise(r => setTimeout(r, ms)),
+          R = S.kv.recipe,
+          o = {};
+        show('conception');
+        await w(200);
+        const L = courList(),
+          i = L.findIndex(c => c.t === 'malts' || c.t === 'hops' || c.t === 'yeasts'),
+          c = L[i],
+          d = find(c.t, c.n),
+          b = document.querySelector(`[data-cinfo="${i}"]`);
+        o.btn = !!b && !!b.querySelector('svg');
+        b.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        await w(500);
+        o.notYet = !document.getElementById('cinfo');
+        await w(700);
+        const tip = document.getElementById('cinfo');
+        o.tip = !!tip && /Stock actuel/.test(tip.textContent) && /Après achat/.test(tip.textContent) && tip.textContent.includes(cfr((+d.stock || 0) + c.q));
+        b.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+        o.hide = !document.getElementById('cinfo');
+        /* caddie de la recette puis composant retiré */
+        const nm = S.hops.find(h => !R.hops.some(x => x.n === h.name)).name;
+        R.hops.push({ n: nm, g: 1, use: 'Ébullition', t: 10 });
+        S.hops.find(h => h.name === nm).stock = 1000;
+        conception();
+        await w(150);
+        courAddItem('hops', nm, false, true);
+        o.inCart = courList().some(x => x.n === nm);
+        R.hops = R.hops.filter(x => x.n !== nm);
+        conception();
+        updCart();
+        await w(150);
+        o.outCart = !courList().some(x => x.n === nm);
+        /* arômes accentués (radar des malts, en-têtes de la table des malts) */
+        o.radar = /céréale/.test(document.querySelector('#main').innerHTML) && !/>cereale /.test(document.querySelector('#main').innerHTML);
+        show('malts');
+        await w(200);
+        const hd = [...document.querySelectorAll('tr.hd th')].map(x => x.textContent).join('|');
+        o.head = /céréale/.test(hd) && /malté/.test(hd) && /toasté/.test(hd) && /fumé/.test(hd) && /café/.test(hd);
+        show('params');
+        await w(200);
+        const tr = document.querySelector('tr[data-prow="0:0"]'),
+          dn = tr.querySelector('[data-pm$=":1"]').getBoundingClientRect(),
+          pe = tr.querySelector('[data-ped]').getBoundingClientRect();
+        o.gap = pe.left - dn.right >= 5;
+        show('conception');
+        return o;
+      });
+      check(
+        'courses : bouton info (après 1 s : stock actuel, après achat) ; article du caddie retiré quand le composant sort de la recette ; arômes accentués ; ≥ 5 px entre flèches et crayon du Process',
+        Object.values(c66).every(Boolean),
+        JSON.stringify(c66)
       );
       /* 6.5.0 : date d’embouteillage ≥ date de brassage (saisie refusée, valeur rétablie, pas de mouvement de stock) */
       const dt = await page.evaluate(async () => {

@@ -73,6 +73,7 @@ const NAMES = {
   bookopen: 'book-open-text',
   coffee: 'coffee',
   mail: 'mail',
+  info: 'info',
   /* ornements des étiquettes et de la feuille de brassage */
   heart: 'heart',
   flower: 'flower',

@@ -416,6 +416,7 @@
           <li><b>Quantità fisse</b>: una volta che un articolo è nella lista, la sua quantità non cambia più da sola (pulsante «Calcola», modifica di una riga…). Se diventa inferiore a ciò che manca, compare un <b>triangolo arancione</b> accanto alla quantità (il suo suggerimento indica ciò che manca) e una notifica arancione segnala gli articoli interessati; correggi la quantità per farli sparire.</li>
           <li>I componenti non usati dalla ricetta non vengono mai aggiunti, nemmeno con scorte a zero.</li>
           <li><b>＋ Nuova ricetta</b> svuota la lista della spesa (aggiunte manuali comprese); poi si riempie in base alla nuova ricetta.</li>
+          <li><b>Componente tolto dalla ricetta</b>: quando elimini un componente dalla ricetta (o lo sostituisci con un altro), esce anche dalla lista della spesa — compresi il malto, il luppolo e il lievito proposti per impostazione predefinita in una nuova ricetta, e un articolo aggiunto con il carrello della ricetta. Restano solo gli articoli aggiunti dalle schermate dei database (Malti, Luppoli…).</li>
         </ul>
         <h3>Aggiunta manuale</h3>
         <ul>
@@ -424,6 +425,10 @@
           <li>Un articolo aggiunto a mano, o di cui modifichi la quantità, non viene mai rimosso automaticamente.</li>
           <li>La <b>croce</b> rimuove un articolo; se manca ancora per la ricetta, non viene rimesso finché le scorte restano esaurite.</li>
           <li>L’icona della <b>stampante</b> nel titolo stampa la lista della spesa (o la salva in PDF).</li>
+        </ul>
+        <h3>Pulsante info</h3>
+        <ul>
+          <li>Il pulsante <b>ⓘ</b> a fine riga di un articolo dà lo <b>stato delle scorte</b> del componente: lascia il mouse sopra per <b>un secondo</b> (o fai clic) per vedere le scorte attuali, il fabbisogno della ricetta attuale, le scorte <b>dopo l’acquisto</b> (scorte attuali + quantità da acquistare) e ciò che resterà <b>dopo la cotta</b> (in rosso se manca ancora qualcosa). Se la ricetta è già realizzata, il fumetto ricorda che il suo consumo è già scalato; un articolo assente dal database non ha scorte note.</li>
         </ul>
         <h3>Scorte</h3>
         <ul>
@@ -526,7 +531,14 @@
           <li><b>Caratteri</b>: caratteri Google Fonts salvati nel database; <b>Importa</b> (più file alla volta), filtro, anteprima al passaggio del mouse. I caratteri dell’interfaccia, segnati da un lucchetto, non possono essere eliminati; quando si elimina un altro carattere, una finestra propone un carattere sostitutivo.</li>
           <li><b>Contattami</b>: l’indirizzo dello sviluppatore, <code>openmaltforge@pm.me</code> (clic = nuovo messaggio nella tua posta, <b>Copia</b> = indirizzo negli appunti), per una domanda, un’idea o un problema.</li>
           <li><b>Unità</b>: sezione in preparazione (disattivata).</li>
-          <li><b>Da cercare</b> (visibile solo se necessario): ingredienti trovati durante un’importazione PDF e assenti dal database. Il pulsante <b>Copia il prompt</b> copia una richiesta pronta, nella lingua dell’interfaccia, da inviare a un’IA con accesso al web: cerca questi ingredienti e produce file CSV da incollare nelle schermate Malti, Luppoli, Lieviti e Ingredienti («Incolla CSV»).</li>
+          <li><b>Da cercare</b> (visibile solo se necessario): ingredienti trovati durante un’importazione (PDF Brewfather / BeerSmith) e assenti dal database. Ogni ingrediente è un’etichetta (la sua croce lo toglie; <b>Cancella tutto</b> svuota l’elenco); un ingrediente scompare da solo appena esiste nel database. <b>Generazione del prompt</b>: il testo mostrato è costruito automaticamente, nella lingua dell’interfaccia (viene rigenerato quando cambi lingua):
+            <ul>
+              <li>un’introduzione che presenta il compito (cercare su Internet i dati di ogni ingrediente e produrre file CSV);</li>
+              <li>una sezione per categoria interessata (malti, luppoli, lieviti, ingredienti vari), con il nome del file CSV atteso (<code>malts_nouveaux.csv</code>, <code>houblons_nouveaux.csv</code>, <code>levures_nouvelles.csv</code>, <code>ingredients_nouveaux.csv</code>) e l’elenco degli ingredienti, ciascuno con i dati trovati nella ricetta importata e le ricette in cui compare;</li>
+              <li>le regole comuni dei CSV (codifica UTF-8, separatore punto e virgola, virgola decimale…);</li>
+              <li>per ogni file: le intestazioni esatte delle colonne del tuo database, il significato di ogni colonna (unità, scale degli aromi da 0 a 5…) e una riga di esempio presa dal tuo database per mostrare il formato.</li>
+            </ul>
+            Il pulsante <b>Copia il prompt</b> lo copia: incollalo in un’IA con accesso al web, poi incolla i CSV ottenuti nelle schermate Malti, Luppoli, Lieviti e Ingredienti («Incolla CSV»).</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-reglages.jpg" alt="Preferenze" />

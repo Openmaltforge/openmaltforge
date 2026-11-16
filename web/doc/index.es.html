@@ -416,6 +416,7 @@
           <li><b>Cantidades fijas</b>: una vez un artículo está en la lista, su cantidad ya no cambia sola (botón «Calcular», modificación de una línea…). Si pasa a ser inferior a lo que falta, aparece un <b>triángulo naranja</b> junto a la cantidad (su información emergente indica lo que falta) y una notificación naranja señala los artículos afectados; corrija la cantidad para que desaparezcan.</li>
           <li>Los componentes no usados por la receta nunca se añaden, ni siquiera con un stock a cero.</li>
           <li><b>＋ Nueva receta</b> vacía la lista de la compra (adiciones manuales incluidas); después se rellena según la nueva receta.</li>
+          <li><b>Componente retirado de la receta</b>: cuando elimina un componente de la receta (o lo sustituye por otro), también sale de la lista de la compra — incluidos la malta, el lúpulo y la levadura propuestos por defecto en una receta nueva, y un artículo añadido con el carrito de la receta. Solo se quedan los artículos añadidos desde las pantallas de base (Maltas, Lúpulos…).</li>
         </ul>
         <h3>Adición manual</h3>
         <ul>
@@ -424,6 +425,10 @@
           <li>Un artículo añadido a mano, o cuya cantidad modifica, nunca se retira automáticamente.</li>
           <li>La <b>cruz</b> retira un artículo; si sigue faltando para la receta, no se vuelve a añadir mientras el stock siga agotado.</li>
           <li>El icono de la <b>impresora</b> del título imprime la lista de la compra (o la guarda en PDF).</li>
+        </ul>
+        <h3>Botón info</h3>
+        <ul>
+          <li>El botón <b>ⓘ</b> al final de la fila de un artículo da el <b>estado de las existencias</b> del componente: deje el ratón encima <b>un segundo</b> (o haga clic) para ver las existencias actuales, lo que necesita la receta actual, las existencias <b>tras la compra</b> (existencias actuales + cantidad a comprar) y lo que quedará <b>tras la elaboración</b> (en rojo si aún falta). Si la receta ya está realizada, la burbuja recuerda que su consumo ya está descontado; un artículo ausente de la base no tiene existencias conocidas.</li>
         </ul>
         <h3>Stock</h3>
         <ul>
@@ -526,7 +531,14 @@
           <li><b>Fuentes</b>: fuentes de Google Fonts guardadas en la base; <b>Importar</b> (varios archivos a la vez), filtro, vista previa al pasar el ratón. Las fuentes de la interfaz, marcadas con un candado, no se pueden eliminar; al eliminar otra fuente, una ventana propone una fuente de sustitución.</li>
           <li><b>Contácteme</b>: la dirección del desarrollador, <code>openmaltforge@pm.me</code> (clic = nuevo mensaje en su correo, <b>Copiar</b> = dirección en el portapapeles), para una pregunta, una idea o un problema.</li>
           <li><b>Unidades</b>: sección en preparación (desactivada).</li>
-          <li><b>Por buscar</b> (visible solo si hace falta): ingredientes encontrados al importar un PDF y ausentes de la base. El botón <b>Copiar el prompt</b> copia una petición lista, en el idioma de la interfaz, para enviar a una IA con acceso a la web: busca esos ingredientes y genera archivos CSV que pegar en las pantallas Maltas, Lúpulos, Levaduras e Ingredientes («Pegar CSV»).</li>
+          <li><b>Por buscar</b> (solo visible si es necesario): ingredientes encontrados en una importación (PDF de Brewfather / BeerSmith) y ausentes de la base. Cada ingrediente es una etiqueta (su cruz lo retira; <b>Borrar todo</b> vacía la lista); un ingrediente desaparece solo en cuanto existe en la base. <b>Generación del prompt</b>: el texto mostrado se construye automáticamente, en el idioma de la interfaz (se regenera al cambiar de idioma):
+            <ul>
+              <li>una introducción que presenta la tarea (buscar los datos de cada ingrediente en Internet y producir archivos CSV);</li>
+              <li>una sección por categoría afectada (maltas, lúpulos, levaduras, ingredientes varios), con el nombre del archivo CSV esperado (<code>malts_nouveaux.csv</code>, <code>houblons_nouveaux.csv</code>, <code>levures_nouvelles.csv</code>, <code>ingredients_nouveaux.csv</code>) y la lista de ingredientes, cada uno con los datos hallados en la receta importada y las recetas donde aparece;</li>
+              <li>las reglas comunes de los CSV (codificación UTF-8, separador punto y coma, coma decimal…);</li>
+              <li>para cada archivo: los encabezados exactos de las columnas de su base, el significado de cada columna (unidades, escalas de aromas de 0 a 5…) y una línea de ejemplo tomada de su base para mostrar el formato.</li>
+            </ul>
+            El botón <b>Copiar el prompt</b> lo copia: péguelo en una IA con acceso a la web y luego pegue los CSV obtenidos en las pantallas Maltas, Lúpulos, Levaduras e Ingredientes («Pegar CSV»).</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-reglages.jpg" alt="Preferencias" />
