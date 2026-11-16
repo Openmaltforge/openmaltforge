@@ -1830,7 +1830,7 @@ function conception0() {
 <label>Style<select data-r="style" style="max-width:300px">${S.styles.some(s => s.name === R.style) ? '' : `<option selected>${hh(R.style)}</option>`}${S.styles.map(s => `<option${s.name === R.style ? ' selected' : ''}>${hh(s.name)}</option>`).join('')}</select></label>
 <label>Volume à embouteiller (L)<input type="number" min="1" step="1" data-e="vol" value="${S.kv.equip.vol}"></label>
 <label>Ratio d’empâtage (L/kg)<span class="rin2"><input type="number" min="0" step="0.1" data-e="ratio" id="ratioro" value="${S.kv.equip.ratio}"><span class="al" id="ratio-al" style="display:none">⚠</span></span></label>
-<label>Date de brassage<input type="date" data-r="date" value="${R.date || ''}"></label><label>Date d’embouteillage<input type="date" data-r="embou" value="${R.embou || ''}"></label>
+<label>Date de brassage<input type="date" data-r="date" value="${R.date || ''}"></label><label>Date d’embouteillage<input type="date" data-r="embou" min="${R.date || ''}" value="${R.embou || ''}"></label>
 <div class="tgt"><label>DI cible<input type="number" step="0.001" data-r="ogT" value="${R.ogT ?? ''}"></label><label>IBU cible<input type="number" step="1" data-r="ibuT" value="${R.ibuT ?? ''}"></label><button class="go" id="calc">Calculer</button></div><span class="rt"><button id="newrec">＋ Nouvelle recette</button></span></div>
 <div class="radars" id="radars"></div>
 <div class="grid"><div class="col">${tbl('malts', '🌾 Malts')}${tbl('hops', '🌿 Houblons')}${tbl('yeasts', '🧫 Levures')}${mineralPanel()}${tblMix()}<div id="courses">${coursesBox()}</div>${orgPanel()}</div>
@@ -3533,7 +3533,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.4.0',
+const VER = '6.5.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4559,6 +4559,24 @@ document.addEventListener('input', e => {
       if (m) m.textContent = t.value;
       save();
       return;
+    }
+    /* 6.5.0 : la date d’embouteillage ne peut pas précéder la date de brassage (saisie refusée, valeur rétablie) */
+    if (d.r === 'embou' || d.r === 'date') {
+      const em = d.r === 'embou' ? t.value : R.embou,
+        br = d.r === 'date' ? t.value : R.date;
+      if (em && br && em < br) {
+        t.value = R[d.r] || '';
+        notify(
+          'embou',
+          d.r === 'embou'
+            ? '⚠ La date d’embouteillage ne peut pas être antérieure à la date de brassage.'
+            : '⚠ La date de brassage ne peut pas être postérieure à la date d’embouteillage.',
+          'err'
+        );
+        return;
+      }
+      const ie = document.querySelector('input[data-r="embou"]');
+      if (ie) ie.min = br || '';
     }
     R[d.r] = ['ogT', 'ibuT'].includes(d.r)
       ? parseFloat(t.value)

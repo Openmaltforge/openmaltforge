@@ -268,7 +268,7 @@
           <figcaption>Intestazione: menu delle schermate, pulsante «Salva», spia del database, interruttore chiaro / scuro e documentazione.</figcaption>
         </figure>
         <ul>
-          <li><b>Menu</b>: Progettazione, Libreria, i database (Malti, Luppoli, Lieviti, Acque, Stili, Ingredienti, Consumabili), HTML, Etichette, Scheda di cotta, Impostazioni, poi l’icona <b>Documentazione</b> (libro aperto) che mostra questa pagina, e il pulsante <b>Buy me a coffee</b> (Ko-fi) per sostenere lo sviluppo di OpenMaltForge con una donazione: un clic apre la pagina Ko-fi nel tuo browser abituale. All’avvio, una finestra «Offrimi un caffè» spiega a cosa serve la donazione; il suo pulsante Ko-fi apre la pagina delle donazioni e chiude la finestra, «Più tardi» la chiude).</li>
+          <li><b>Menu</b>: Progettazione, Libreria, i database (Malti, Luppoli, Lieviti, Acque, Stili, Ingredienti, Consumabili), HTML, Etichette, Scheda di cotta, Impostazioni, poi l’icona <b>Documentazione</b> (libro aperto) che mostra questa pagina).</li>
           <li><b>Salva</b>: scrive subito tutti i dati nel database. Avviene anche un salvataggio automatico (ogni 5 minuti per impostazione predefinita, regolabile in Impostazioni › Preferenze).</li>
           <li><b>Spia «Database: openmaltforge.sqlite»</b>: verde quando tutto è salvato. In caso di problema (programma chiuso, scrittura rifiutata) compare un avviso arancione; un clic ritenta il salvataggio.</li>
           <li><b>Area delle notifiche</b> (sotto il menu): messaggi temporanei in verde (salvataggio, calcolo), errori in rosso, avvisi persistenti in arancione (per esempio un rapporto d’ammostamento troppo alto per il tino). Più messaggi vengono mostrati uno accanto all’altro.</li>
@@ -282,7 +282,21 @@
         <h3 id="c-recette">Ricetta e obiettivi</h3>
         <ul>
           <li><b>Ricetta, Stile</b> (stili BJCP 2021), <b>Volume da imbottigliare</b>, <b>Rapporto d’ammostamento (L/kg)</b>, <b>date</b> di cotta e di imbottigliamento.</li>
-          <li><b>DI target, IBU target</b> e pulsante <b>Calcola</b>: regola le quantità di malti e luppoli per raggiungere la densità iniziale e l’amaro desiderati, mantenendo le proporzioni.</li>
+          <li><b>Date</b>:
+            <ul>
+              <li><b>Data di cotta</b>: serve per il numero di cotta (<code>anno#rango</code>) delle etichette e dell’HTML.</li>
+              <li><b>Data di imbottigliamento</b>: inserirla segna la cotta come <b>realizzata</b>. I suoi componenti (malti, luppoli, lieviti, ingredienti, consumabili, acque minerali) vengono <b>scalati dalle scorte</b>, una sola volta, e un messaggio indica quanti; compare la sezione <b>Analisi organolettica della cotta</b>; la ricetta riceve la spunta verde «Realizzata» nella Libreria e l’HTML mostra la data di imbottigliamento e l’analisi. Cancellare la data <b>rimette i componenti nelle scorte</b> e nasconde l’analisi. La data di imbottigliamento non può essere anteriore alla data di cotta: un tale inserimento viene rifiutato (messaggio in rosso) e il valore precedente viene ripristinato; allo stesso modo, la data di cotta non può essere successiva a quella di imbottigliamento.</li>
+            </ul>
+          </li>
+          <li><b>DI target, IBU target</b> e pulsante <b>Calcola</b>:
+            <ul>
+              <li>se le percentuali dei malti o dei luppoli non fanno 100 %, una finestra propone di <b>riportarle a 100 %</b> (regola del tre); altrimenti il calcolo non viene fatto;</li>
+              <li>i <b>malti</b> vengono moltiplicati per uno stesso fattore perché la densità iniziale raggiunga la <b>DI target</b> (le proporzioni tra i malti non cambiano);</li>
+              <li>poi i <b>luppoli</b> da amaro vengono moltiplicati per uno stesso fattore per raggiungere gli <b>IBU target</b> (formula di Tinseth); i luppoli senza amaro (dry hop) restano invariati;</li>
+              <li>i pesi vengono arrotondati (al grammo per i malti, al decimo di grammo per i luppoli), la ricetta viene ricalcolata e salvata, e un messaggio ricorda la DI e gli IBU ottenuti;</li>
+              <li>messaggi di errore: target vuoti o fuori limite (DI tra 1,010 e 1,200, IBU maggiori di 0), nessun malto riconosciuto, nessun luppolo da amaro.</li>
+            </ul>
+          </li>
           <li><b>＋ Nuova ricetta</b>: riparte da una ricetta vuota (obiettivi e rapporto riprendono i valori predefiniti delle Impostazioni); la lista della spesa viene svuotata.</li>
           <li><b>Radar aromatici</b> di malti, luppoli e lieviti: profilo della ricetta, valore mostrato al passaggio su un punto, ingrandimento al clic (Esc per chiudere), esportazione come immagine con i pulsanti <b>PNG</b> (sfondo scuro o chiaro).</li>
         </ul>

@@ -268,7 +268,7 @@
           <figcaption>Cabeçalho: menu dos ecrãs, botão «Guardar», indicador da base, interruptor claro / escuro e documentação.</figcaption>
         </figure>
         <ul>
-          <li><b>Menu</b>: Conceção, Biblioteca, as bases (Maltes, Lúpulos, Leveduras, Águas, Estilos, Ingredientes, Consumíveis), HTML, Rótulos, Folha de brassagem, Definições, depois o ícone <b>Documentação</b> (livro aberto) que mostra esta página, e o botão <b>Buy me a coffee</b> (Ko-fi) para apoiar o desenvolvimento do OpenMaltForge com um donativo: um clique abre a página Ko-fi no seu navegador habitual. No arranque, uma janela «Oferecer um café» explica para que serve o donativo; o seu botão Ko-fi abre a página de donativos e fecha a janela, «Mais tarde» fecha-a).</li>
+          <li><b>Menu</b>: Conceção, Biblioteca, as bases (Maltes, Lúpulos, Leveduras, Águas, Estilos, Ingredientes, Consumíveis), HTML, Rótulos, Folha de brassagem, Definições, depois o ícone <b>Documentação</b> (livro aberto) que mostra esta página).</li>
           <li><b>Guardar</b>: escreve imediatamente todos os dados na base. Há também uma gravação automática (a cada 5 minutos por predefinição, ajustável em Definições › Preferências).</li>
           <li><b>Indicador «Base: openmaltforge.sqlite»</b>: verde quando tudo está guardado. Em caso de problema (programa fechado, escrita recusada), aparece um aviso laranja; um clique volta a tentar a gravação.</li>
           <li><b>Zona de notificações</b> (sob o menu): mensagens temporárias a verde (gravação, cálculo), erros a vermelho, avisos persistentes a laranja (por exemplo um rácio de maceração demasiado alto para a cuba). Várias mensagens aparecem lado a lado.</li>
@@ -282,7 +282,21 @@
         <h3 id="c-recette">Receita e alvos</h3>
         <ul>
           <li><b>Receita, Estilo</b> (estilos BJCP 2021), <b>Volume a engarrafar</b>, <b>Rácio de maceração (L/kg)</b>, <b>datas</b> de brassagem e de engarrafamento.</li>
-          <li><b>DI alvo, IBU alvo</b> e botão <b>Calcular</b>: ajusta as quantidades de maltes e lúpulos para atingir a densidade inicial e o amargor pretendidos, mantendo as proporções.</li>
+          <li><b>Datas</b>:
+            <ul>
+              <li><b>Data de brassagem</b>: serve para o número de lote (<code>ano#posição</code>) dos rótulos e do HTML.</li>
+              <li><b>Data de engarrafamento</b>: preenchê-la marca o lote como <b>realizado</b>. Os seus componentes (maltes, lúpulos, leveduras, ingredientes, consumíveis, águas minerais) são <b>descontados do stock</b>, uma única vez, e uma mensagem indica quantos; aparece a secção <b>Análise organolética do lote</b>; a receita recebe o visto verde «Realizado» na Biblioteca e o HTML indica a data de engarrafamento e a análise. Apagar a data <b>devolve os componentes ao stock</b> e esconde a análise. A data de engarrafamento não pode ser anterior à data de brassagem: essa entrada é recusada (mensagem a vermelho) e o valor anterior é reposto; do mesmo modo, a data de brassagem não pode ser posterior à de engarrafamento.</li>
+            </ul>
+          </li>
+          <li><b>DI alvo, IBU alvo</b> e botão <b>Calcular</b>:
+            <ul>
+              <li>se as percentagens dos maltes ou dos lúpulos não somarem 100 %, uma janela propõe <b>ajustá-las a 100 %</b> (regra de três); caso contrário o cálculo não é feito;</li>
+              <li>os <b>maltes</b> são multiplicados por um mesmo fator para que a densidade inicial atinja a <b>DI alvo</b> (as proporções entre maltes não mudam);</li>
+              <li>depois os <b>lúpulos</b> de amargor são multiplicados por um mesmo fator para atingir os <b>IBU alvo</b> (fórmula de Tinseth); os lúpulos sem amargor (dry hop) ficam como estão;</li>
+              <li>os pesos são arredondados (ao grama para os maltes, à décima de grama para os lúpulos), a receita é recalculada e gravada, e uma mensagem lembra a DI e os IBU obtidos;</li>
+              <li>mensagens de erro: alvos vazios ou fora dos limites (DI entre 1,010 e 1,200, IBU superiores a 0), nenhum malte reconhecido, nenhum lúpulo de amargor.</li>
+            </ul>
+          </li>
           <li><b>＋ Nova receita</b>: recomeça a partir de uma receita em branco (alvos e rácio retomam os valores predefinidos das Definições); a lista de compras é esvaziada.</li>
           <li><b>Radares aromáticos</b> dos maltes, lúpulos e leveduras: perfil da receita, valor mostrado ao passar sobre um ponto, ampliação com um clique (Esc para fechar), exportação em imagem com os botões <b>PNG</b> (fundo escuro ou claro).</li>
         </ul>

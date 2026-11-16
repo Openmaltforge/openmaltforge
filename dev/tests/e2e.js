@@ -2054,6 +2054,7 @@ check(
               g = +R.malts[0].g,
               d0 = find('malts', mn);
             d0.stock = 20;
+            R.date = '2026-11-01'; /* embouteillage après le brassage (6.5.0) */
             show('conception');
             const eb = document.querySelector('[data-r="embou"]');
             eb.value = '2026-11-12';
@@ -4124,6 +4125,10 @@ check(
       oc.t === 'date' && oc.hid === true && oc.pick === 1,
       JSON.stringify(oc)
     );
+    await page.evaluate(() => {
+      S.kv.recipe.date = '2026-07-01'; /* embouteillage après le brassage (6.5.0) */
+      conception();
+    });
     await page.fill('input[data-r="embou"]', '2026-07-02');
     await wait(150);
     check(
@@ -6096,6 +6101,45 @@ check(
         'courses : eaux minérales de la recette (litres ≥ stock) ; quantités figées dès l’ajout (Calculer, modification de ligne) ; quantité insuffisante = triangle orange + notification ; icône de don à droite de la documentation, bouton Ko-fi (image) dans l’en-tête et dans la fenêtre « Offrir un café » (seulement au lancement)',
         Object.values(c5).every(Boolean),
         JSON.stringify(c5)
+      );
+      /* 6.5.0 : date d’embouteillage ≥ date de brassage (saisie refusée, valeur rétablie, pas de mouvement de stock) */
+      const dt = await page.evaluate(async () => {
+        const R = S.kv.recipe,
+          w = ms => new Promise(r => setTimeout(r, ms)),
+          d0 = R.date,
+          e0 = R.embou,
+          stk0 = R.stk;
+        show('conception');
+        await w(200);
+        const set = (k, v) => {
+          const el = document.querySelector(`input[data-r="${k}"]`);
+          el.value = v;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          return el;
+        };
+        R.embou = '';
+        delete R.stk;
+        set('date', '2026-06-10');
+        const ie = set('embou', '2026-06-01'),
+          o = { refus: R.embou === '' && ie.value === '' && !R.stk, msg: /antérieure à la date de brassage/.test(document.querySelector('#hbar').textContent), min: ie.min === '2026-06-10' };
+        set('embou', '2026-06-20');
+        o.ok = R.embou === '2026-06-20';
+        const idt = set('date', '2026-07-01');
+        o.refusDate = R.date === '2026-06-10' && idt.value === '2026-06-10';
+        set('embou', '');
+        o.back = R.embou === '' && !R.stk;
+        R.date = d0;
+        R.embou = e0;
+        if (stk0) R.stk = stk0;
+        show('conception');
+        /* bouton Ko-fi de l'en-tête moins haut */
+        o.kofi = document.querySelector('#navdon img').getBoundingClientRect().height <= 27;
+        return o;
+      });
+      check(
+        'date d’embouteillage antérieure à la date de brassage refusée (et inversement), sans mouvement de stock ; bouton Ko-fi de l’en-tête réduit',
+        Object.values(dt).every(Boolean),
+        JSON.stringify(dt)
       );
       /* 6.1.0 : Paramètres › Contactez-moi ; fenêtre du café prévue au lancement (hors navigateur piloté) */
       const ct = await page.evaluate(async () => {

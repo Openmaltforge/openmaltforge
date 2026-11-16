@@ -268,7 +268,7 @@
           <figcaption>Header: screen menu, “Save” button, database indicator, light / dark switch and documentation.</figcaption>
         </figure>
         <ul>
-          <li><b>Menu</b>: Design, Library, the databases (Malts, Hops, Yeasts, Waters, Styles, Ingredients, Consumables), HTML, Labels, Brew sheet, Settings, then the <b>Documentation</b> icon (open book) that shows this page, and the <b>Buy me a coffee</b> button (Ko-fi) to support the development of OpenMaltForge with a donation: a click opens the Ko-fi page in your usual browser. At launch, a “Buy me a coffee” window explains what the donation is for; its Ko-fi button opens the donation page and closes the window, “Later” closes it.</li>
+          <li><b>Menu</b>: Design, Library, the databases (Malts, Hops, Yeasts, Waters, Styles, Ingredients, Consumables), HTML, Labels, Brew sheet, Settings, then the <b>Documentation</b> icon (open book) that shows this page.</li>
           <li><b>Save</b>: immediately writes all the data to the database. An automatic save also takes place (every 5 minutes by default, adjustable in Settings › General settings).</li>
           <li><b>“Database: openmaltforge.sqlite” indicator</b>: green when everything is saved. If there is a problem (program closed, write refused), an orange warning appears; a click retries the save.</li>
           <li><b>Notification area</b> (under the menu): temporary messages in green (save, calculation), errors in red, persistent warnings in orange (for example a mash ratio too high for the tun). Several messages are shown side by side.</li>
@@ -282,7 +282,21 @@
         <h3 id="c-recette">Recipe and targets</h3>
         <ul>
           <li><b>Recipe, Style</b> (BJCP 2021 styles), <b>Volume to bottle</b>, <b>Mash ratio (L/kg)</b>, brewing and bottling <b>dates</b>.</li>
-          <li><b>Target OG, Target IBU</b> and the <b>Calculate</b> button: adjusts the malt and hop quantities to reach the intended original gravity and bitterness, keeping the proportions.</li>
+          <li><b>Dates</b>:
+            <ul>
+              <li><b>Brewing date</b>: used for the batch number (<code>year#rank</code>) on labels and in the HTML.</li>
+              <li><b>Bottling date</b>: filling it in marks the batch as <b>brewed</b>. Its components (malts, hops, yeasts, ingredients, consumables, mineral waters) are then <b>deducted from stock</b>, only once, and a message tells how many were; the <b>Batch tasting analysis</b> section appears; the recipe gets the green “Brewed” tick in the Library and the HTML shows the bottling date and the analysis. Clearing the date <b>puts the components back in stock</b> and hides the analysis. The bottling date cannot be earlier than the brewing date: such an entry is refused (red message) and the previous value is restored; likewise, the brewing date cannot be later than the bottling date.</li>
+            </ul>
+          </li>
+          <li><b>Target OG, Target IBU</b> and the <b>Calculate</b> button:
+            <ul>
+              <li>if the malt or hop percentages do not add up to 100 %, a window offers to <b>scale them to 100 %</b> (rule of three); otherwise the calculation is not done;</li>
+              <li>the <b>malts</b> are multiplied by the same factor so that the original gravity reaches the <b>target OG</b> (the proportions between malts do not change);</li>
+              <li>then the bittering <b>hops</b> are multiplied by the same factor to reach the <b>target IBU</b> (Tinseth formula); hops without bitterness (dry hop) stay as they are;</li>
+              <li>weights are rounded (to the gram for malts, to a tenth of a gram for hops), the recipe is recalculated and saved, and a message shows the OG and IBU obtained;</li>
+              <li>error messages: empty or out-of-range targets (OG between 1.010 and 1.200, IBU above 0), no recognised malt, no bittering hop.</li>
+            </ul>
+          </li>
           <li><b>＋ New recipe</b>: starts again from a blank recipe (targets and ratio take the default values from Settings); the shopping list is emptied.</li>
           <li><b>Aroma radars</b> for malts, hops and yeasts: profile of the recipe, value shown when hovering over a point, enlarged on click (Esc to close), exported as an image with the <b>PNG</b> buttons (dark or light background).</li>
         </ul>

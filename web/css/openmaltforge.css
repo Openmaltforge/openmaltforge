@@ -5604,3 +5604,8 @@ a.kofi:hover img {
 .dondlg .donbtn {
   margin: 12px 0 6px;
 }
+/* 6.5.0 — bouton Ko-fi de l'en-tête moins haut (la fenêtre du lancement garde la taille d'origine) */
+#nav a.kofi img {
+  height: 26px !important;
+  width: auto;
+}

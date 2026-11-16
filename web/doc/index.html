@@ -268,7 +268,7 @@
           <figcaption>En-tête : menu des écrans, bouton « Sauvegarder », voyant de la base, interrupteur clair / sombre et documentation.</figcaption>
         </figure>
         <ul>
-          <li><b>Menu</b> : Conception, Bibliothèque, les bases (Malts, Houblons, Levures, Eaux, Styles, Ingrédients, Consommables), HTML, Étiquettes, Feuille de brassage, Paramètres, puis l’icône <b>Documentation</b> (livre ouvert) qui affiche cette page, et le bouton <b>Buy me a coffee</b> (Ko-fi) pour soutenir le développement d’OpenMaltForge par un don : un clic ouvre la page Ko-fi dans votre navigateur habituel. Au lancement, une fenêtre « Offrir un café » explique à quoi sert le don ; son bouton Ko-fi ouvre la page de don et ferme la fenêtre, « Plus tard » la ferme.</li>
+          <li><b>Menu</b> : Conception, Bibliothèque, les bases (Malts, Houblons, Levures, Eaux, Styles, Ingrédients, Consommables), HTML, Étiquettes, Feuille de brassage, Paramètres, puis l’icône <b>Documentation</b> (livre ouvert) qui affiche cette page.</li>
           <li><b>Sauvegarder</b> : enregistre immédiatement toutes les données dans la base. Une sauvegarde automatique a lieu aussi (5 minutes par défaut, réglable dans Paramètres › Réglages).</li>
           <li><b>Voyant « Base : openmaltforge.sqlite »</b> : vert quand tout est enregistré. En cas de problème (programme fermé, écriture refusée), un avertissement orange s’affiche ; un clic relance l’enregistrement.</li>
           <li><b>Zone de notifications</b> (sous le menu) : messages temporaires en vert (enregistrement, calcul), erreurs en rouge, avertissements persistants en orange (par exemple un ratio d’empâtage trop élevé pour la cuve). Plusieurs messages s’affichent côte à côte.</li>
@@ -282,7 +282,21 @@
         <h3 id="c-recette">Recette et cibles</h3>
         <ul>
           <li><b>Recette, Style</b> (styles BJCP 2021), <b>Volume à embouteiller</b>, <b>Ratio d’empâtage (L/kg)</b>, <b>dates</b> de brassage et d’embouteillage.</li>
-          <li><b>DI cible, IBU cible</b> et bouton <b>Calculer</b> : ajuste les quantités de malts et de houblons pour atteindre la densité initiale et l’amertume visées, en conservant les proportions.</li>
+          <li><b>Dates</b> :
+            <ul>
+              <li><b>Date de brassage</b> : sert au numéro de brassin (<code>année#rang</code>) des étiquettes et du HTML.</li>
+              <li><b>Date d’embouteillage</b> : la renseigner marque le brassin comme <b>réalisé</b>. Ses composants (malts, houblons, levures, ingrédients, consommables, eaux minérales) sont alors <b>déduits du stock</b>, une seule fois, et un message indique combien l’ont été ; la section <b>Analyse organoleptique du brassin</b> apparaît ; la recette porte la coche verte « Réalisé » dans la Bibliothèque et le HTML indique la date d’embouteillage et l’analyse. Effacer la date <b>remet les composants en stock</b> et masque l’analyse. La date d’embouteillage ne peut pas être antérieure à la date de brassage : une telle saisie est refusée (message en rouge) et l’ancienne valeur est rétablie ; de même, la date de brassage ne peut pas dépasser la date d’embouteillage.</li>
+            </ul>
+          </li>
+          <li><b>DI cible, IBU cible</b> et bouton <b>Calculer</b> :
+            <ul>
+              <li>si les pourcentages des malts ou des houblons ne font pas 100 %, une fenêtre propose de les <b>ramener à 100 %</b> (règle de trois) ; sinon le calcul n’est pas fait ;</li>
+              <li>les <b>malts</b> sont multipliés par un même facteur pour que la densité initiale atteigne la <b>DI cible</b> (les proportions entre malts ne changent pas) ;</li>
+              <li>puis les <b>houblons</b> qui donnent de l’amertume sont multipliés par un même facteur pour atteindre les <b>IBU cibles</b> (formule de Tinseth) ; les houblons sans amertume (dry hop) restent tels quels ;</li>
+              <li>les poids sont arrondis (au gramme pour les malts, au dixième de gramme pour les houblons), la recette est recalculée et enregistrée, et un message rappelle la DI et les IBU obtenus ;</li>
+              <li>messages d’erreur : cibles vides ou hors limites (DI entre 1,010 et 1,200, IBU supérieurs à 0), aucun malt reconnu, aucun houblon donnant de l’amertume.</li>
+            </ul>
+          </li>
           <li><b>＋ Nouvelle recette</b> : repart d’une recette vierge (cibles et ratio reprennent les valeurs par défaut des Paramètres) ; la liste de courses est vidée.</li>
           <li><b>Radars aromatiques</b> des malts, houblons et levures : profil de la recette, valeur affichée au survol d’un point, agrandissement au clic (Échap pour fermer), export en image avec les boutons <b>PNG</b> (fond sombre ou clair).</li>
         </ul>

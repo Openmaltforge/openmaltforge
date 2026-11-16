@@ -268,7 +268,7 @@
           <figcaption>Cabecera: menú de pantallas, botón «Guardar», indicador de la base, interruptor claro / oscuro y documentación.</figcaption>
         </figure>
         <ul>
-          <li><b>Menú</b>: Diseño, Biblioteca, las bases (Maltas, Lúpulos, Levaduras, Aguas, Estilos, Ingredientes, Consumibles), HTML, Etiquetas, Hoja de elaboración, Ajustes, luego el icono <b>Documentación</b> (libro abierto) que muestra esta página, y el botón <b>Buy me a coffee</b> (Ko-fi) para apoyar el desarrollo de OpenMaltForge con una donación: un clic abre la página Ko-fi en su navegador habitual. Al iniciar, una ventana «Invítame a un café» explica para qué sirve la donación; su botón Ko-fi abre la página de donación y cierra la ventana, «Más tarde» la cierra).</li>
+          <li><b>Menú</b>: Diseño, Biblioteca, las bases (Maltas, Lúpulos, Levaduras, Aguas, Estilos, Ingredientes, Consumibles), HTML, Etiquetas, Hoja de elaboración, Ajustes, luego el icono <b>Documentación</b> (libro abierto) que muestra esta página).</li>
           <li><b>Guardar</b>: escribe inmediatamente todos los datos en la base. También hay un guardado automático (cada 5 minutos por defecto, ajustable en Ajustes › Preferencias).</li>
           <li><b>Indicador «Base: openmaltforge.sqlite»</b>: verde cuando todo está guardado. Si hay un problema (programa cerrado, escritura rechazada), aparece un aviso naranja; un clic vuelve a intentar el guardado.</li>
           <li><b>Zona de notificaciones</b> (bajo el menú): mensajes temporales en verde (guardado, cálculo), errores en rojo, avisos persistentes en naranja (por ejemplo una relación de empastado demasiado alta para la cuba). Varios mensajes se muestran uno al lado del otro.</li>
@@ -282,7 +282,21 @@
         <h3 id="c-recette">Receta y objetivos</h3>
         <ul>
           <li><b>Receta, Estilo</b> (estilos BJCP 2021), <b>Volumen a embotellar</b>, <b>Relación de empastado (L/kg)</b>, <b>fechas</b> de elaboración y de embotellado.</li>
-          <li><b>DI objetivo, IBU objetivo</b> y botón <b>Calcular</b>: ajusta las cantidades de maltas y lúpulos para alcanzar la densidad inicial y el amargor buscados, conservando las proporciones.</li>
+          <li><b>Fechas</b>:
+            <ul>
+              <li><b>Fecha de elaboración</b>: sirve para el número de lote (<code>año#rango</code>) de las etiquetas y del HTML.</li>
+              <li><b>Fecha de embotellado</b>: rellenarla marca el lote como <b>realizado</b>. Sus componentes (maltas, lúpulos, levaduras, ingredientes, consumibles, aguas minerales) se <b>descuentan de las existencias</b>, una sola vez, y un mensaje indica cuántos; aparece la sección <b>Análisis organoléptico del lote</b>; la receta lleva la marca verde «Realizado» en la Biblioteca y el HTML indica la fecha de embotellado y el análisis. Borrar la fecha <b>devuelve los componentes a las existencias</b> y oculta el análisis. La fecha de embotellado no puede ser anterior a la fecha de elaboración: esa entrada se rechaza (mensaje en rojo) y se restablece el valor anterior; del mismo modo, la fecha de elaboración no puede ser posterior a la de embotellado.</li>
+            </ul>
+          </li>
+          <li><b>DI objetivo, IBU objetivo</b> y botón <b>Calcular</b>:
+            <ul>
+              <li>si los porcentajes de maltas o lúpulos no suman 100 %, una ventana propone <b>ajustarlos a 100 %</b> (regla de tres); si no, el cálculo no se hace;</li>
+              <li>las <b>maltas</b> se multiplican por un mismo factor para que la densidad inicial alcance la <b>DI objetivo</b> (las proporciones entre maltas no cambian);</li>
+              <li>luego los <b>lúpulos</b> de amargor se multiplican por un mismo factor para alcanzar los <b>IBU objetivo</b> (fórmula de Tinseth); los lúpulos sin amargor (dry hop) no cambian;</li>
+              <li>los pesos se redondean (al gramo para las maltas, a la décima de gramo para los lúpulos), la receta se recalcula y se guarda, y un mensaje recuerda la DI y los IBU obtenidos;</li>
+              <li>mensajes de error: objetivos vacíos o fuera de límites (DI entre 1,010 y 1,200, IBU mayores que 0), ninguna malta reconocida, ningún lúpulo de amargor.</li>
+            </ul>
+          </li>
           <li><b>＋ Nueva receta</b>: vuelve a una receta en blanco (objetivos y relación toman los valores por defecto de los Ajustes); la lista de la compra se vacía.</li>
           <li><b>Radares aromáticos</b> de maltas, lúpulos y levaduras: perfil de la receta, valor mostrado al pasar sobre un punto, ampliación con un clic (Esc para cerrar), exportación como imagen con los botones <b>PNG</b> (fondo oscuro o claro).</li>
         </ul>
