@@ -1349,7 +1349,7 @@ function coursesBox() {
           .filter(([c]) => c.t === t)
           .map(
             ([c, i]) =>
-              `<tr><td>${esc(c.n)}</td><td class="cqc"><input class="rin" type="number" min="0" step="any" data-cq="${i}" value="${c.q}"><span class="cwarn" data-ci="${i}" hidden>⚠</span></td><td class="un">${CUN[t]}</td><td class="pc" id="cpx${i}">${nf(courPrice(c), 2)}</td><td class="xc"><button class="cinfo" data-cinfo="${i}" aria-label="État du stock">${ic('info')}</button><button class="x" data-cdel="${i}" title="Retirer de la liste">✕</button></td></tr>`
+              `<tr><td>${esc(c.n)}</td><td class="cqc"><button class="cinfo" data-cinfo="${i}" aria-label="État du stock">${ic('info')}</button><input class="rin" type="number" min="0" step="any" data-cq="${i}" value="${c.q}"><span class="cwarn" data-ci="${i}" hidden>⚠</span></td><td class="un">${CUN[t]}</td><td class="pc" id="cpx${i}">${nf(courPrice(c), 2)}</td><td class="xc"><button class="cart" tabindex="-1" aria-hidden="true" hidden>🛒</button><button class="x" data-cdel="${i}" title="Retirer de la liste">✕</button></td></tr>`
           )
           .join('')
     )
@@ -3609,7 +3609,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.6.0',
+const VER = '6.6.1',
   MASH = [
     'Palier Saccharification',
     'Palier I',

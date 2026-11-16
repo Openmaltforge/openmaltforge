@@ -5611,14 +5611,14 @@ header a.kofi img {
 }
 
 /* 6.6.0 — Courses : bouton info (état du stock) et sa bulle, après 1 s de survol */
-#main .cour td.xc button.cinfo {
+#main .cour td.cqc button.cinfo {
   background: none;
   border: 0;
   padding: 0 4px;
   cursor: help;
   color: var(--c);
 }
-#main .cour td.xc button.cinfo svg {
+#main .cour td.cqc button.cinfo svg {
   width: 15px;
   height: 15px;
   vertical-align: -3px;

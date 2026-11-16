@@ -4828,7 +4828,9 @@ check(
       window.__bcAuto = 'ok';
     });
     await page.click('#calc');
-    await wait(200);
+    await page
+      .waitForFunction(() => /Recalculé/.test((document.querySelector('#hbar .hn[data-k="calc"]') || {}).textContent || ''), null, { timeout: 3000 })
+      .catch(() => {});
     const yr = await page.evaluate(() => ({
       g: S.kv.recipe.malts.map(x => x.g),
       m: (document.querySelector('#hbar .hn[data-k="calc"]') || {}).textContent || '',
@@ -6118,7 +6120,7 @@ check(
           c = L[i],
           d = find(c.t, c.n),
           b = document.querySelector(`[data-cinfo="${i}"]`);
-        o.btn = !!b && !!b.querySelector('svg');
+        o.btn = !!b && !!b.querySelector('svg') && !!b.closest('td.cqc') && b.nextElementSibling.matches('input[data-cq]'); /* 6.6.1 : juste avant la quantité */
         b.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
         await w(500);
         o.notYet = !document.getElementById('cinfo');
