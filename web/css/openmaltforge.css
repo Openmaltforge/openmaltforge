@@ -5718,3 +5718,12 @@ header a.kofi img {
   margin-top: 12px;
   touch-action: none;
 }
+
+/* 6.9.0 — Paramètres › Calculs : mélange froid / chaud */
+#calcp .wt td.ch {
+  color: var(--m);
+  font-size: 11px;
+}
+#calcp .wt input.wi {
+  width: 80px;
+}

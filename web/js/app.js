@@ -1782,6 +1782,22 @@ function bar(v, a, b, drag) {
 }
 /* glisser la poignée d'un curseur DI / IBU : la cible varie comme la valeur affichée (cible + déplacement), le champ
    « DI cible » / « IBU cible » suit en direct ; au relâchement, la recette est recalculée (bouton Calculer) */
+/* place le curseur DI / IBU du bilan sur la valeur v (saisie de la cible) */
+function tgtCursor(k, v) {
+  const b = document.querySelector(`#bilan .bar.drag[data-drag="${k}"]`);
+  if (!b) return;
+  const lo = +b.dataset.lo,
+    hi = +b.dataset.hi,
+    x = Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+  b.querySelector('s').style.left = x * 100 + '%';
+  const lb = b.parentElement && b.parentElement.querySelector('.bl b');
+  if (lb) lb.textContent = (+v).toFixed(k === 'og' ? 3 : 1);
+}
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (!t || !t.matches || !t.matches('input[data-r="ogT"], input[data-r="ibuT"]')) return;
+  if (!isNaN(parseFloat(t.value))) adjust();
+});
 let BDRAG = null;
 document.addEventListener('pointerdown', e => {
   const k = e.target.closest && e.target.closest('.bar.drag .knob, .bar.drag s');
@@ -1957,10 +1973,8 @@ function conception0() {
 <div class="radars" id="radars"></div>
 <div class="grid"><div class="col">${tbl('malts', '🌾 Malts')}${tbl('hops', '🌿 Houblons')}${tbl('yeasts', '🧫 Levures')}${mineralPanel()}${tblMix()}<div id="courses">${coursesBox()}</div>${orgPanel()}</div>
 <div class="col"><div class="panel"><h3>Bilan de la recette</h3><div id="bilan"></div></div>${mashPanel()}<div class="panel"><h3>Quantités d’eau</h3><table id="wtab" class="kv"><tr><td>Eau d’empâtage <span class="al" id="w-al" style="display:none">⚠</span></td><td class="pc" id="w-v0"></td></tr>
-<tr><td>Eau d’empâtage + malt</td><td class="pc" id="w-vm"></td></tr>
 <tr><td>Eau de rinçage</td><td class="pc" id="w-rinc"></td></tr>
-<tr><td>Quantité totale d’eau nécessaire (hors glace)</td><td class="pc" id="w-nog"></td></tr>
-<tr class="sum"><td>Empâtage + rinçage + glace</td><td class="pc" id="w-tot"></td></tr>
+<tr class="sum"><td>Empâtage + rinçage + divers</td><td class="pc" id="w-tot"></td></tr>
 <tr><td colspan="2" id="w-warn" style="color:#ffb4b4"></td></tr></table></div><div class="panel"><h3>Resucrage & CO₂</h3><table id="rtab" class="kv"><tr><td>Sucre de resucrage (g/L)</td><td><input type="number" min="0" step="0.1" data-r="sucre" value="${R.sucre ?? ''}"></td></tr>
 <tr><td>Température de la bière (°C)</td><td><input type="number" min="10" max="30" step="0.5" data-r="tcarbo" value="${R.tcarbo ?? ''}" placeholder="20"></td></tr>
 <tr><td>CO₂ résiduel à cette température (vol)</td><td class="pc" id="r-res"></td></tr>
@@ -2807,12 +2821,15 @@ function dbScreen(t, ed = -1) {
 /* Équipement & process : caractéristiques de l'équipement, puis sous-section « Valeurs par défaut »
    (le ratio eau/grain n'est plus ici : c'est le « Ratio d’empâtage (L/kg) » saisi dans la Conception) */
 const EQ = [
-  ['volD', 'Volume à embouteiller (L)'],
-  ['eff', 'Rendement d’empâtage (%)']
+  /* 6.9.0 : « Volume à embouteiller » retiré (référence : écran Conception) ; « Volume maxi empâtage », « Volume mort sous
+     le panier » et le taux d'évaporation viennent des Paramètres de brassage (valeurs gardées dans E.w / E.evap) */
+  ['cmax', 'Volume maxi empâtage (L)', 'w'],
+  ['eff', 'Rendement d’empâtage (%)'],
+  ['mort', 'Volume mort sous le panier (L)', 'w'],
+  ['evap', 'Taux d’évaporation horaire (L/h)']
 ];
 const EQD = [
   ['boilD', 'Durée d’ébullition (min)'],
-  ['evap', 'Évaporation (L/h)'],
   ['t0', 'Température initiale de l’eau (°C)'],
   ['chauffe', 'Chauffe (°C/min)'],
   ['refroid', 'Refroidissement (°C/min)'],
@@ -2869,14 +2886,14 @@ function params() {
   main.innerHTML =
     `<div class="pg">` +
     main.innerHTML +
-    `<div class="col2">${procPanel()}${coefPanel()}${reglagesPanel()}${contactPanel()}${unitsPanel()}${logoPanel()}</div><div class="col2">${waterPanel()}<div class="panel"><h3>Besoins en électricité<button data-al="elec">＋</button></h3><table><tr><th>Désignation</th><th>Puissance (W)</th><th>Durée (min)</th><th>kWh</th><th>Coût (€)</th><th></th></tr>${elecSync()
+    `<div class="col2">${procPanel()}${coefPanel()}${reglagesPanel()}${unitsPanel()}${logoPanel()}</div><div class="col2">${waterPanel()}<div class="panel"><h3>Besoins en électricité<button data-al="elec">＋</button></h3><table><tr><th>Désignation</th><th>Puissance (W)</th><th>Durée (min)</th><th>kWh</th><th>Coût (€)</th><th></th></tr>${elecSync()
       .map(({ i, line }) => {
         const l = S.elec[i];
         return `<tr class="ea" data-ek="${line.kind}"><td><input class="nm" readonly tabindex="-1" value="${esc(l.name)}"></td>${L('elec', i, 'w', l.w)}<td><input type="number" readonly tabindex="-1" id="em${i}"></td><td class="pc" id="pk${i}"></td><td class="pc" id="ec${i}"></td><td></td></tr>`;
       })
       .join(
         ''
-      )}${S.elec.map((l, i) => (l.auto ? '' : `<tr>${L('elec', i, 'name', l.name, 1)}${L('elec', i, 'w', l.w)}${L('elec', i, 'min', l.min)}<td class="pc" id="pk${i}"></td><td class="pc" id="ec${i}"></td>${X('elec', i)}</tr>`)).join('')}<tr class="sum"><td>Total</td><td></td><td></td><td id="te-k"></td><td id="tot-elec"></td><td></td></tr></table></div>${fontsPanel()}</div>${arPanel()}</div>`;
+      )}${S.elec.map((l, i) => (l.auto ? '' : `<tr>${L('elec', i, 'name', l.name, 1)}${L('elec', i, 'w', l.w)}${L('elec', i, 'min', l.min)}<td class="pc" id="pk${i}"></td><td class="pc" id="ec${i}"></td>${X('elec', i)}</tr>`)).join('')}<tr class="sum"><td>Total</td><td></td><td></td><td id="te-k"></td><td id="tot-elec"></td><td></td></tr></table></div>${fontsPanel()}${calcPanel()}${contactPanel()}</div>${arPanel()}</div>`;
   updParams();
   logoBind();
 }
@@ -3036,38 +3053,15 @@ document.addEventListener('click', e => {
   });
 });
 const WIN = [
+  /* 6.9.0 : une seule liste, sans sous-sections ; la contraction se règle dans le Process */
   [
-    'DONNÉES DE BASE & PARAMÈTRES',
-    [
-      ['kg', 'Quantité de grains (kg)', 'a', 3],
-      ['ratio', 'Ratio d’empâtage souhaité (L/kg)', 'e', 2],
-      ['mort', 'Volume mort sous le panier (L)', 'w', 2],
-      ['vol', 'Volume à embouteiller (L)', 'e', 1],
-      ['pot', 'Potentiel du grain (L°/kg)', 'a', 1],
-      ['eff', 'Efficacité globale estimée (%)', 'e', 1],
-      ['occ', 'Occupation du malt sec concassé (L/kg)', 'w', 2]
-    ]
-  ],
-  [
-    'VARIABLES DE PERTES / AJOUTS',
-    [
-      ['ret', 'Rétention d’eau par les grains (L/kg)', 'w', 3],
-      ['evap', 'Taux d’évaporation horaire (L/h)', 'e', 2],
-      ['duree', 'Durée de l’ébullition (min)', 'a', 0],
-      ['trub', 'Pertes de fond de cuve / trub (L)', 'w', 2],
-      ['contr', 'Contraction du moût au refroidissement (%)', 'w', 1],
-      ['pferm', 'Perte fond de fermenteur (L)', 'w', 2],
-      ['resuc', 'Resucrage (L)', 'w', 2]
-    ]
-  ],
-  [
-    'CONTRAINTES & TEMPÉRATURES',
+    '',
     [
       ['fmax', 'Volume maxi du fermenteur inox (L)', 'w', 1],
-      ['cmax', 'Volume maxi empâtage + malt dans la cuve (L)', 'w', 1],
-      ['glace', 'Glace dans le fermenteur (L)', 'w', 2],
-      ['tmout', 'Température du moût transféré (°C)', 'w', 0],
-      ['tglace', 'Température de la glace (°C)', 'w', 0]
+      ['pferm', 'Perte fond de fermenteur (L)', 'w', 2],
+      ['occ', 'Occupation du malt sec concassé (L/kg)', 'w', 2],
+      ['ret', 'Rétention d’eau par les grains (L/kg)', 'w', 3],
+      ['pot', 'Potentiel du grain (L°/kg)', 'a', 1]
     ]
   ]
 ];
@@ -3185,7 +3179,9 @@ function wcalc() {
   if (vs) o.vres = vs.v;
   o.vbot = pr.end;
   o.ret = kg * ret;
-  o.tot = o.rinc + o.v0 + ice;
+  /* 6.9.0 : eau totale = tous les « Ajouts » du Process (empâtage, volume mort, rinçage, glace, resucrage, ajouts
+     personnalisés) ; sans Process, empâtage + rinçage + glace */
+  o.tot = pr.rows.length ? pr.rows.reduce((a, x) => a + (+x.a || 0), 0) : o.rinc + o.v0 + ice;
   o.hot = o.vpost;
   o.cold = o.vpost;
   o.d1 = 1 + o.pts / o.vpre / 1000;
@@ -3383,7 +3379,7 @@ function procPanel() {
     `<table class="wt"><tr><th colspan="2">${h}</th></tr>${r.map(([k, l, d], i) => `<tr><td>${l}</td><td><input readonly class="wr ro" id="wo-${h[0]}${i}"></td></tr>`).join('')}</table>`)(
     WOUT[0]
   );
-  return `<div class="panel" id="procp"><h3>Process — pertes et ajouts d’eau<button data-phadd="1" title="Ajouter une phase à la fin du tableau">＋ Phase</button><button data-pzero="1" title="Rétablir les lignes par défaut">↺ défaut</button></h3><small style="color:var(--m)">Case vide = valeur automatique des Paramètres (italique). Saisir une valeur la remplace pour la ligne ; la vider rétablit l’automatique. La densité tient compte des points de sucre extraits.</small>${vt}${P.map(tab).join('')}<div id="pwarn"></div></div>`;
+  return `<div class="panel" id="procp"><h3>Process<button data-phadd="1" title="Ajouter une phase à la fin du tableau">＋ Phase</button><button data-pzero="1" title="Rétablir les lignes par défaut">↺ défaut</button></h3><small style="color:var(--m)">Case vide = valeur automatique des Paramètres (italique). Saisir une valeur la remplace pour la ligne ; la vider rétablit l’automatique. La densité tient compte des points de sucre extraits.</small>${vt}${P.map(tab).join('')}<div id="pwarn"></div></div>`;
 }
 /* ✎ en bout de ligne : passe la ligne (étape ou nom de phase) en modification ; le nom brut remplace le nom affiché */
 function procEdit(tr, on) {
@@ -3490,7 +3486,6 @@ const WOUT = [
       ['vpreT', 'Volume de moût pré-ébullition cible (L)', 2],
       ['rincN', 'Volume d’eau de rinçage nécessaire (L)', 2],
       ['vgr', 'Volume d’eau + malt (L)', 2],
-      ['glace', 'Volume de glace dans le fermenteur (L)', 2],
       ['tot', 'Volume d’eau total (L)', 2]
     ]
   ],
@@ -3506,12 +3501,11 @@ const WOUT = [
       ['d4', 'Densité initiale (DI) après fusion de la glace', 3]
     ]
   ],
-  ['TEMPÉRATURE', [['tf', 'Température du moût dans le fermenteur en fin de transfert (°C)', 1]]]
 ];
 function waterPanel() {
   const inp = ([k, l, t, d]) =>
-    `<tr><td>${l}</td><td><input type="number" step="any" class="wi" ${t === 'e' ? `data-e="${k}"` : `data-w="${k}"`} data-d="${d}" data-t="${t}"${k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree' ? ` readonly title="Issu de l’écran Conception${k === 'duree' ? ' (paliers d’empâtage › Ébullition)' : ''}"` : ''}></td></tr>`;
-  return `<div class="panel"><h3>Paramètres de brassage <small>— vide = valeur automatique (recette / équipement)</small></h3><div class="wgrid2">${WIN.map(([h, r]) => `<table class="wt"><tr><th colspan="2">${h}</th></tr>${r.map(inp).join('')}</table>`).join('')}${WOUT.slice(
+    `<tr><td>${l}</td><td><input type="number" step="any" class="wi" ${t === 'e' ? `data-e="${k}"` : `data-w="${k}"`} data-d="${d}" data-t="${t}"${k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree' ? ` readonly title="Issu de l’écran Conception${k === 'duree' ? ' (paliers d’empâtage › Ébullition)' : ''}"` : k === 'pot' ? ' readonly title="Calculé d’après les malts de la recette (écran Conception)"' : ''}></td></tr>`;
+  return `<div class="panel"><h3>Paramètres de brassage <small>— vide = valeur automatique (recette / équipement)</small></h3><div class="wgrid2">${WIN.map(([h, r]) => `<table class="wt">${h ? `<tr><th colspan="2">${h}</th></tr>` : ''}${r.map(inp).join('')}</table>`).join('')}${WOUT.slice(
     2
   )
     .map(
@@ -3520,18 +3514,62 @@ function waterPanel() {
     )
     .join('')}<div id="wwarn"></div></div></div>`;
 }
+/* 6.9.0 : section « Calculs » des Paramètres — température d'un mélange de liquide froid et de liquide chaud, comme
+   l'ancienne « Température du moût dans le fermenteur en fin de transfert » : par défaut, liquide froid = glace du
+   Process (« Ajouts » des étapes « glace ») à −16 °C, liquide chaud = moût transféré (moût en fermenteur − glace) à 95 °C.
+   Liquide froid à 0 °C ou moins = glace : il faut la fondre (80 kcal/kg) et la réchauffer (0,5 kcal/kg/°C).
+   Valeurs saisies dans S.kv.equip.calc ; case vide = valeur par défaut (italique). */
+const CALC = [
+  ['c', 'Volume de liquide froid'],
+  ['h', 'Volume de liquide chaud']
+];
+function calcDef() {
+  const o = wcalc(),
+    g = wIn('glace');
+  return { cv: g, ct: wIn('tglace'), hv: Math.max(0, (o.mg || 0) - g), ht: wIn('tmout') };
+}
+function calcVal() {
+  const D = calcDef(),
+    C = S.kv.equip.calc || {},
+    v = k => (C[k] !== undefined && C[k] !== '' && !isNaN(+C[k]) ? +C[k] : D[k]);
+  const cv = v('cv'),
+    ct = v('ct'),
+    hv = v('hv'),
+    ht = v('ht'),
+    V = cv + hv;
+  return { cv, ct, hv, ht, t: V > 0 ? (ct <= 0 ? (hv * ht - cv * (80 + 0.5 * Math.abs(ct))) / V : (hv * ht + cv * ct) / V) : 0 };
+}
+function calcPanel() {
+  const cell = k => `<td><input type="number" step="any" class="wi wc" data-calc="${k}"></td>`;
+  return `<div class="panel" id="calcp"><h3>Calculs</h3><table class="wt"><tr><th colspan="3">TEMPÉRATURE</th></tr><tr><td></td><td class="ch">Volume (L)</td><td class="ch">Température (°C)</td></tr>${CALC.map(([p, l]) => `<tr><td>${l}</td>${cell(p + 'v')}${cell(p + 't')}</tr>`).join('')}<tr class="sum"><td>Température résultante (°C)</td><td></td><td class="pc" id="calc-t"></td></tr></table></div>`;
+}
+function updCalc() {
+  if (!$('#calcp')) return;
+  const D = calcDef(),
+    C = S.kv.equip.calc || {},
+    r = calcVal();
+  document.querySelectorAll('[data-calc]').forEach(el => {
+    if (document.activeElement === el) return;
+    const k = el.dataset.calc,
+      own = C[k] !== undefined && C[k] !== '';
+    el.value = +(+(own ? C[k] : D[k])).toFixed(2);
+    el.classList.toggle('auto', !own);
+  });
+  $('#calc-t').textContent = nf(r.t, 1) + ' °C';
+}
 function updWater() {
+  updCalc();
   if (!$('#wwarn')) return;
   const o = wcalc(),
     E = S.kv.equip,
     W = E.w || {};
   o.mg = wIn('vmoût');
-  document.querySelectorAll('.wi').forEach(el => {
+  document.querySelectorAll('.wi:not(.wc)').forEach(el => {
     if (document.activeElement === el) return;
     const k = el.dataset.w || el.dataset.e,
       d = +el.dataset.d,
       own =
-        k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree'
+        k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree' || k === 'pot'
           ? false
           : el.dataset.t === 'w' || el.dataset.t === 'a'
             ? W[k] !== undefined
@@ -3572,13 +3610,15 @@ function updWater() {
     w.push(
       `ℹ Pour obtenir ${nf(wIn('bout'), 1)} L en bouteilles, il faut ${nf(o.vreq, 1)} L en fermenteur (actuellement ${nf(o.vbot, 1)} L en bouteilles).`
     );
-  else w.push(`✔ ${nf(o.vbot, 1)} L en bouteilles pour ${nf(vf, 1)} L en fermenteur.`);
   if (o.rincN < 0) w.push('⚠ Eau de rinçage négative : réduire le ratio d’empâtage ou le volume mort.');
   $('#wwarn').innerHTML = w.map(x => `<p class="wmsg">${x}</p>`).join('');
 }
 function params0() {
   const E = S.kv.equip;
-  const fld = ([k, l]) => `<label>${l}<input type="number" step="any" data-e="${k}" value="${E[k]}"></label>`;
+  const fld = ([k, l, t]) =>
+    t === 'w'
+      ? `<label>${l}<input type="number" step="any" data-w="${k}" value="${+(+wIn(k)).toFixed(2)}"></label>`
+      : `<label>${l}<input type="number" step="any" data-e="${k}" value="${E[k]}"></label>`;
   main.innerHTML = `<div class="panel full"><h3>Équipement & process</h3><div class="eq"><label>Nom de l’équipement<input data-e="name" value="${esc(E.name || '')}"></label>${EQ.map(fld).join('')}</div><h4 class="eqsub">Valeurs par défaut</h4><div class="eq" id="eqdef">${EQD.map(fld).join('')}</div></div>`;
 }
 const coefPanel = () => {
@@ -3663,7 +3703,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.8.0',
+const VER = '6.9.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4470,6 +4510,63 @@ new MutationObserver(() => {
     foldApply();
   });
 }).observe(document.getElementById('main'), { childList: true, subtree: true });
+/* 6.9.0 : styles sans fourchette (styles « spéciaux » BJCP : 21B, 27, 28…34) — la valeur basse manquante
+   prend la plus basse de tous les styles, la valeur haute manquante la plus haute ; écrit une fois dans la base (styfix2) */
+function styleFix() {
+  const E = S.kv && S.kv.equip;
+  if (!E || E.styfix2 || !Array.isArray(S.styles) || !S.styles.length) return false;
+  const has = v => v !== null && v !== undefined && v !== '' && !isNaN(+v);
+  let n = 0;
+  for (const [lo, hi] of [
+    ['og_min', 'og_max'],
+    ['ibu_min', 'ibu_max'],
+    ['srm_min', 'srm_max'],
+    ['fg_min', 'fg_max'],
+    ['abv_min', 'abv_max']
+  ]) {
+    const L = S.styles.filter(x => has(x[lo])).map(x => +x[lo]),
+      H = S.styles.filter(x => has(x[hi])).map(x => +x[hi]);
+    if (!L.length || !H.length) continue;
+    const mn = Math.min(...L),
+      mx = Math.max(...H);
+    S.styles.forEach(x => {
+      if (!has(x[lo])) (x[lo] = mn), n++;
+      if (!has(x[hi])) (x[hi] = mx), n++;
+    });
+  }
+  E.styfix1 = E.styfix2 = 1;
+  return true;
+}
+/* 6.9.0 : ＋ Nouvelle recette — malts, houblons et levure tirés au hasard dans les bases : un malt de base (EBC ≤ 10)
+   et deux autres malts, deux houblons (amérisant 60 min, aromatique 10 min), une levure ; les quantités sont ensuite
+   ajustées aux cibles par le calcul. Seuls les composants utilisables (potentiel, alpha connus) sont tirés. */
+function newRandom(R) {
+  const pick = (a, n) => {
+      const c = a.slice(),
+        out = [];
+      while (c.length && out.length < n) out.push(c.splice(Math.floor(Math.random() * c.length), 1)[0]);
+      return out;
+    },
+    ok = (o, k) => o && o.name && +o[k] > 0,
+    M = (S.malts || []).filter(m => ok(m, 'potentiel')),
+    base = pick(M.filter(m => +m.ebc > 0 && +m.ebc <= 10), 1),
+    others = pick(
+      M.filter(m => !base.includes(m)),
+      2
+    ),
+    H = pick(
+      (S.hops || []).filter(h => ok(h, 'alpha_min') || ok(h, 'alpha_max')),
+      2
+    ),
+    Y = pick(
+      (S.yeasts || []).filter(y => y && y.name),
+      1
+    );
+  if (base.length || others.length)
+    R.malts = [...base, ...others].map((m, i) => ({ n: m.name, g: [5000, 400, 200][i] || 200 }));
+  if (H.length) R.hops = H.map((h, i) => ({ n: h.name, g: i ? 20 : 25, use: 'Ébullition', t: i ? 10 : 60 }));
+  if (Y.length) R.yeasts = [{ n: Y[0].name, g: 2 }];
+}
 /* écran affiché (réaffiché au changement de langue : les valeurs traduites par tx() dans les champs ne le sont pas par le DOM) */
 let CURSCR = 'conception';
 function show(s) {
@@ -4499,14 +4596,16 @@ document.addEventListener('click', async e => {
     delete D.id;
     D.date = '' /* 6.7.0 : date de brassage à saisir (sa saisie déduit le stock) */;
     D.ogT = S.kv.equip.ogT || D.ogT;
-    S.kv.equip.vol = +S.kv.equip.volD || 30 /* volume et ébullition par défaut (Paramètres) */;
     D.ibuT = S.kv.equip.ibuT || D.ibuT;
     S.kv.equip.ratio = +S.kv.equip.ratioD || 3 /* ratio d’empâtage par défaut (Paramètres) */;
     S.kv.recipe = D;
     S.kv.equip.courses = [] /* nouvelle recette : liste de courses réinitialisée */;
+    newRandom(D);
     ensureMash();
     conception();
-    save();
+    /* puis ajustement aux cibles (DI, IBU), comme le bouton Calculer */
+    if (D.malts.length && D.hops.length) adjust();
+    else save();
   } else if (d.bview !== undefined) {
     rvOpen(+d.bview);
   } else if (d.bedit !== undefined) {
@@ -4757,6 +4856,17 @@ document.addEventListener('input', e => {
       const ie = document.querySelector('input[data-r="embou"]');
       if (ie) ie.min = br || '';
     }
+    /* 6.9.0 : DI cible / IBU cible saisies — le curseur du bilan suit la cible (sans recalcul) ; la recette est
+       recalculée au relâchement (événement change : flèches relâchées, Entrée, sortie du champ) */
+    if (d.r === 'ogT' || d.r === 'ibuT') {
+      const v = parseFloat(t.value);
+      if (!isNaN(v)) {
+        R[d.r] = v;
+        tgtCursor(d.r === 'ogT' ? 'og' : 'ibu', v);
+      }
+      save();
+      return;
+    }
     R[d.r] = ['ogT', 'ibuT'].includes(d.r)
       ? parseFloat(t.value)
       : ['sucre', 'tcarbo', 'glace'].includes(d.r)
@@ -4772,11 +4882,11 @@ document.addEventListener('input', e => {
         sm = R.stk.length + ' composant(s) remis en stock';
         stockBack(R);
       }
-      const hm = $('#hmsg');
-      if (sm && hm) {
-        hm.textContent = '✔ Brassage : ' + sm;
-        hm.className = 'ok';
-      }
+      if (sm) notify('stock', '✔ Brassage : ' + sm, 'ok');
+      /* 6.9.0 : la recette est enregistrée (bibliothèque + base) dès que la date de brassage change */
+      refresh();
+      saveAll();
+      return;
     }
     /* la date d’embouteillage fait toujours apparaître l’analyse organoleptique du brassin */
     if (d.r === 'embou') {
@@ -4806,6 +4916,13 @@ document.addEventListener('input', e => {
     if (t.value.trim() === '') delete E.w[d.w];
     else E.w[d.w] = parseFloat(t.value) || 0;
     updWater();
+    save();
+  } else if (d.calc) {
+    const E = S.kv.equip;
+    E.calc = E.calc || {};
+    if (t.value.trim() === '') delete E.calc[d.calc];
+    else E.calc[d.calc] = parseFloat(t.value) || 0;
+    updCalc();
     save();
   } else if (d.cf) {
     S.kv.equip.coef[d.cf] = Math.max(0, parseFloat(t.value) || 0);
@@ -4969,6 +5086,7 @@ load()
   .then(() => {
     ensureMash();
     recalcMalts();
+    if (styleFix()) save();
     show('conception') /* au lancement : toujours l'écran de conception */;
     /* au lancement : fenêtre « Offrir un café » (pas dans les navigateurs pilotés : tests, captures) */
     if (!navigator.webdriver) setTimeout(donDialog, 700);
@@ -5215,7 +5333,7 @@ if (typeof document !== 'undefined')
     vpreT:
       'Volume pré-ébullition cible = volume de moût ÷ (1 − contraction) + évaporation × durée d’ébullition + pertes de fond de cuve.',
     rincN: 'Eau de rinçage = volume pré-ébullition − volume pré-rinçage disponible.',
-    tot: 'Eau totale = eau de rinçage + eau d’empâtage + glace.',
+    tot: 'Eau totale = somme des « Ajouts » du Process (empâtage, volume mort, rinçage, glace, resucrage, ajouts personnalisés).',
     pts: 'Points de sucre = poids des grains × potentiel (L°/kg) × efficacité ÷ 100.',
     hot: 'Volume à chaud = volume dans le fermenteur + pertes de fond de cuve (trub).',
     cold: 'Volume de moût froid final = volume post-ébullition (champ repris du calcul).',
@@ -5275,6 +5393,7 @@ if (typeof document !== 'undefined')
     [/^pab$/, 'Absorption des drêches = poids des malts × absorption (L/kg).'],
     [/^pev$/, 'Évaporation = taux (L/h) × durée d’ébullition (h).'],
     [/^o-abv$/, 'ABV réel = (DI mesurée − DF mesurée) × 131,25.'],
+    [/^calc-t$/, 'Température du mélange : (V chaud × T chaud + V froid × T froid) ÷ (V chaud + V froid) ; liquide froid à 0 °C ou moins = glace : (V chaud × T chaud − V glace × (80 + 0,5 × |T glace|)) ÷ volume total.'],
     [/^w-v0$/, 'Eau d’empâtage = poids des malts × ratio d’empâtage (L/kg) + volume mort.'],
     [/^w-vm$/, 'Eau d’empâtage + poids des malts (1 kg de malt ≈ 1 L).'],
     [/^w-nog$/, 'Eau d’empâtage + eau de rinçage (la glace n’est pas comptée).'],

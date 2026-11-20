@@ -392,7 +392,7 @@ async function scenarioApp(label) {
       })
     );
     check(
-      'Process : Volume d’eau + malt et Volume de glace affichés ; champ rouge si > maxi cuve',
+      'Process : Volume d’eau + malt affiché, plus de « Volume de glace » (6.9.0) ; champ rouge si > maxi cuve',
       await page.evaluate(() => {
         const E = S.kv.equip;
         E.w = E.w || {};
@@ -401,8 +401,8 @@ async function scenarioApp(label) {
         updWater();
         const ok1 =
           !document.querySelector('#wo-V5').classList.contains('bad') &&
-          /glace/i.test(document.querySelector('#wo-V6').closest('tr').innerText) &&
-          document.querySelector('#wo-V6').value !== '';
+          !/glace/i.test(document.querySelector('#procp .wt').innerText) &&
+          /Volume d’eau total/.test(document.querySelector('#wo-V6').closest('tr').innerText);
         E.w.cmax = 20;
         updWater();
         const bad =
@@ -614,11 +614,13 @@ async function scenarioApp(label) {
       hd.join('|')
     );
     const cell = await page.$$eval('table.lib tr:nth-child(3) td', e => e.map(x => x.textContent));
-    check(
-      'bibliothèque : malts et houblons = noms seulement',
-      cell[9] === 'Pilsen' && cell[10] === 'Magnum',
-      cell[9] + ' / ' + cell[10]
+    /* 6.9.0 : la nouvelle recette est tirée au hasard — on vérifie que chaque cellule ne contient que des noms de la base */
+    const namesOk = await page.evaluate(
+      ([m, h]) =>
+        !!m && !!h && m.split(', ').every(n => find('malts', n)) && h.split(', ').every(n => find('hops', n)),
+      [cell[9], cell[10]]
     );
+    check('bibliothèque : malts et houblons = noms seulement', namesOk, cell[9] + ' / ' + cell[10]);
     check(
       'tableau bibliothèque (2 lignes, crayon + croix)',
       (await page.$$('tr button[data-bedit]')).length === 2 && (await page.$$('tr button[data-bdel]')).length === 2
@@ -1047,13 +1049,11 @@ async function scenarioApp(label) {
       S.kv.equip.w = { ...(S.kv.equip.w || {}), duree: 2 };
     });
     await nav(page, 'params');
-    const du = await page.evaluate(() => {
-      const i = document.querySelector('input[data-w="duree"]');
-      return { ro: i.readOnly, v: i.value };
-    });
+    /* 6.9.0 : la durée d’ébullition n’est plus dans les paramètres de brassage ; le calcul suit le palier « Ébullition » */
+    const du = await page.evaluate(() => ({ none: !document.querySelector('input[data-w="duree"]'), h: wIn('duree') }));
     check(
-      'paramètres : durée d’ébullition = palier « Ébullition » de la conception (90 min), affichée en minutes, non modifiable',
-      du.ro && +du.v === 90,
+      'paramètres : durée d’ébullition prise dans le palier « Ébullition » de la conception (90 min), plus affichée dans les paramètres de brassage',
+      du.none && Math.abs(du.h - 1.5) < 1e-9,
       JSON.stringify(du)
     );
     await page.evaluate(() => {
@@ -1089,9 +1089,9 @@ async function scenarioApp(label) {
     });
     const near = (a, b, t = 1e-4) => Math.abs(a - b) < t;
     check(
-      'calcul d’eau = feuille Excel (empâtage 30,257 ; total 42,518 ; rinçage 6,261 (tableau Process) ; DI = cible 1,060 ; T° 58,4)',
+      'calcul d’eau = feuille Excel (empâtage 30,257 ; total 42,518 + 2 L de resucrage = tous les ajouts du Process (6.9.0) ; rinçage 6,261 (tableau Process) ; DI = cible 1,060 ; T° 58,4)',
       near(wc.v0, 30.257328714474) &&
-        near(wc.tot, 42.5179629248004) &&
+        near(wc.tot, 42.5179629248004 + 2) &&
         near(wc.rincN, 6.26063421032641) &&
         near(wc.rinc, 6.26063421032641) &&
         near(wc.d4, 1.06, 1e-9) &&
@@ -1105,29 +1105,71 @@ async function scenarioApp(label) {
     });
     await wait(100);
     check(
-      'panneau « Calcul des volumes d’eau » : champs modifiables + résultats + 30 L en bouteille',
-      await page.evaluate(
-        () =>
-          document.querySelectorAll('.wi').length === 19 &&
+      'Paramètres de brassage (6.9.0) : une seule liste — fermenteur maxi, perte fond de fermenteur, occupation, rétention, potentiel ; section Calculs (4 champs) ; plus de « ✔ … L en bouteilles »',
+      await page.evaluate(() => {
+        const ks = [...document.querySelectorAll('.wgrid2 .wi')].map(x => x.dataset.w || x.dataset.e).join();
+        return (
+          ks === 'fmax,pferm,occ,ret,pot' &&
+          !document.querySelector('.wgrid2 .wt th') &&
+          document.querySelector('.wi[data-w="pot"]').readOnly &&
+          document.querySelectorAll('#calcp [data-calc]').length === 4 &&
           /Volume d’eau total/.test(document.querySelector('#main').innerText) &&
-          /30,0 L en bouteilles/.test(document.querySelector('#wwarn').innerText)
-      )
+          !/L en bouteilles pour/.test(document.querySelector('#wwarn').innerText)
+        ) || ks;
+      }) === true
     );
-    await page.fill('.wi[data-w="trub"]', '5');
+    await page.fill('.wi[data-w="ret"]', '0.9');
     await wait(150);
     check(
       'modification d’une valeur : recalcul immédiat et sauvegarde',
-      await page.evaluate(() => S.kv.equip.w.trub === 5 && Math.abs(wcalc().vpost - (wcalc().vferm + 5)) < 1e-9)
+      await page.evaluate(() => S.kv.equip.w.ret === 0.9)
     );
-    await page.fill('.wi[data-e="vol"]', '33');
+    await page.evaluate(() => {
+      delete S.kv.equip.w.ret;
+      S.kv.equip.vol = 33;
+      updWater();
+    });
     await wait(150);
     check(
       'avertissement si le fermenteur dépasse 30 L',
       await page.evaluate(() => /dépasse le maximum/.test(document.querySelector('#wwarn').innerText))
     );
+    /* 6.9.0 : section Calculs — mélange liquide froid / liquide chaud */
     check(
-      'Paramètres : quantité de grains non modifiable',
-      await page.evaluate(() => document.querySelector('.wi[data-w="kg"]').readOnly)
+      'Paramètres › Calculs : température du mélange froid / chaud (glace : fusion comptée), valeurs par défaut = glace du Process et moût transféré ; résultat en jaune ; Calculs puis Contactez-moi sous Polices de caractères',
+      await page.evaluate(() => {
+        const set = (k, v) => {
+            const el = document.querySelector(`[data-calc="${k}"]`);
+            el.value = v;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+          },
+          r = () => parseFloat(document.getElementById('calc-t').textContent.replace(',', '.')),
+          D = calcDef(),
+          o = wcalc(),
+          defOk = Math.abs(r() - +nf(o.tf, 1).replace(',', '.')) < 0.11 && Math.abs(D.cv - wIn('glace')) < 1e-9;
+        set('cv', '10');
+        set('ct', '20');
+        set('hv', '10');
+        set('ht', '60');
+        const mix = Math.abs(r() - 40) < 0.05;
+        set('ct', '-10');
+        const ice = Math.abs(r() - (10 * 60 - 10 * (80 + 5)) / 20) < 0.05;
+        delete S.kv.equip.calc;
+        updCalc();
+        const tr = document.getElementById('calc-t').closest('tr'),
+          ord = [...document.querySelectorAll('.pg .panel > h3')].map(h => h.textContent.trim().split(/\s+/)[0]),
+          iF = ord.findIndex(t => /^Polices/.test(t)),
+          place = iF >= 0 && /^Calculs/.test(ord[iF + 1]) && /^Contactez/.test(ord[iF + 2]);
+        return (
+          defOk &&
+          mix &&
+          ice &&
+          document.querySelector('[data-calc="cv"]').classList.contains('auto') &&
+          tr.classList.contains('sum') &&
+          getComputedStyle(document.getElementById('calc-t')).color === getComputedStyle(document.querySelector('.pg tr.sum td')).color &&
+          (place || ord.join('|'))
+        ) === true;
+      })
     );
     await nav(page, 'conception');
     check(
@@ -1220,11 +1262,11 @@ async function scenarioApp(label) {
     );
     await nav(page, 'params');
     check(
-      'Paramètres : glace non modifiable (reprise des ajouts « glace » du Process)',
+      'Paramètres : plus de champ glace ; la glace du Process est reprise comme liquide froid de la section Calculs',
       await page.evaluate(
         () =>
-          document.querySelector('.wi[data-w="glace"]').readOnly &&
-          Math.abs(+document.querySelector('.wi[data-w="glace"]').value - wIn('glace')) < 1e-6
+          !document.querySelector('.wi[data-w="glace"]') && /* 6.9.0 : glace réglée dans le Process, reprise par Calculs */
+          Math.abs(+document.querySelector('[data-calc="cv"]').value - wIn('glace')) < 0.01
       )
     );
     await nav(page, 'conception');
@@ -1252,20 +1294,19 @@ async function scenarioApp(label) {
           S.kv.equip.ratio === 3.2 &&
           !document.querySelector('.eq [data-e="ratio"]') &&
           !/Ratio eau\/grain/.test(document.querySelector('.panel.full').textContent) &&
-          document.querySelector('.wi[data-e="ratio"]').readOnly &&
-          +document.querySelector('.wi[data-e="ratio"]').value === 3.2
+          !document.querySelector('.wi[data-e="ratio"]') /* 6.9.0 : plus dans les paramètres de brassage */
       )
     );
     check(
       'Paramètres › Équipement & process : sous-section « Valeurs par défaut » (ébullition, évaporation, T° initiale, chauffe, refroidissement, absorption, DI, IBU, ratio par défaut)',
       await page.evaluate(() => {
         const p = document.querySelector('.panel.full'),
-          top = [...p.querySelector('.eq').querySelectorAll('[data-e]')].map(i => i.dataset.e),
+          top = [...p.querySelector('.eq').querySelectorAll('[data-e], [data-w]')].map(i => i.dataset.e || i.dataset.w),
           def = [...p.querySelectorAll('#eqdef [data-e]')].map(i => i.dataset.e);
         return (
           /Valeurs par défaut/.test(p.querySelector('h4.eqsub').textContent) &&
-          top.join() === 'name,volD,eff' &&
-          def.join() === 'boilD,evap,t0,chauffe,refroid,abs,ogT,ibuT,ratioD'
+          top.join() === 'name,cmax,eff,mort,evap' &&
+          def.join() === 'boilD,t0,chauffe,refroid,abs,ogT,ibuT,ratioD'
         );
       })
     );
@@ -2282,26 +2323,24 @@ check(
               },
               bm = () => S.kv.recipe.mash.find(r => r.role === 'boil').m;
             show('params');
-            o.has = !!document.querySelector('.eq [data-e="volD"]') && !!document.querySelector('.eq [data-e="boilD"]') && !document.querySelector('.eq [data-e="vol"]') && !document.querySelector('.eq [data-e="boil"]');
-            const vol0 = S.kv.equip.vol,
-              b0 = bm();
-            inp('.eq [data-e="volD"]', '28');
+            /* 6.9.0 : plus de « Volume à embouteiller » dans les Paramètres (référence : Conception) */
+            o.has = !document.querySelector('.eq [data-e="volD"]') && !!document.querySelector('.eq [data-e="boilD"]') && !document.querySelector('.eq [data-e="vol"]');
+            const b0 = bm();
             inp('.eq [data-e="boilD"]', '75');
-            o.indep = S.kv.equip.volD === 28 && S.kv.equip.boilD === 75 && S.kv.equip.vol === vol0 && bm() === b0;
+            o.indep = S.kv.equip.boilD === 75 && bm() === b0;
             show('conception');
             inp('[data-e="vol"]', '22');
-            o.keep = S.kv.equip.volD === 28 && S.kv.equip.vol === 22;
             document.querySelector('#newrec').click();
-            o.nw = S.kv.equip.vol === 28 && bm() === 75 && document.querySelector('[data-e="vol"]').value === '28';
+            o.nw = S.kv.equip.vol === 22 && bm() === 75 && document.querySelector('[data-e="vol"]').value === '22';
             return o;
           });
           check(
-            'Paramètres : « Volume à embouteiller » et « Durée d’ébullition » = valeurs par défaut des nouvelles recettes (indépendantes de la Conception, comme la DI cible)',
-            vb.has && vb.indep && vb.keep && vb.nw,
+            'Paramètres : « Durée d’ébullition » par défaut des nouvelles recettes ; le volume à embouteiller reste celui de la Conception (plus dans les Paramètres)',
+            vb.has && vb.indep && vb.nw,
             JSON.stringify(vb)
           );
           await page.evaluate(() => {
-            S.kv.equip.volD = 30;
+            S.kv.equip.vol = 30;
             S.kv.equip.boilD = 60;
           });
         }
@@ -5359,7 +5398,7 @@ check(
       const R = S.kv.recipe,
         W = wcalc(),
         res = {};
-      res.nog = document.querySelector('#w-nog').textContent;
+      res.nog = document.querySelector('#w-nog') ? 'encore affiché' : (W.v0 + W.rinc).toFixed(2).replace('.', ','); /* 6.9.0 : ligne retirée */
       res.exp = (W.v0 + W.rinc).toFixed(2).replace('.', ',');
       R.water = [
         { n: 'Épernay', p: 50, l: 0 },
@@ -6216,20 +6255,104 @@ check(
         }, og0);
         await page.waitForTimeout(200);
       }
-      /* ＋ Nouvelle recette : date de brassage vide */
+      /* ＋ Nouvelle recette : date de brassage vide ; 6.9.0 : malts, houblons, levure tirés au hasard dans les bases, puis
+         ajustés aux cibles */
       check(
-        '＋ Nouvelle recette : date de brassage vide',
+        '＋ Nouvelle recette : date de brassage vide ; 3 malts, 2 houblons, 1 levure tirés dans les bases, ajustés à la DI cible',
         await page.evaluate(async () => {
           const R0 = JSON.stringify(S.kv.recipe),
             c0 = JSON.stringify(S.kv.equip.courses || []);
           document.getElementById('newrec').click();
           await new Promise(r => setTimeout(r, 150));
-          const ok = S.kv.recipe.date === '' && document.querySelector('input[data-r="date"]').value === '';
+          const N = S.kv.recipe,
+            inDb = (t, a) => a.every(x => find(t, x.n));
+          const ok =
+            N.date === '' &&
+            document.querySelector('input[data-r="date"]').value === '' &&
+            N.malts.length === 3 &&
+            N.hops.length === 2 &&
+            N.yeasts.length === 1 &&
+            inDb('malts', N.malts) &&
+            inDb('hops', N.hops) &&
+            inDb('yeasts', N.yeasts) &&
+            +find('malts', N.malts[0].n).ebc <= 10 &&
+            Math.abs(compute().og - N.ogT) < 0.0015;
           S.kv.recipe = JSON.parse(R0);
           S.kv.equip.courses = JSON.parse(c0);
           conception();
           return ok;
         })
+      );
+      /* 6.9.0 : styles sans DI / IBU complétés ; Quantités d’eau allégée ; date de brassage = recette enregistrée */
+      const c69 = await page.evaluate(async () => {
+        const w = ms => new Promise(r => setTimeout(r, ms)),
+          has = v => v !== null && v !== undefined && v !== '' && !isNaN(+v),
+          o = {},
+          ST = S.styles,
+          lo = k => Math.min(...ST.map(x => +x[k])),
+          hi = k => Math.max(...ST.map(x => +x[k]));
+        o.sty =
+          S.kv.equip.styfix2 === 1 &&
+          ST.every(x => ['og', 'ibu', 'srm', 'fg', 'abv'].every(k => has(x[k + '_min']) && has(x[k + '_max']))) &&
+          (() => {
+            const sp = ST.find(x => /^34C/.test(x.name));
+            return !sp || ['og', 'ibu', 'srm', 'fg', 'abv'].every(k => +sp[k + '_min'] === lo(k + '_min') && +sp[k + '_max'] === hi(k + '_max'));
+          })();
+        show('conception');
+        await w(150);
+        const t = document.querySelector('#wtab').innerText;
+        o.wtab = !/Eau d’empâtage \+ malt|hors glace/.test(t) && /Empâtage \+ rinçage \+ divers/.test(t);
+        /* date de brassage modifiée → recette enregistrée dans la bibliothèque */
+        const R = S.kv.recipe,
+          d0 = R.date,
+          stk0 = R.stk,
+          el = document.querySelector('input[data-r="date"]');
+        R.embou = '';
+        el.value = '2026-05-04';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        await w(400);
+        const b = S.biblio.find(x => x.id === R.id);
+        o.saved = !!b && b.recipe.date === '2026-05-04';
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        await w(300);
+        R.date = d0;
+        if (stk0) R.stk = stk0;
+        return o;
+      });
+      check(
+        'styles sans plages (DI, IBU, SRM, DF, ABV) : plus basse et plus haute valeurs de tous les styles ; Quantités d’eau sans « Eau d’empâtage + malt » ni « hors glace », total « … + divers » ; changement de date de brassage = recette enregistrée',
+        Object.values(c69).every(Boolean),
+        JSON.stringify(c69)
+      );
+      /* 6.9.0 : champ DI cible modifié → le curseur DI se place sur la cible ; au relâchement (change) → recette recalculée */
+      const c610 = await page.evaluate(async () => {
+        const w = ms => new Promise(r => setTimeout(r, ms)),
+          R = S.kv.recipe,
+          og0 = R.ogT;
+        show('conception');
+        await w(150);
+        const inp = document.querySelector('input[data-r="ogT"]'),
+          b = document.querySelector('#bilan .bar.drag[data-drag="og"]'),
+          lo = +b.dataset.lo,
+          hi = +b.dataset.hi,
+          t = Math.round(Math.min(hi - 0.002, Math.max(lo + 0.002, (+og0 || 1.05) + 0.004)) * 1000) / 1000;
+        inp.value = t;
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+        const pos = parseFloat(b.querySelector('s').style.left),
+          o = { pos: Math.abs(pos - ((t - lo) / (hi - lo)) * 100) < 0.5, notYet: Math.abs(compute().og - t) > 0.0005 || Math.abs((+og0 || 0) - t) < 0.0005 };
+        inp.dispatchEvent(new Event('change', { bubbles: true }));
+        await w(150);
+        o.calc = Math.abs(compute().og - t) < 0.0015;
+        R.ogT = og0;
+        adjust();
+        await w(150);
+        return o;
+      });
+      check(
+        'DI cible saisie : le curseur DI du bilan se place sur la cible, la recette n’est recalculée qu’au relâchement (change)',
+        Object.values(c610).every(Boolean),
+        JSON.stringify(c610)
       );
       /* 6.6.0 : courses — bouton info (stock actuel / après achat / après brassage, après 1 s de survol) ; article ajouté
          au caddie de la recette retiré quand le composant sort de la recette ; arômes accentués ; Process : espace crayon */
