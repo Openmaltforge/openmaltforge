@@ -5676,9 +5676,19 @@ header a.kofi img {
 }
 #main .panel.fold {
   padding-bottom: 2px;
-  align-self: start;
   height: auto !important;
   min-height: 0 !important;
+}
+/* 6.7.1 : chevron descendant, espacé du titre, sur une section repliée */
+#main .panel > h3 > .foldc,
+#main .panel > h4 > .foldc {
+  margin-left: 10px;
+  display: inline-flex;
+  opacity: 0.85;
+}
+#main .panel .foldc svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* 6.7.0 — Bilan : curseurs DI et IBU déplaçables, poignée ronde au-dessus du curseur */

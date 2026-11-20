@@ -6122,26 +6122,50 @@ check(
         await w(200);
         const hh = [...document.querySelectorAll('#main .panel > h3')].find(h => /Houblons/.test(h.textContent));
         o.hop = !!hh && !!hh.querySelector('svg.fa-hop');
-        /* repli */
+        /* repli (6.7.1) : titre d'un radar = toute la ligne des radars ; titre d'une section = elle seule */
         const rh = [...document.querySelectorAll('#radars .panel > h4')][1],
-          pm = rh.parentElement;
+          pm = rh.parentElement,
+          rads = () => [...document.querySelectorAll('#radars .panel')],
+          w0 = pm.getBoundingClientRect().width;
         rh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await w(50);
-        o.fold = pm.classList.contains('fold') && [...pm.children].every(c => (c === rh) === (getComputedStyle(c).display !== 'none')) && !pm.querySelector('svg:not(.fa)').getClientRects().length;
+        o.fold =
+          rads().every(p => p.classList.contains('fold')) &&
+          [...pm.children].every(c => (c === rh) === (getComputedStyle(c).display !== 'none')) &&
+          !pm.querySelector('svg:not(.fa)').getClientRects().length &&
+          !!rh.querySelector('.foldc svg.fa-down') &&
+          Math.abs(pm.getBoundingClientRect().width - w0) < 1;
+        o.malts = ![...document.querySelectorAll('#main .col .panel > h3')].some(h => /Malts/.test(h.textContent) && h.parentElement.classList.contains('fold'));
         refresh();
         await w(50);
-        const pm2 = [...document.querySelectorAll('#radars .panel > h4')][1].parentElement;
-        o.keep = pm2.classList.contains('fold') && (S.kv.equip.folds || []).length === 1;
-        pm2.querySelector('h4').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        o.keep = rads().every(p => p.classList.contains('fold')) && JSON.stringify(S.kv.equip.folds) === '["radars"]';
+        rads()[0].querySelector('h4').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await w(50);
-        o.unfold = !pm2.classList.contains('fold') && !(S.kv.equip.folds || []).length;
+        o.unfold = rads().every(p => !p.classList.contains('fold') && !p.querySelector('.foldc')) && !(S.kv.equip.folds || []).length;
+        /* section Malts (tableau) seule : les radars restent dépliés */
+        const mh = [...document.querySelectorAll('#main .panel > h3')].find(h => /Malts/.test(h.textContent)),
+          mw = mh.parentElement.getBoundingClientRect().width;
+        mh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        o.single =
+          mh.parentElement.classList.contains('fold') &&
+          !!mh.querySelector('.foldc') &&
+          Math.abs(mh.parentElement.getBoundingClientRect().width - mw) < 1 &&
+          rads().every(p => !p.classList.contains('fold')) &&
+          document.querySelectorAll('#main .panel.fold').length === 1;
+        mh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        o.single = o.single && !document.querySelectorAll('#main .panel.fold').length;
+        /* bilan : IBU juste sous la DI */
+        const bl = [...document.querySelectorAll('#bilan .bi .bl span')].map(x => x.textContent);
+        o.order = /Densité initiale/.test(bl[0]) && /^IBU/.test(bl[1]);
         /* curseurs DI / IBU : poignée sur ces deux-là seulement */
         const kn = [...document.querySelectorAll('#bilan .bar.drag')];
         o.knobs = kn.length === 2 && kn.every(b => b.querySelector('.knob')) && document.querySelectorAll('#bilan .knob').length === 2;
         return o;
       });
       check(
-        'icône hop des Houblons ; double-clic sur un titre de la Conception = section repliée (mémorisé), puis dépliée ; poignées sur les seuls curseurs DI et IBU',
+        'icône hop des Houblons ; double-clic : titre d’un radar = ligne des radars repliée, titre d’une section = elle seule (chevron, même largeur, mémorisé) ; poignées sur les seuls curseurs DI et IBU, IBU sous la DI',
         Object.values(c67).every(Boolean),
         JSON.stringify(c67)
       );

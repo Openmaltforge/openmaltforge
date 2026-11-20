@@ -2270,6 +2270,7 @@ function refresh() {
   $('#bilan').innerHTML =
     [
       ['Densité initiale (DI)', c.og, st.og_min, st.og_max, 3, 'og'],
+      ['IBU (Tinseth)', c.ibu, st.ibu_min, st.ibu_max, 1, 'ibu'] /* 6.7.1 : sous la DI (les deux curseurs déplaçables) */,
       ['Densité finale obtenue', c.fg, st.fg_min, st.fg_max, 3],
       ['Atténuation levure' + (R.yeasts.length > 1 ? ' (moy.)' : '') + ' %', c.att, c.attMin, c.attMax, 0],
       [
@@ -2279,7 +2280,6 @@ function refresh() {
         c.flocMax,
         0
       ],
-      ['IBU (Tinseth)', c.ibu, st.ibu_min, st.ibu_max, 1, 'ibu'],
       ['Couleur (EBC)', c.ebc, st.srm_min * 1.97, st.srm_max * 1.97, 0],
       ['Alcool (% vol.)', c.abv, st.abv_min, st.abv_max, 1],
       ['IBU / DI', rt.ibudi, ra, rb, 2],
@@ -3655,7 +3655,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.7.0',
+const VER = '6.7.1',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4413,21 +4413,32 @@ function biblio() {
 }
 SCR.html[1] = htmlScreen;
 SCR.sheet[1] = sheetScreen;
-/* 6.7.0 : écran Conception — double-clic sur le titre d'une section (h3, ou h4 des radars) = la replier (seuls le titre et
-   son trait jaune restent) ou la déplier. Clé = texte français d'origine du titre (avant traduction), mémorisée dans
-   S.kv.equip.folds ; réappliquée après chaque nouveau rendu (observateur sur #main). */
+/* 6.7.0 (revu en 6.7.1) : écran Conception — double-clic sur le titre d'une section (h3) = la replier ou la déplier, elle
+   seule ; double-clic sur le titre d'un radar (h4 de #radars) = toute la ligne des radars. Une section repliée ne garde que
+   son titre (suivi d'un chevron) et son trait jaune, sur la même largeur. Clés mémorisées dans S.kv.equip.folds :
+   « h3:<titre français d'origine> » ou « radars » ; réappliquées après chaque rendu (observateur sur #main). */
 const foldKey = h => {
+  if (h.closest('#radars')) return 'radars';
   let t = '';
   for (const n of h.childNodes) if (n.nodeType === 3) t += n.__o !== undefined ? n.__o : n.data;
-  return t.replace(/\s+/g, ' ').trim() || (h.textContent || '').trim();
+  return 'h3:' + (t.replace(/\s+/g, ' ').trim() || (h.textContent || '').trim());
 };
 const foldTitles = () => (CURSCR === 'conception' ? [...document.querySelectorAll('#main .panel > h3, #main .panel > h4')] : []);
 function foldApply() {
   const F = (S.kv && S.kv.equip && S.kv.equip.folds) || [];
   foldTitles().forEach(h => {
-    const on = F.includes(foldKey(h));
-    if (h.parentElement.classList.contains('fold') !== on) h.parentElement.classList.toggle('fold', on);
-    if (!h.title) h.title = noIc(tx('Double-clic : replier / déplier la section'));
+    const on = F.includes(foldKey(h)),
+      p = h.parentElement;
+    if (p.classList.contains('fold') !== on) p.classList.toggle('fold', on);
+    let c = h.querySelector(':scope > .foldc');
+    if (on && !c) {
+      c = document.createElement('span');
+      c.className = 'foldc';
+      c.innerHTML = ic('down');
+      const b = [...h.children].find(x => x.tagName !== 'SPAN' || !x.classList.contains('ic'));
+      h.insertBefore(c, b && b.tagName === 'BUTTON' ? b : null);
+    } else if (!on && c) c.remove();
+    if (!h.title) h.title = noIc(tx(h.closest('#radars') ? 'Double-clic : replier / déplier la ligne des radars' : 'Double-clic : replier / déplier la section'));
   });
 }
 document.addEventListener('dblclick', e => {
@@ -4435,7 +4446,7 @@ document.addEventListener('dblclick', e => {
   if (!h || CURSCR !== 'conception' || e.target.closest('button, input, select, label, a')) return;
   const E = S.kv.equip,
     k = foldKey(h);
-  E.folds = E.folds || [];
+  E.folds = (E.folds || []).filter(x => x === 'radars' || x.startsWith('h3:')) /* clés 6.7.0 sans préfixe : abandonnées */;
   if (E.folds.includes(k)) E.folds = E.folds.filter(x => x !== k);
   else E.folds.push(k);
   getSelection && getSelection().removeAllRanges();
