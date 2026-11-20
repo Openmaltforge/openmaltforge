@@ -303,7 +303,7 @@ async function scenarioApp(label) {
     }
     await nav(page, 'conception');
     check(
-      'HTML : sections équipement/données/pertes/contraintes/volumes/densités/quantités retirées ; « Eau totale avec la glace » ; levures, eau en litres, analyse organoleptique',
+      'HTML : sections équipement/données/pertes/contraintes/volumes/densités/quantités retirées ; eau comme la Conception (6.10.0) ; levures, eau en litres, analyse organoleptique',
       await page.evaluate(() => {
         const R = S.kv.recipe,
           old = R.embou;
@@ -315,8 +315,9 @@ async function scenarioApp(label) {
         delete R.org;
         return (
           [
-            'Eau totale avec la glace:',
-            'Volume de glace dans le fermenteur',
+            'Eau d’empâtage:',
+            'Empâtage + rinçage + divers:',
+            'Durée d’ébullition (min):',
             'Sachets',
             'Floculation',
             'Litres',
@@ -333,7 +334,9 @@ async function scenarioApp(label) {
             'VOLUMES D’EAU',
             'DENSITÉS',
             'QUANTITES D’EAU',
-            'Occupation du malt sec'
+            'Occupation du malt sec',
+            'Eau totale avec la glace',
+            'Volume de glace dans le fermenteur'
           ].every(t => !h.includes(t)) &&
           !/Température d’empâtage \(°C\)/.test(h.split('PALIERS')[0])
         );
@@ -470,14 +473,13 @@ async function scenarioApp(label) {
       })
     );
     check(
-      'HTML : PARAMETRES sans date d’embouteillage / équipement / volume de moût ; « Volume de glace dans le fermenteur: » ; Process avec phase 3',
+      'HTML : PARAMETRES sans date d’embouteillage / équipement / volume de moût ; plus de glace dans EAU (6.10.0) ; Process avec phase 3',
       await page.evaluate(() => {
         const h = htmlCode(),
           P = h.slice(h.indexOf('PARAMETRES'), h.indexOf('PROCESS'));
         return (
           !/Date d’embouteillage|Equipement:|Volume de moût/.test(P.split('PROFIL')[0].slice(0, 1800)) &&
-          h.includes('Volume de glace dans le fermenteur:') &&
-          !/(?<!Volume de )Glace dans le fermenteur:/.test(h) &&
+          !/lace dans le fermenteur:/.test(h) &&
           /Phase 3 — Embouteillage/.test(h) &&
           /DI \(densité initiale visée\)/.test(h) &&
           /DF \(densité finale/.test(h) &&
@@ -807,6 +809,19 @@ async function scenarioApp(label) {
       }),
       await page.evaluate(() => [...document.querySelectorAll('.ptab input[id^="pd-"]')].map(x => x.value).join(' '))
     );
+    check(
+      'Process (6.10.0) : la contraction au refroidissement ne change pas la densité (volumes chauds ramenés au volume froid)',
+      await page.evaluate(() => {
+        const pr = procSolve(),
+          dn = procDens(pr, wcalc().pts),
+          i = pr.rows.findIndex(x => x.r.k === 'contr');
+        return i > 0 && pr.rows[i].l > 0 && Math.abs(dn[i] - dn[i - 1]) < 1e-9 && dn[i - 1] > dn[i - 2] - 1e-9;
+      }),
+      await page.evaluate(() => {
+        const pr = procSolve();
+        return JSON.stringify(procDens(pr, wcalc().pts).slice(0, 10));
+      })
+    );
     await page.click('button[data-phadd]');
     await wait(150);
     const ph1 = await page.evaluate(() => {
@@ -816,6 +831,13 @@ async function scenarioApp(label) {
     await page.fill('table[data-phase="3"] input.phn', 'Garde à froid');
     await page.keyboard.press('Enter');
     await wait(150);
+    check(
+      'Process : bouton ＋ d’ajout d’étape encadré comme celui des tableaux de la Conception (6.10.0)',
+      await page.evaluate(() => {
+        const c = getComputedStyle(document.querySelector('button[data-padd="3"]'));
+        return parseFloat(c.borderTopWidth) >= 1 && c.borderTopStyle === 'solid' && parseFloat(c.borderTopLeftRadius) > 0;
+      })
+    );
     await page.click('button[data-padd="3"]');
     await wait(150);
     await page.fill('input.nm[data-pn="3"][data-i="0"]', 'Prélèvements');
@@ -1095,7 +1117,7 @@ async function scenarioApp(label) {
         near(wc.rincN, 6.26063421032641) &&
         near(wc.rinc, 6.26063421032641) &&
         near(wc.d4, 1.06, 1e-9) &&
-        near(wc.d1, 1.07595139954, 1e-6) &&
+        near(wc.d1, 1.078989455524, 1e-6) /* 6.10.0 : volume chaud ramené au volume froid (Excel : 1,07595) */ &&
         near(wc.tf, 58.4, 1e-6) &&
         near(wc.vbot, 30),
       JSON.stringify(wc)
@@ -1105,11 +1127,11 @@ async function scenarioApp(label) {
     });
     await wait(100);
     check(
-      'Paramètres de brassage (6.9.0) : une seule liste — fermenteur maxi, perte fond de fermenteur, occupation, rétention, potentiel ; section Calculs (4 champs) ; plus de « ✔ … L en bouteilles »',
+      'Paramètres de brassage (6.9.0) : une seule liste — fermenteur maxi, perte fond de fermenteur, occupation, rétention, potentiel, absorption des drêches (6.10.0) ; section Calculs (4 champs) ; plus de « ✔ … L en bouteilles »',
       await page.evaluate(() => {
         const ks = [...document.querySelectorAll('.wgrid2 .wi')].map(x => x.dataset.w || x.dataset.e).join();
         return (
-          ks === 'fmax,pferm,occ,ret,pot' &&
+          ks === 'fmax,pferm,occ,ret,pot,abs' /* 6.10.0 : absorption des drêches */ &&
           !document.querySelector('.wgrid2 .wt th') &&
           document.querySelector('.wi[data-w="pot"]').readOnly &&
           document.querySelectorAll('#calcp [data-calc]').length === 4 &&
@@ -1298,7 +1320,7 @@ async function scenarioApp(label) {
       )
     );
     check(
-      'Paramètres › Équipement & process : sous-section « Valeurs par défaut » (ébullition, évaporation, T° initiale, chauffe, refroidissement, absorption, DI, IBU, ratio par défaut)',
+      'Paramètres › Équipement & process : sous-section « Valeurs par défaut » (chauffe, refroidissement, DI, IBU, ratio par défaut) — 6.10.0 : plus d’ébullition, T° initiale dans le Process, absorption dans les paramètres de brassage',
       await page.evaluate(() => {
         const p = document.querySelector('.panel.full'),
           top = [...p.querySelector('.eq').querySelectorAll('[data-e], [data-w]')].map(i => i.dataset.e || i.dataset.w),
@@ -1306,7 +1328,10 @@ async function scenarioApp(label) {
         return (
           /Valeurs par défaut/.test(p.querySelector('h4.eqsub').textContent) &&
           top.join() === 'name,cmax,eff,mort,evap' &&
-          def.join() === 'boilD,t0,chauffe,refroid,abs,ogT,ibuT,ratioD'
+          def.join() === 'chauffe,refroid,ogT,ibuT,ratioD' &&
+          !p.querySelector('[data-e="boilD"]') &&
+          !!document.querySelector('.wt input.t0in[data-e="t0"]') &&
+          document.querySelector('.wt input.t0in').closest('tr') === document.querySelector('.wt input.t0in').closest('table').querySelector('tr:last-child')
         );
       })
     );
@@ -2324,10 +2349,10 @@ check(
               bm = () => S.kv.recipe.mash.find(r => r.role === 'boil').m;
             show('params');
             /* 6.9.0 : plus de « Volume à embouteiller » dans les Paramètres (référence : Conception) */
-            o.has = !document.querySelector('.eq [data-e="volD"]') && !!document.querySelector('.eq [data-e="boilD"]') && !document.querySelector('.eq [data-e="vol"]');
-            const b0 = bm();
-            inp('.eq [data-e="boilD"]', '75');
-            o.indep = S.kv.equip.boilD === 75 && bm() === b0;
+            /* 6.10.0 : plus de « Durée d’ébullition » dans les Paramètres (réglée dans la Conception) */
+            o.has = !document.querySelector('.eq [data-e="volD"]') && !document.querySelector('[data-e="boilD"]') && !document.querySelector('.eq [data-e="vol"]');
+            S.kv.equip.boilD = 75;
+            o.indep = true;
             show('conception');
             inp('[data-e="vol"]', '22');
             document.querySelector('#newrec').click();
@@ -2335,7 +2360,7 @@ check(
             return o;
           });
           check(
-            'Paramètres : « Durée d’ébullition » par défaut des nouvelles recettes ; le volume à embouteiller reste celui de la Conception (plus dans les Paramètres)',
+            'Paramètres : plus de « Durée d’ébullition » (6.10.0, valeur gardée pour les nouvelles recettes) ; le volume à embouteiller reste celui de la Conception (plus dans les Paramètres)',
             vb.has && vb.indep && vb.nw,
             JSON.stringify(vb)
           );
@@ -4461,7 +4486,7 @@ check(
           /Phase 1/.test(h) &&
           /Phase 2/.test(h) &&
           /DF \(densité finale/.test(h) &&
-          /Eau totale/.test(h) &&
+          /Empâtage \+ rinçage \+ divers/.test(h) &&
           /Ajouts de minéraux/.test(h) &&
           /RATIO SO\/CL<\/td><td>[0-9]/.test(h) &&
           /CO2-vol<\/td><td>[0-9]/.test(h) &&
@@ -4472,7 +4497,7 @@ check(
           'PROCESS',
           'Phase 1',
           'DF (densité finale',
-          'Eau totale',
+          'Empâtage + rinçage + divers',
           'Ajouts de minéraux',
           'Écorce',
           'Densité post-ébullition'
@@ -4931,8 +4956,86 @@ check(
     const f2 = await page.evaluate(
       () => [...document.querySelectorAll('tr[data-ri]')].filter(r => r.style.display !== 'none').length
     );
-    await page.fill('input.fi[data-fc="ebc"]', '');
     await page.fill('input.fi[data-fc="name"]', '');
+    {
+      /* 6.10.0 : filtres numériques (<, >, <=, >=, =, !=, intervalles [a;b] ]a;b[ ]a;b] [a;b[, liste a;b) */
+      const nf = await page.evaluate(() => {
+        const cases = {
+          '<3': x => x < 3,
+          '>4': x => x > 4,
+          '>=4': x => x >= 4,
+          '<=3': x => x <= 3,
+          '!=3': x => x !== 3,
+          '[2;4]': x => x >= 2 && x <= 4,
+          ']2;4[': x => x > 2 && x < 4,
+          ']2;4]': x => x > 2 && x <= 4,
+          '[2;4[': x => x >= 2 && x < 4,
+          '2;4': x => x === 2 || x === 4,
+          '[2,5;10]': x => x >= 2.5 && x <= 10
+        };
+        const bad = [];
+        for (const [e, fn] of Object.entries(cases)) {
+          const f = numFilter(e);
+          if (!f) bad.push(e + ':null');
+          else [0, 2, 2.5, 3, 3.5, 4, 5, 10, -1].forEach(x => f(x) !== fn(x) && bad.push(e + ':' + x));
+        }
+        ['3', '=3', '3,5'].forEach(e => {
+          const f = numFilter(e),
+            n = e === '3,5' ? 3.5 : 3;
+          if (!f || !f(n) || f(n + 1)) bad.push('égal ' + e);
+        });
+        ['pils', '', 'a;b', '[2;b]'].forEach(e => numFilter(e) && bad.push('texte ' + e));
+        return bad;
+      });
+      check('filtres numériques : opérateurs, intervalles inclus / exclus et liste de valeurs', nf.length === 0, nf.join(' '));
+      const vis = () =>
+        page.evaluate(() => [...document.querySelectorAll('tr[data-ri]')].filter(r => r.style.display !== 'none').length);
+      const exp = e =>
+        page.evaluate(
+          e => Math.min(S.malts.filter(m => isNum(m.ebc) && numFilter(e)(fnum(m.ebc))).length, PGSZ),
+          e
+        );
+      const ui = [];
+      for (const e of ['[2;4]', '>10', '<=3', '2;4']) {
+        await page.fill('input.fi[data-fc="ebc"]', e);
+        await wait(100);
+        const v = await vis(),
+          x = await exp(e);
+        if (v !== x) ui.push(`${e}:${v}≠${x}`);
+      }
+      const tip = await page.evaluate(() => [
+        /Filtre numérique/.test(document.querySelector('input.fi[data-fc="ebc"]').title),
+        !document.querySelector('input.fi[data-fc="name"]').title
+      ]);
+      check(
+        'Malts : filtre numérique sur la colonne EBC (lignes affichées = lignes attendues), infobulle de syntaxe sur les seules colonnes numériques',
+        ui.length === 0 && tip.every(Boolean),
+        ui.join(' ') + JSON.stringify(tip)
+      );
+    }
+    {
+      /* 6.10.0 : « 3 » = égal à 3, réécrit « =3 » en quittant le champ ; colonne texte et stock 0/1 inchangés */
+      await page.fill('input.fi[data-fc="ebc"]', '3');
+      await page.press('input.fi[data-fc="ebc"]', 'Tab');
+      await wait(100);
+      const r = await page.evaluate(() => ({
+        v: document.querySelector('input.fi[data-fc="ebc"]').value,
+        f: FLT.malts.ebc,
+        n: [...document.querySelectorAll('tr[data-ri]')].filter(r => r.style.display !== 'none').length,
+        x: Math.min(S.malts.filter(m => isNum(m.ebc) && Math.abs(fnum(m.ebc) - 3) < 1e-9).length, PGSZ)
+      }));
+      await page.fill('input.fi[data-fc="ebc"]', '');
+      await page.fill('input.fi[data-fc="name"]', '3');
+      await page.press('input.fi[data-fc="name"]', 'Tab');
+      const tn = await page.evaluate(() => document.querySelector('input.fi[data-fc="name"]').value);
+      await page.fill('input.fi[data-fc="name"]', '');
+      check(
+        'filtre « 3 » sur une colonne numérique : lignes égales à 3, réécrit « =3 » en quittant le champ (pas sur une colonne texte)',
+        r.v === '=3' && r.f === '=3' && r.n === r.x && tn === '3',
+        JSON.stringify([r, tn])
+      );
+    }
+    await page.fill('input.fi[data-fc="ebc"]', '');
     await wait(100);
     await page.click('tr[data-ri="0"] [data-dup]');
     await wait(150);
@@ -7608,8 +7711,11 @@ async function scenarioI18n() {
       })
     );
     check(
-      'HTML : numéro de brassin (année#rang) ajouté aux paramètres et recalculé pour la bibliothèque (version du gabarit 4)',
-      await page.evaluate(() => /Brassin N°/.test(htmlCode()) && htmlCode().includes(brewNo(S.kv.recipe).code) && HTMLV === 4)
+      'HTML (6.10.0) : plus de ligne « Brassin N° » ni de tableau ÉLECTRICITÉ ; version du gabarit 6',
+      await page.evaluate(() => {
+        const h = htmlCode();
+        return !/Brassin N°/.test(h) && !/ÉLECTRICITÉ/.test(h) && /PARAMETRES/.test(h) && /LEVURE/.test(h) && HTMLV === 6;
+      })
     );
     {
       /* Paramètres › Réglages : export de la base */

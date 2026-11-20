@@ -5727,3 +5727,30 @@ header a.kofi img {
 #calcp .wt input.wi {
   width: 80px;
 }
+
+/* 6.10.0 — Process : bouton « ＋ » d'ajout d'étape lisible, comme le « ＋ » des tableaux de la Conception */
+.ptab th.pact button.padd,
+.ptab th.pact button.padd:hover {
+  border: 1px solid #3a8fe8 !important;
+  border-radius: 3px !important;
+  background: #2f3a49 !important;
+  color: var(--t) !important;
+  padding: 1px 8px !important;
+  font-size: 12px !important;
+  opacity: 1 !important;
+}
+.ptab th.pact button.padd svg {
+  color: var(--t) !important;
+}
+:root.light .ptab th.pact button.padd {
+  background: #fff !important;
+}
+/* 6.10.0 — température initiale de l'eau, saisissable dans le Process */
+main .wt input.t0in {
+  width: 90px;
+  text-align: left;
+  background: var(--in);
+  border: 1px solid var(--b);
+  color: var(--t);
+  font-style: normal;
+}

@@ -2476,7 +2476,8 @@ const nrm = v =>
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
 function fltRow(t, keys, tx) {
-  return `<tr class="flt">${keys.map(c => `<th><input class="fi" data-ft="${t}" data-fc="${c}" ${tx.includes(c) ? `list="fl-${t}-${c}"` : ''} value="${esc((FLT[t] || {})[c] || '')}" placeholder="filtrer…" autocomplete="off">${tx.includes(c) ? `<datalist id="fl-${t}-${c}"></datalist>` : ''}</th>`).join('')}<th><button class="fx" onclick="fltClear('${t}')" title="Effacer tous les filtres et revenir au tri par nom croissant"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M16.2 3.8l4 4a1.6 1.6 0 010 2.3L11 19.3H6.6L3.8 16.5a1.6 1.6 0 010-2.3l10.1-10.4a1.6 1.6 0 012.3 0z"/><path d="M8.5 9.3l6.2 6.2M10.5 19.3H21"/></svg></button></th></tr>`;
+  const num = c => (S[t] || []).some(x => isNum(x[c]));
+  return `<tr class="flt">${keys.map(c => `<th><input class="fi" data-ft="${t}" data-fc="${c}" ${tx.includes(c) ? `list="fl-${t}-${c}"` : ''} value="${esc((FLT[t] || {})[c] || '')}" placeholder="filtrer…"${num(c) ? ` title="${esc('Filtre numérique : 3 ou =3, <3, >4, <=3, >=4, !=3, [2;4] (bornes incluses), ]2;4[ (exclues), ]2;4], [2;4[, 2;4 (égal à 2 ou 4)')}"` : ''} autocomplete="off">${tx.includes(c) ? `<datalist id="fl-${t}-${c}"></datalist>` : ''}</th>`).join('')}<th><button class="fx" onclick="fltClear('${t}')" title="Effacer tous les filtres et revenir au tri par nom croissant"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M16.2 3.8l4 4a1.6 1.6 0 010 2.3L11 19.3H6.6L3.8 16.5a1.6 1.6 0 010-2.3l10.1-10.4a1.6 1.6 0 012.3 0z"/><path d="M8.5 9.3l6.2 6.2M10.5 19.3H21"/></svg></button></th></tr>`;
 }
 function fltClear(t) {
   FLT[t] = {};
@@ -2530,6 +2531,61 @@ function pgFill(table, shown) {
     `<tr class="pgfill" style="height:${h}px"><td colspan="${table.rows[0].cells.length}"></td></tr>`.repeat(PGSZ - shown)
   );
 }
+/* 6.10.0 : filtres numériques des écrans de base (malts, houblons, levures, eaux, styles) — sur les colonnes à valeurs
+   numériques : <3, >4, <=3, >=4, =3, !=3 ou <>3, intervalles [2;4] (bornes incluses), ]2;4[ (exclues), ]2;4], [2;4[,
+   liste 2;4 (égal à l’une des valeurs). Virgule ou point décimal. Renvoie null si l’expression n’est pas numérique
+   (filtre texte habituel). */
+const FNUM = '(-?\\d+(?:[.,]\\d+)?)',
+  fnum = x => parseFloat(String(x).replace(',', '.'));
+function numFilter(expr) {
+  const v = String(expr).trim(),
+    eq = (a, b) => Math.abs(a - b) < 1e-9;
+  let m = new RegExp('^(<=|>=|<>|!=|<|>|=)\\s*' + FNUM + '$').exec(v);
+  if (m) {
+    const n = fnum(m[2]);
+    return {
+      '<': x => x < n,
+      '>': x => x > n,
+      '<=': x => x <= n + 1e-9,
+      '>=': x => x >= n - 1e-9,
+      '=': x => eq(x, n),
+      '!=': x => !eq(x, n),
+      '<>': x => !eq(x, n)
+    }[m[1]];
+  }
+  m = new RegExp('^([\\[\\]])\\s*' + FNUM + '\\s*;\\s*' + FNUM + '\\s*([\\[\\]])$').exec(v);
+  if (m) {
+    const a = fnum(m[2]),
+      b = fnum(m[3]),
+      li = m[1] === '[',
+      ri = m[4] === ']';
+    return x => (li ? x >= a - 1e-9 : x > a) && (ri ? x <= b + 1e-9 : x < b);
+  }
+  if (new RegExp('^' + FNUM + '(\\s*;\\s*' + FNUM + ')+$').test(v)) {
+    const L = v.split(';').map(fnum);
+    return x => L.some(n => eq(x, n));
+  }
+  /* 6.10.0 : un nombre seul = égalité (réécrit « =3 » en quittant le champ, fltNumEq) */
+  if (new RegExp('^' + FNUM + '$').test(v)) {
+    const n = fnum(v);
+    return x => eq(x, n);
+  }
+  return null;
+}
+/* 6.10.0 : filtre d’une colonne numérique — un nombre seul saisi devient « =nombre » (sauf stock 0 / 1 : en stock ou non) */
+function fltNumEq(el) {
+  const t = el.dataset.ft,
+    c = el.dataset.fc,
+    v = el.value.trim();
+  if (c === 'stock' && /^[01]$/.test(v)) return;
+  if (!new RegExp('^' + FNUM + '$').test(v) || !(S[t] || []).some(x => isNum(x[c]))) return;
+  el.value = '=' + v;
+  fltInput(el);
+}
+document.addEventListener('change', e => {
+  if (e.target.classList && e.target.classList.contains('fi')) fltNumEq(e.target);
+});
+const isNum = x => x !== '' && x !== null && x !== undefined && !isNaN(fnum(x));
 function fltApply(t) {
   const act = Object.entries(FLT[t] || {}).filter(([, v]) => v !== ''),
     arr = S[t],
@@ -2538,9 +2594,13 @@ function fltApply(t) {
     const o = arr[+(tr.dataset.ss !== undefined ? tr.dataset.ss : tr.dataset.ri)],
       ok =
         !o ||
-        act.every(([c, v]) =>
-          c === 'stock' && /^[01]$/.test(v.trim()) ? (+o.stock > 0) === (v.trim() === '1') : nrm(o[c]).includes(nrm(v))
-        );
+        act.every(([c, v]) => {
+          if (c === 'stock' && /^[01]$/.test(v.trim())) return (+o.stock > 0) === (v.trim() === '1');
+          const f = numFilter(v);
+          /* filtre numérique : seulement sur une colonne numérique (sinon texte) ; cellule vide = écartée */
+          if (f && arr.some(x => isNum(x[c]))) return isNum(o[c]) && f(fnum(o[c]));
+          return nrm(o[c]).includes(nrm(v));
+        });
     tr.style.display = ok ? '' : 'none';
     if (ok) vis.push(tr);
   });
@@ -2829,11 +2889,8 @@ const EQ = [
   ['evap', 'Taux d’évaporation horaire (L/h)']
 ];
 const EQD = [
-  ['boilD', 'Durée d’ébullition (min)'],
-  ['t0', 'Température initiale de l’eau (°C)'],
   ['chauffe', 'Chauffe (°C/min)'],
   ['refroid', 'Refroidissement (°C/min)'],
-  ['abs', 'Absorption des drêches (L/kg)'],
   ['ogT', 'DI cible par défaut'],
   ['ibuT', 'IBU cible par défaut'],
   ['ratioD', 'Ratio d’empâtage par défaut (L/kg)']
@@ -3061,7 +3118,8 @@ const WIN = [
       ['pferm', 'Perte fond de fermenteur (L)', 'w', 2],
       ['occ', 'Occupation du malt sec concassé (L/kg)', 'w', 2],
       ['ret', 'Rétention d’eau par les grains (L/kg)', 'w', 3],
-      ['pot', 'Potentiel du grain (L°/kg)', 'a', 1]
+      ['pot', 'Potentiel du grain (L°/kg)', 'a', 1],
+      ['abs', 'Absorption des drêches (L/kg)', 'e', 2] /* 6.10.0 : venu des valeurs par défaut */
     ]
   ]
 ];
@@ -3069,7 +3127,7 @@ function wIn(k) {
   const E = S.kv.equip,
     W = E.w || {},
     R = S.kv.recipe;
-  if (['ratio', 'vol', 'eff', 'evap'].includes(k)) return +E[k] || 0;
+  if (['ratio', 'vol', 'eff', 'evap', 'abs'].includes(k)) return +E[k] || 0;
   if (k === 'bout') return +E.vol || 0; /* volume à embouteiller = champ de l'écran Conception (source unique) */
   if (k === 'vmoût') return (+E.vol || 0) + wIn('pferm') - wIn('resuc');
   if (k === 'glace') {
@@ -3184,10 +3242,16 @@ function wcalc() {
   o.tot = pr.rows.length ? pr.rows.reduce((a, x) => a + (+x.a || 0), 0) : o.rinc + o.v0 + ice;
   o.hot = o.vpost;
   o.cold = o.vpost;
-  o.d1 = 1 + o.pts / o.vpre / 1000;
-  o.d2 = 1 + o.pts / o.vpreb / 1000;
-  o.d3 = 1 + o.pts / o.vpost / 1000;
-  o.d4 = 1 + o.pts / o.mg / 1000;
+  /* 6.10.0 : densités ramenées au volume froid (la contraction au refroidissement ne change pas la densité) */
+  const hk = procHotK(pr),
+    kv = r => (r && pr.rows.indexOf(r) < hk.i ? hk.k : 1),
+    dens = () => {
+      o.d1 = 1 + o.pts / (o.vpre * kv(vp)) / 1000;
+      o.d2 = 1 + o.pts / (o.vpreb * kv(vr)) / 1000;
+      o.d3 = 1 + o.pts / (o.vpost * kv(ve)) / 1000;
+      o.d4 = 1 + o.pts / o.mg / 1000;
+    };
+  dens();
   /* 6.8.0 : glace = « Ajouts » des étapes du Process dont le nom contient « glace » (ou de rôle glace) */
   const gl = pr.rows.filter(x => /glace/i.test(x.r.n || '') || x.r.k === 'glace');
   const iceT = gl.length ? gl.reduce((a, x) => a + (+x.a || 0), 0) : ice;
@@ -3196,10 +3260,7 @@ function wcalc() {
   const ot = parseFloat(S.kv.recipe.ogT);
   if (ot > 1 && o.mg > 0) {
     o.pts = (ot - 1) * 1000 * o.mg;
-    o.d1 = 1 + o.pts / o.vpre / 1000;
-    o.d2 = 1 + o.pts / o.vpreb / 1000;
-    o.d3 = 1 + o.pts / o.vpost / 1000;
-    o.d4 = 1 + o.pts / o.mg / 1000;
+    dens();
   }
   return o;
 }
@@ -3327,6 +3388,15 @@ function procDiPhase(P) {
    points extraits). Ensuite (ou dès la fermentation) : les points suivent le liquide perdu, un ajout d’eau dilue,
    la fermentation retire l’atténuation de la levure, le resucrage ajoute le sucre (saccharose 0,384 L° par g/L ×
    volume embouteillé) */
+/* 6.10.0 : volumes chauds — avant l'étape « Contraction du moût au refroidissement », les volumes sont mesurés à chaud ;
+   la densité (mesurée sur un échantillon refroidi) se calcule sur le volume froid équivalent : volume × k,
+   k = volume après contraction ÷ volume avant. La contraction ne change donc pas la densité. i = indice de l'étape. */
+function procHotK(pr) {
+  const i = pr.rows.findIndex(x => x.r.k === 'contr'),
+    c = i >= 0 ? pr.rows[i] : null,
+    vb = c ? c.v + (+c.l || 0) - (+c.a || 0) : 0;
+  return { i, k: c && vb > 0 && c.v > 0 ? c.v / vb : 1 };
+}
 function procDens(pr, pts) {
   const sg = +S.kv.recipe.sucre || 0,
     att = compute().att / 100,
@@ -3335,9 +3405,10 @@ function procDens(pr, pts) {
   let pt = pts,
     sp = 0,
     prop = false;
+  const hk = procHotK(pr);
   out.att = att;
   out.dp = dp;
-  pr.rows.forEach(x => {
+  pr.rows.forEach((x, j) => {
     if (x.ph > dp || x.r.k === 'ferm') prop = true;
     if (prop) {
       const vp = x.v - x.a + x.l;
@@ -3348,7 +3419,7 @@ function procDens(pr, pts) {
         pt += sp;
       }
       out.push(x.v > 0 ? 1 + pt / x.v / 1000 : null);
-    } else out.push(x.v > 0 ? 1 + pts / x.v / 1000 : null);
+    } else out.push(x.v > 0 ? 1 + pts / (x.v * (j < hk.i ? hk.k : 1)) / 1000 : null);
   });
   out.pt = pt;
   out.sp = sp;
@@ -3376,9 +3447,9 @@ function procPanel() {
     tab = (ph, p) =>
       `<table class="ptab" data-phase="${p}"><colgroup><col><col class="cn"><col class="cn"><col class="cn"><col class="cn"><col class="ca"></colgroup><tr class="phr"><th colspan="5" class="ph"><input readonly class="phn" data-phn="${p}" placeholder="Nom de la phase" value="${esc(tx(ph.n || ''))}"></th><td class="pact"><button class="x" data-phm="${p}:-1" title="Monter la phase"${p ? '' : ' disabled'}>▲</button><button class="x" data-phm="${p}:1" title="Descendre la phase"${p < n - 1 ? '' : ' disabled'}>▼</button><button class="x" data-ped="1" title="Renommer la phase">✎</button><button class="x" data-pdel="${p}" title="Supprimer la phase">✕</button></td></tr><tr><th>Étape</th><th>Pertes (L)</th><th>Ajouts (L)</th><th>Volume (L)</th><th>Densité</th><th class="pact"><button class="x padd" data-padd="${p}" title="Ajouter une étape à cette phase">＋</button></th></tr>${ph.rows.map((r, i) => row(p, r, i)).join('')}${p === dp ? sum('di', 'DI', '(densité initiale visée — écran Conception)') : ''}${p === n - 1 ? sum('df', 'DF', '(densité finale : après refermentation en bouteilles)') : ''}</table>`;
   const vt = (([h, r]) =>
-    `<table class="wt"><tr><th colspan="2">${h}</th></tr>${r.map(([k, l, d], i) => `<tr><td>${l}</td><td><input readonly class="wr ro" id="wo-${h[0]}${i}"></td></tr>`).join('')}</table>`)(
+    `<table class="wt"><tr><th colspan="2">${h}</th></tr>${r.map(([k, l, d], i) => `<tr><td>${l}</td><td><input readonly class="wr ro" id="wo-${h[0]}${i}"></td></tr>`).join('')}<tr><td>Température initiale de l’eau (°C)</td><td><input type="number" step="any" class="wr t0in" data-e="t0" value="${esc(S.kv.equip.t0 ?? 12)}"></td></tr></table>`)(
     WOUT[0]
-  );
+  ); /* 6.10.0 : température initiale de l’eau, venue des valeurs par défaut, en dernière ligne des volumes */
   return `<div class="panel" id="procp"><h3>Process<button data-phadd="1" title="Ajouter une phase à la fin du tableau">＋ Phase</button><button data-pzero="1" title="Rétablir les lignes par défaut">↺ défaut</button></h3><small style="color:var(--m)">Case vide = valeur automatique des Paramètres (italique). Saisir une valeur la remplace pour la ligne ; la vider rétablit l’automatique. La densité tient compte des points de sucre extraits.</small>${vt}${P.map(tab).join('')}<div id="pwarn"></div></div>`;
 }
 /* ✎ en bout de ligne : passe la ligne (étape ou nom de phase) en modification ; le nom brut remplace le nom affiché */
@@ -3703,7 +3774,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.9.0',
+const VER = '6.10.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -3841,6 +3912,7 @@ function htmlCode() {
       'Ebulition'
     ],
     pr = procSolve(),
+    wo = wcalc(),
     mt = minTot(),
     sg = +R.sucre || 0,
     co2T = R.tcarbo === undefined || R.tcarbo === '' || R.tcarbo === null || isNaN(R.tcarbo) ? 20 : +R.tcarbo,
@@ -3875,10 +3947,10 @@ function htmlCode() {
     ...tb('tabla-larga', [
       tr('<th colspan="2">PARAMETRES</th>'),
       tr(td('Date de brassage', fd(R.date))),
-      tr(td('Brassin N°:', brewNo(R).code)),
       tr(td('Style:', hh(R.style || '-'))),
       tr(td('Brassin réalisé (embouteillage):', R.embou ? fd(R.embou) : '-')),
       tr(td('Ratio d’empâtage (L/kg):', nf(+E.ratio || 0, 2))),
+      tr(td('Durée d’ébullition (min):', (m => (m > 0 ? nf(m, 0) : '-'))(+(R.mash || []).find(r => r.role === 'boil')?.m || 0))),
       tr(td('DI cible:', R.ogT ? nf(+R.ogT, 3) : '-')),
       tr(td('IBU cible:', R.ibuT ? nf(+R.ibuT, 0) : '-')),
       tr(td('Volume à embouteiller:', V + 'L')),
@@ -3890,11 +3962,10 @@ function htmlCode() {
     ]),
     ...tb('tabla-larga', [
       tr(th('EAU', 'Volume (L) prévu', 'Volume (L) réalisé')),
-      tr(td('Eau initial:', nf(b.o.v0, 1), rv('v_emp'))),
-      tr(td('Eau de rinçage:', nf(b.sp, 1), rv('v_rinc'))),
-      tr(td('Eau totale (sans la glace):', nf(b.o.v0 + b.sp, 1), '-')),
-      tr(td('Volume de glace dans le fermenteur:', nf(wIn('glace'), 1), '-')),
-      tr(td('Eau totale avec la glace:', nf(b.o.v0 + b.sp + wIn('glace'), 1), '-')),
+      /* 6.10.0 : mêmes lignes que « Quantités d’eau » (Conception) ; total = tous les ajouts du Process */
+      tr(td('Eau d’empâtage:', nf(wo.v0, 1), rv('v_emp'))),
+      tr(td('Eau de rinçage:', nf(wo.rinc, 1), rv('v_rinc'))),
+      tr(td('Empâtage + rinçage + divers:', nf(wo.tot, 1), '-'), 'total'),
       tr(td('Volume début d’ébullition:', nf(b.vPre, 1), rv('v_debeb'))),
       tr(td('Volume fin d’ébullition:', nf(b.vEnd, 1), rv('v_fineb'))),
       tr(td('Moût dans le fermenteur (glace fondue):', nf(b.o.mg, 1), '-'))
@@ -3967,52 +4038,6 @@ function htmlCode() {
     ...tb('tabla-larga', [
       tr(th('PALIERS', 'Température (°C)', 'Temps (Mn)')),
       ...R.mash.map(r => tr(td(hh(r.k), dash(r.t), dash(r.m))))
-    ]),
-    ...tb('tabla-larga', [
-      tr(th('ÉLECTRICITÉ', 'Puissance (W)', 'Durée (min)', 'kWh')),
-      ...(() => {
-        const v = elecSync(),
-          k = elecKwh();
-        let n = 0;
-        const rows = v.map(({ i, line }) =>
-          tr(
-            td(
-              hh(line.label),
-              nf(+S.elec[i].w || 0, 0),
-              nf(line.min, 1),
-              nf((((+S.elec[i].w || 0) / 1000) * line.min) / 60, 2)
-            )
-          )
-        );
-        S.elec.forEach(l => {
-          if (!l.auto)
-            rows.push(
-              tr(
-                td(
-                  hh(l.name || '-'),
-                  nf(+l.w || 0, 0),
-                  nf(+l.min || 0, 1),
-                  nf((((+l.w || 0) / 1000) * (+l.min || 0)) / 60, 2)
-                )
-              )
-            );
-        });
-        rows.push(
-          tr(
-            td(
-              'Total',
-              '',
-              '',
-              nf(
-                k.reduce((x, y) => x + y, 0),
-                2
-              )
-            ),
-            'total'
-          )
-        );
-        return rows;
-      })()
     ]),
     ...tb('tabla-larga', [
       tr(th('#', 'LEVURE', 'Sachets', 'Aténuation', 'Floculation', 'Tps fermention (j)')),
@@ -4127,7 +4152,7 @@ function htmlCode() {
   ].join('\n');
 }
 /* le code HTML stocké pour chaque recette de la bibliothèque est recalculé quand le gabarit change (HTMLV) — jamais de liste de courses dedans */
-const HTMLV = 4;
+const HTMLV = 6;
 function htmlRefreshAll() {
   const E = S.kv.equip;
   if (E.htmlv === HTMLV) return false;
