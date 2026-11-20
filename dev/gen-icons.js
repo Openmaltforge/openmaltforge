@@ -74,6 +74,7 @@ const NAMES = {
   coffee: 'coffee',
   mail: 'mail',
   info: 'info',
+  hop: 'hop',
   /* ornements des étiquettes et de la feuille de brassage */
   heart: 'heart',
   flower: 'flower',

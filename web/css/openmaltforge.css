@@ -5665,3 +5665,46 @@ header a.kofi img {
 .ptab td.pact button[data-ped] {
   margin-left: 6px;
 }
+
+/* 6.7.0 — Conception : section repliée par double-clic sur son titre (seuls le titre et son trait restent) */
+#main .panel > h3,
+#main .panel > h4 {
+  user-select: none;
+}
+#main .panel.fold > :not(h3):not(h4) {
+  display: none !important;
+}
+#main .panel.fold {
+  padding-bottom: 2px;
+  align-self: start;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* 6.7.0 — Bilan : curseurs DI et IBU déplaçables, poignée ronde au-dessus du curseur */
+.bar.drag s {
+  cursor: ew-resize;
+}
+.bar.drag .knob {
+  position: absolute;
+  left: 50%;
+  top: -11px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--y);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+  cursor: grab;
+  touch-action: none;
+  box-sizing: border-box;
+}
+.bar.drag.on .knob {
+  cursor: grabbing;
+  transform: scale(1.25);
+}
+.bar.drag {
+  margin-top: 12px;
+  touch-action: none;
+}

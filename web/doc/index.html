@@ -208,12 +208,21 @@
           box-shadow: none;
         }
       }
-    </style>
+          /* bouton de retour à l'accueil du site (seulement sur openmaltforge.fr, pas dans l'application) */
+      .home{position:fixed;top:12px;right:14px;z-index:10;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#ffe600;color:#1a1a1a;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+      .home:hover{background:#f5c400}
+      .home[hidden]{display:none}
+</style>
     <script>
       if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
     </script>
   </head>
   <body>
+    <a id="home" class="home" href="../" hidden>← Accueil du site</a>
+    <script>
+      if (window.top === window && /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))
+        document.getElementById('home').hidden = false;
+    </script>
     <div class="wrap">
       <nav aria-label="Sommaire">
         <b>OpenMaltForge</b>
@@ -278,14 +287,15 @@
 
         <h2 id="conception">Conception d’une recette</h2>
         <p>L’écran <b>Conception</b> rassemble la recette en cours. Tout est recalculé à chaque saisie.</p>
+        <p>Un <b>double-clic sur le titre</b> d’une section (radars compris) la <b>replie</b> : seuls son titre et son trait jaune restent ; un nouveau double-clic la déplie. Le choix est mémorisé.</p>
 
         <h3 id="c-recette">Recette et cibles</h3>
         <ul>
           <li><b>Recette, Style</b> (styles BJCP 2021), <b>Volume à embouteiller</b>, <b>Ratio d’empâtage (L/kg)</b>, <b>dates</b> de brassage et d’embouteillage.</li>
           <li><b>Dates</b> :
             <ul>
-              <li><b>Date de brassage</b> : sert au numéro de brassin (<code>année#rang</code>) des étiquettes et du HTML.</li>
-              <li><b>Date d’embouteillage</b> : la renseigner marque le brassin comme <b>réalisé</b>. Ses composants (malts, houblons, levures, ingrédients, consommables, eaux minérales) sont alors <b>déduits du stock</b>, une seule fois, et un message indique combien l’ont été ; la section <b>Analyse organoleptique du brassin</b> apparaît ; la recette porte la coche verte « Réalisé » dans la Bibliothèque et le HTML indique la date d’embouteillage et l’analyse. Effacer la date <b>remet les composants en stock</b> et masque l’analyse. La date d’embouteillage ne peut pas être antérieure à la date de brassage : une telle saisie est refusée (message en rouge) et l’ancienne valeur est rétablie ; de même, la date de brassage ne peut pas dépasser la date d’embouteillage.</li>
+              <li><b>Date de brassage</b> : vide dans une nouvelle recette (<b>＋ Nouvelle recette</b>). La saisir indique que la bière est brassée : les composants de la recette (malts, houblons, levures, ingrédients, consommables, eaux minérales) sont <b>déduits du stock</b>, une seule fois, et un message indique combien l’ont été ; l’effacer <b>les remet en stock</b>. Elle sert aussi au numéro de brassin (<code>année#rang</code>) des étiquettes et du HTML.</li>
+              <li><b>Date d’embouteillage</b> : la renseigner fait apparaître la section <b>Analyse organoleptique du brassin</b> ; la recette porte la coche verte « Réalisé » dans la Bibliothèque et le HTML indique la date d’embouteillage et l’analyse. Elle ne touche pas au stock. Elle ne peut pas être antérieure à la date de brassage : une telle saisie est refusée (message en rouge) et l’ancienne valeur est rétablie ; de même, la date de brassage ne peut pas dépasser la date d’embouteillage.</li>
             </ul>
           </li>
           <li><b>DI cible, IBU cible</b> et bouton <b>Calculer</b> : ajustent la recette pour atteindre la densité initiale et l’amertume voulues, sans changer sa composition.
@@ -360,6 +370,7 @@
           Densités initiale et finale, atténuation, floculation, IBU, couleur (EBC / SRM), alcool, rapports IBU / DI et RBR, avec la
           plage attendue pour le style choisi, puis la couleur estimée de la bière.
         </p>
+        <p><b>Curseurs déplaçables</b> : les curseurs <b>DI</b> et <b>IBU</b> ont une petite <b>poignée ronde</b> au-dessus. Glissez-la avec la souris : la <b>DI cible</b> ou l’<b>IBU cible</b> varie comme la valeur du curseur (le champ suit en direct) ; au relâchement, la recette est recalculée comme avec le bouton <b>Calculer</b> et le curseur reste où vous l’avez lâché. Les autres curseurs sont des indicateurs, ils ne se déplacent pas.</p>
         <figure class="half">
           <img src="img/conception-couts.jpg" alt="Récapitulatif des coûts" />
           <figcaption>Coûts : malts, houblons, levures, ingrédients, électricité, eau, consommables, total et coût au litre.</figcaption>
@@ -436,7 +447,7 @@
         <ul>
           <li>Chaque base a une colonne <b>stock</b> (kg pour les malts, g pour les houblons et ingrédients, sachets pour les levures, unités pour les consommables, litres pour les eaux).</li>
           <li>Base Eaux : <b>prix/L</b> et <b>stock (L)</b> pour les eaux minérales ; leur coût entre dans le coût de l’eau de la recette.</li>
-          <li>Quand la <b>date d’embouteillage</b> de la recette est renseignée, le brassin est « réalisé » : ses composants sont déduits du stock, une seule fois. Effacer la date les remet en stock.</li>
+          <li>Quand la <b>date de brassage</b> de la recette est saisie, ses composants sont déduits du stock, une seule fois. Effacer la date les remet en stock.</li>
         </ul>
 
         <h2 id="bibliotheque">Bibliothèque et imports</h2>

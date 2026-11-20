@@ -208,12 +208,21 @@
           box-shadow: none;
         }
       }
-    </style>
+          /* bouton de retour à l'accueil du site (seulement sur openmaltforge.fr, pas dans l'application) */
+      .home{position:fixed;top:12px;right:14px;z-index:10;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#ffe600;color:#1a1a1a;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+      .home:hover{background:#f5c400}
+      .home[hidden]{display:none}
+</style>
     <script>
       if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
     </script>
   </head>
   <body>
+    <a id="home" class="home" href="../" hidden>← Home del sito</a>
+    <script>
+      if (window.top === window && /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))
+        document.getElementById('home').hidden = false;
+    </script>
     <div class="wrap">
       <nav aria-label="Sommario">
         <b>OpenMaltForge</b>
@@ -278,14 +287,15 @@
 
         <h2 id="conception">Progettare una ricetta</h2>
         <p>La schermata <b>Progettazione</b> raccoglie la ricetta in corso. Tutto viene ricalcolato a ogni inserimento.</p>
+        <p>Un <b>doppio clic sul titolo</b> di una sezione (radar compresi) la <b>comprime</b>: restano solo il titolo e la sua linea gialla; un altro doppio clic la espande. La scelta viene ricordata.</p>
 
         <h3 id="c-recette">Ricetta e obiettivi</h3>
         <ul>
           <li><b>Ricetta, Stile</b> (stili BJCP 2021), <b>Volume da imbottigliare</b>, <b>Rapporto d’ammostamento (L/kg)</b>, <b>date</b> di cotta e di imbottigliamento.</li>
           <li><b>Date</b>:
             <ul>
-              <li><b>Data di cotta</b>: serve per il numero di cotta (<code>anno#rango</code>) delle etichette e dell’HTML.</li>
-              <li><b>Data di imbottigliamento</b>: inserirla segna la cotta come <b>realizzata</b>. I suoi componenti (malti, luppoli, lieviti, ingredienti, consumabili, acque minerali) vengono <b>scalati dalle scorte</b>, una sola volta, e un messaggio indica quanti; compare la sezione <b>Analisi organolettica della cotta</b>; la ricetta riceve la spunta verde «Realizzata» nella Libreria e l’HTML mostra la data di imbottigliamento e l’analisi. Cancellare la data <b>rimette i componenti nelle scorte</b> e nasconde l’analisi. La data di imbottigliamento non può essere anteriore alla data di cotta: un tale inserimento viene rifiutato (messaggio in rosso) e il valore precedente viene ripristinato; allo stesso modo, la data di cotta non può essere successiva a quella di imbottigliamento.</li>
+              <li><b>Data di cotta</b>: vuota in una nuova ricetta (<b>＋ Nuova ricetta</b>). Inserirla indica che la birra è prodotta: i componenti della ricetta (malti, luppoli, lieviti, ingredienti, consumabili, acque minerali) vengono <b>scalati dalle scorte</b>, una sola volta, e un messaggio indica quanti; cancellarla li <b>rimette nelle scorte</b>. Serve anche per il numero di cotta (<code>anno#rango</code>) delle etichette e dell’HTML.</li>
+              <li><b>Data di imbottigliamento</b>: inserirla fa comparire la sezione <b>Analisi organolettica della cotta</b>; la ricetta riceve la spunta verde «Realizzata» nella Libreria e l’HTML mostra la data di imbottigliamento e l’analisi. Non tocca le scorte. Non può essere anteriore alla data di cotta: un tale inserimento viene rifiutato (messaggio in rosso) e il valore precedente viene ripristinato; allo stesso modo, la data di cotta non può essere successiva a quella di imbottigliamento.</li>
             </ul>
           </li>
           <li><b>DI target, IBU target</b> e pulsante <b>Calcola</b>: regolano la ricetta per raggiungere la densità iniziale e l’amaro desiderati, senza cambiarne la composizione.
@@ -360,6 +370,7 @@
           Densità iniziale e finale, attenuazione, flocculazione, IBU, colore (EBC / SRM), alcol, rapporti IBU / DI e RBR, con
           l’intervallo atteso per lo stile scelto, poi il colore stimato della birra.
         </p>
+        <p><b>Cursori trascinabili</b>: i cursori <b>DI</b> e <b>IBU</b> hanno una piccola <b>maniglia rotonda</b> sopra. Trascinala con il mouse: la <b>DI target</b> o gli <b>IBU target</b> variano come il valore del cursore (il campo segue in diretta); al rilascio, la ricetta viene ricalcolata come con il pulsante <b>Calcola</b> e il cursore resta dove l’hai lasciato. Gli altri cursori sono indicatori e non si spostano.</p>
         <figure class="half">
           <img src="img/en/conception-couts.jpg" alt="Riepilogo dei costi" />
           <figcaption>Costi: malti, luppoli, lieviti, ingredienti, elettricità, acqua, materiali di consumo, totale e costo al litro.</figcaption>
@@ -436,7 +447,7 @@
         <ul>
           <li>Ogni database ha una colonna <b>scorte</b> (stock: kg per i malti, g per luppoli e ingredienti, bustine per i lieviti, unità per i materiali di consumo, litri per le acque).</li>
           <li>Database Acque: <b>prezzo/L</b> e <b>scorte (L)</b> per le acque minerali; il loro costo entra nel costo dell’acqua della ricetta.</li>
-          <li>Quando la <b>data di imbottigliamento</b> della ricetta è inserita, la cotta è «realizzata»: i suoi componenti vengono detratti dalle scorte, una sola volta. Cancellare la data li rimette in scorta.</li>
+          <li>Quando la <b>data di cotta</b> della ricetta è inserita, i suoi componenti vengono scalati dalle scorte, una sola volta. Cancellare la data li rimette nelle scorte.</li>
         </ul>
 
         <h2 id="bibliotheque">Libreria e importazioni</h2>

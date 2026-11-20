@@ -1103,7 +1103,7 @@ function costs() {
 }
 /* écran Eaux : seules les eaux minérales s'achètent */
 const eauMin = o => /min[ée]ral/i.test((o && o.type) || '');
-/* stock : à la coche « Réalisé » (date d'embouteillage renseignée), les composants de la recette sont déduits du stock (malts en kg, le reste dans l'unité de la table) ; la date effacée les remet en stock */
+/* stock (6.7.0) : à la saisie de la date de brassage, les composants de la recette sont déduits du stock (malts en kg, le reste dans l'unité de la table) ; la date effacée les remet en stock */
 function stockUse(R) {
   const out = [],
     add = (t, n, q) => {
@@ -1766,7 +1766,7 @@ function aroma(kind, keys) {
   });
   return tot ? v.map(x => x / tot) : v;
 }
-function bar(v, a, b) {
+function bar(v, a, b, drag) {
   if (a == null || isNaN(a)) return '<div class="bar" style="background:#1b2028"></div>';
   const w = Math.max(b - a, ((a + b) / 2) * 0.02),
     lo = a - w,
@@ -1774,8 +1774,54 @@ function bar(v, a, b) {
     g1 = ((a - lo) / (hi - lo)) * 100,
     g2 = ((b - lo) / (hi - lo)) * 100,
     p = Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
-  return `<div class="bar" style="background:linear-gradient(90deg,#d33 0%,#f90 ${g1 / 2}%,#4b4 ${g1}%,#4b4 ${g2}%,#f90 ${(g2 + 100) / 2}%,#d33 100%)"><s style="left:${p}%"></s></div>`;
+  /* 6.7.0 : DI et IBU — curseur déplaçable (poignée ronde au-dessus) qui règle la cible */
+  const dg = drag
+    ? ` drag" data-drag="${drag}" data-lo="${lo}" data-hi="${hi}" data-v="${v}" title="${esc(noIc(tx(drag === 'og' ? 'Glisser la poignée : règle la DI cible, puis recalcule la recette' : 'Glisser la poignée : règle l’IBU cible, puis recalcule la recette')))}`
+    : '';
+  return `<div class="bar${dg}" style="background:linear-gradient(90deg,#d33 0%,#f90 ${g1 / 2}%,#4b4 ${g1}%,#4b4 ${g2}%,#f90 ${(g2 + 100) / 2}%,#d33 100%)"><s style="left:${p}%">${drag ? '<i class="knob"></i>' : ''}</s></div>`;
 }
+/* glisser la poignée d'un curseur DI / IBU : la cible varie comme la valeur affichée (cible + déplacement), le champ
+   « DI cible » / « IBU cible » suit en direct ; au relâchement, la recette est recalculée (bouton Calculer) */
+let BDRAG = null;
+document.addEventListener('pointerdown', e => {
+  const k = e.target.closest && e.target.closest('.bar.drag .knob, .bar.drag s');
+  if (!k) return;
+  const b = k.closest('.bar.drag'),
+    R = S.kv.recipe,
+    f = b.dataset.drag === 'og' ? 'ogT' : 'ibuT';
+  e.preventDefault();
+  BDRAG = { b, f, s: b.querySelector('s'), lo: +b.dataset.lo, hi: +b.dataset.hi, v0: +b.dataset.v, t0: parseFloat(R[f]) || +b.dataset.v };
+  b.classList.add('on');
+  try {
+    k.setPointerCapture(e.pointerId);
+  } catch (_) {}
+});
+document.addEventListener('pointermove', e => {
+  if (!BDRAG) return;
+  const D = BDRAG,
+    r = D.b.getBoundingClientRect(),
+    x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)),
+    v = D.lo + x * (D.hi - D.lo),
+    og = D.f === 'ogT';
+  let t = D.t0 + (v - D.v0);
+  t = og ? Math.max(1.01, Math.min(1.2, Math.round(t * 1000) / 1000)) : Math.max(0.1, Math.round(t * 10) / 10);
+  D.s.style.left = x * 100 + '%';
+  D.t = t;
+  S.kv.recipe[D.f] = t;
+  const inp = document.querySelector(`input[data-r="${D.f}"]`);
+  if (inp) inp.value = t;
+  const lb = D.b.parentElement && D.b.parentElement.querySelector('.bl b');
+  if (lb) lb.textContent = v.toFixed(og ? 3 : 1);
+});
+const bdragEnd = () => {
+  if (!BDRAG) return;
+  const D = BDRAG;
+  BDRAG = null;
+  D.b.classList.remove('on');
+  if (D.t !== undefined) adjust();
+};
+document.addEventListener('pointerup', bdragEnd);
+document.addEventListener('pointercancel', bdragEnd);
 /* Écran conception */
 const HD = {
     malts: ['Malt', 'Poids (kg)', '%', 'Coût (€)'],
@@ -2223,7 +2269,7 @@ function refresh() {
     rb = gm ? st.ibu_max / gm : undefined;
   $('#bilan').innerHTML =
     [
-      ['Densité initiale (DI)', c.og, st.og_min, st.og_max, 3],
+      ['Densité initiale (DI)', c.og, st.og_min, st.og_max, 3, 'og'],
       ['Densité finale obtenue', c.fg, st.fg_min, st.fg_max, 3],
       ['Atténuation levure' + (R.yeasts.length > 1 ? ' (moy.)' : '') + ' %', c.att, c.attMin, c.attMax, 0],
       [
@@ -2233,15 +2279,15 @@ function refresh() {
         c.flocMax,
         0
       ],
-      ['IBU (Tinseth)', c.ibu, st.ibu_min, st.ibu_max, 1],
+      ['IBU (Tinseth)', c.ibu, st.ibu_min, st.ibu_max, 1, 'ibu'],
       ['Couleur (EBC)', c.ebc, st.srm_min * 1.97, st.srm_max * 1.97, 0],
       ['Alcool (% vol.)', c.abv, st.abv_min, st.abv_max, 1],
       ['IBU / DI', rt.ibudi, ra, rb, 2],
       ['RBR', rt.rbr, ra, rb, 2]
     ]
       .map(
-        ([l, v, a, b, d]) =>
-          `<div class="bi"><div class="bl"><span>${l}</span><b>${v.toFixed(d)}</b></div>${bar(v, a, b)}<small>attendu : ${a == null || isNaN(a) ? '-' : +(+a).toFixed(3) + '–' + +(+b).toFixed(3)}</small></div>`
+        ([l, v, a, b, d, k]) =>
+          `<div class="bi"><div class="bl"><span>${l}</span><b>${v.toFixed(d)}</b></div>${bar(v, a, b, k)}<small>attendu : ${a == null || isNaN(a) ? '-' : +(+a).toFixed(3) + '–' + +(+b).toFixed(3)}</small></div>`
       )
       .join('') + colorBar(c.ebc);
   fillCosts();
@@ -3609,7 +3655,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.6.1',
+const VER = '6.7.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4367,6 +4413,44 @@ function biblio() {
 }
 SCR.html[1] = htmlScreen;
 SCR.sheet[1] = sheetScreen;
+/* 6.7.0 : écran Conception — double-clic sur le titre d'une section (h3, ou h4 des radars) = la replier (seuls le titre et
+   son trait jaune restent) ou la déplier. Clé = texte français d'origine du titre (avant traduction), mémorisée dans
+   S.kv.equip.folds ; réappliquée après chaque nouveau rendu (observateur sur #main). */
+const foldKey = h => {
+  let t = '';
+  for (const n of h.childNodes) if (n.nodeType === 3) t += n.__o !== undefined ? n.__o : n.data;
+  return t.replace(/\s+/g, ' ').trim() || (h.textContent || '').trim();
+};
+const foldTitles = () => (CURSCR === 'conception' ? [...document.querySelectorAll('#main .panel > h3, #main .panel > h4')] : []);
+function foldApply() {
+  const F = (S.kv && S.kv.equip && S.kv.equip.folds) || [];
+  foldTitles().forEach(h => {
+    const on = F.includes(foldKey(h));
+    if (h.parentElement.classList.contains('fold') !== on) h.parentElement.classList.toggle('fold', on);
+    if (!h.title) h.title = noIc(tx('Double-clic : replier / déplier la section'));
+  });
+}
+document.addEventListener('dblclick', e => {
+  const h = e.target.closest && e.target.closest('#main .panel > h3, #main .panel > h4');
+  if (!h || CURSCR !== 'conception' || e.target.closest('button, input, select, label, a')) return;
+  const E = S.kv.equip,
+    k = foldKey(h);
+  E.folds = E.folds || [];
+  if (E.folds.includes(k)) E.folds = E.folds.filter(x => x !== k);
+  else E.folds.push(k);
+  getSelection && getSelection().removeAllRanges();
+  foldApply();
+  save();
+});
+let foldQ = false;
+new MutationObserver(() => {
+  if (foldQ) return;
+  foldQ = true;
+  queueMicrotask(() => {
+    foldQ = false;
+    foldApply();
+  });
+}).observe(document.getElementById('main'), { childList: true, subtree: true });
 /* écran affiché (réaffiché au changement de langue : les valeurs traduites par tx() dans les champs ne le sont pas par le DOM) */
 let CURSCR = 'conception';
 function show(s) {
@@ -4394,6 +4478,7 @@ document.addEventListener('click', async e => {
   else if (e.target.id === 'newrec') {
     const D = defaults().recipe;
     delete D.id;
+    D.date = '' /* 6.7.0 : date de brassage à saisir (sa saisie déduit le stock) */;
     D.ogT = S.kv.equip.ogT || D.ogT;
     S.kv.equip.vol = +S.kv.equip.volD || 30 /* volume et ébullition par défaut (Paramètres) */;
     D.ibuT = S.kv.equip.ibuT || D.ibuT;
@@ -4660,18 +4745,22 @@ document.addEventListener('input', e => {
           ? ''
           : parseFloat(t.value)
         : t.value;
-    if (d.r === 'embou') {
+    /* 6.7.0 : la date de brassage renseignée déduit les composants du stock (une fois) ; effacée, elle les remet */
+    if (d.r === 'date') {
       let sm = '';
-      if (R.embou && !R.stk) sm = stockOut(R) + ' composant(s) déduit(s) du stock';
-      else if (!R.embou && R.stk) {
+      if (R.date && !R.stk) sm = stockOut(R) + ' composant(s) déduit(s) du stock';
+      else if (!R.date && R.stk) {
         sm = R.stk.length + ' composant(s) remis en stock';
         stockBack(R);
       }
       const hm = $('#hmsg');
       if (sm && hm) {
-        hm.textContent = '✔ Recette réalisée : ' + sm;
+        hm.textContent = '✔ Brassage : ' + sm;
         hm.className = 'ok';
       }
+    }
+    /* la date d’embouteillage fait toujours apparaître l’analyse organoleptique du brassin */
+    if (d.r === 'embou') {
       const o = $('#orga');
       if (o) o.hidden = !R.embou;
     }

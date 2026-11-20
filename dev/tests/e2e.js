@@ -2046,30 +2046,36 @@ check(
             f2.dispatchEvent(new Event('input', { bubbles: true }));
             o.out = vis() === Math.min(15, S.malts.filter(x => !(+x.stock > 0)).length);
             FLT.malts = {};
-            /* déduction à « Réalisé » */
+            /* 6.7.0 : déduction à la saisie de la date de brassage (la date d’embouteillage ne touche plus au stock) */
             const R = S.kv.recipe;
             R.embou = '';
+            R.date = '';
             delete R.stk;
             const mn = R.malts[0].n,
               g = +R.malts[0].g,
               d0 = find('malts', mn);
             d0.stock = 20;
-            R.date = '2026-11-01'; /* embouteillage après le brassage (6.5.0) */
             show('conception');
-            const eb = document.querySelector('[data-r="embou"]');
+            const eb = document.querySelector('[data-r="embou"]'),
+              db = document.querySelector('[data-r="date"]');
             eb.value = '2026-11-12';
             eb.dispatchEvent(new Event('input', { bubbles: true }));
-            o.ded = Math.abs(d0.stock - (20 - g / 1000)) < 0.002 && Array.isArray(S.kv.recipe.stk) && S.kv.recipe.stk.length > 0;
-            eb.value = '2026-11-13';
-            eb.dispatchEvent(new Event('input', { bubbles: true }));
-            o.once = Math.abs(d0.stock - (20 - g / 1000)) < 0.002;
+            o.noEmbou = Math.abs(d0.stock - 20) < 0.002 && !S.kv.recipe.stk && !document.getElementById('orga').hidden;
             eb.value = '';
             eb.dispatchEvent(new Event('input', { bubbles: true }));
+            db.value = '2026-11-01';
+            db.dispatchEvent(new Event('input', { bubbles: true }));
+            o.ded = Math.abs(d0.stock - (20 - g / 1000)) < 0.002 && Array.isArray(S.kv.recipe.stk) && S.kv.recipe.stk.length > 0;
+            db.value = '2026-11-02';
+            db.dispatchEvent(new Event('input', { bubbles: true }));
+            o.once = Math.abs(d0.stock - (20 - g / 1000)) < 0.002;
+            db.value = '';
+            db.dispatchEvent(new Event('input', { bubbles: true }));
             o.back = Math.abs(d0.stock - 20) < 0.002 && !S.kv.recipe.stk;
             return o;
           });
           check(
-            'Stock : colonne « stock » (5 listes), filtre 1/0 (placeholder « filtrer… »), déduction du stock à « Réalisé » (une seule fois) et remise en stock si décochée',
+            'Stock : colonne « stock » (5 listes), filtre 1/0 (placeholder « filtrer… »), déduction du stock à la saisie de la date de brassage (une seule fois), remise en stock si effacée ; la date d’embouteillage ne touche pas au stock',
             st.cols && st.head && st.ph && st.in && st.out && st.ded && st.once && st.back,
             JSON.stringify(st)
           );
@@ -6107,6 +6113,78 @@ check(
         Object.values(c5).every(Boolean),
         JSON.stringify(c5)
       );
+      /* 6.7.0 : icône hop des Houblons ; repli des sections au double-clic ; curseurs DI / IBU déplaçables ; nouvelle recette sans date */
+      const c67 = await page.evaluate(async () => {
+        const w = ms => new Promise(r => setTimeout(r, ms)),
+          R = S.kv.recipe,
+          o = {};
+        show('conception');
+        await w(200);
+        const hh = [...document.querySelectorAll('#main .panel > h3')].find(h => /Houblons/.test(h.textContent));
+        o.hop = !!hh && !!hh.querySelector('svg.fa-hop');
+        /* repli */
+        const rh = [...document.querySelectorAll('#radars .panel > h4')][1],
+          pm = rh.parentElement;
+        rh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        o.fold = pm.classList.contains('fold') && [...pm.children].every(c => (c === rh) === (getComputedStyle(c).display !== 'none')) && !pm.querySelector('svg:not(.fa)').getClientRects().length;
+        refresh();
+        await w(50);
+        const pm2 = [...document.querySelectorAll('#radars .panel > h4')][1].parentElement;
+        o.keep = pm2.classList.contains('fold') && (S.kv.equip.folds || []).length === 1;
+        pm2.querySelector('h4').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        o.unfold = !pm2.classList.contains('fold') && !(S.kv.equip.folds || []).length;
+        /* curseurs DI / IBU : poignée sur ces deux-là seulement */
+        const kn = [...document.querySelectorAll('#bilan .bar.drag')];
+        o.knobs = kn.length === 2 && kn.every(b => b.querySelector('.knob')) && document.querySelectorAll('#bilan .knob').length === 2;
+        return o;
+      });
+      check(
+        'icône hop des Houblons ; double-clic sur un titre de la Conception = section repliée (mémorisé), puis dépliée ; poignées sur les seuls curseurs DI et IBU',
+        Object.values(c67).every(Boolean),
+        JSON.stringify(c67)
+      );
+      /* glisser la poignée DI : la DI cible suit, puis la recette est recalculée (curseur gardé) */
+      {
+        const og0 = await page.evaluate(() => S.kv.recipe.ogT),
+          kb = await page.locator('#bilan .bar.drag[data-drag="og"] .knob').boundingBox(),
+          bb = await page.locator('#bilan .bar.drag[data-drag="og"]').boundingBox();
+        await page.mouse.move(kb.x + kb.width / 2, kb.y + kb.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(Math.min(bb.x + bb.width - 2, kb.x + 40), kb.y + kb.height / 2, { steps: 5 });
+        const mid = await page.evaluate(() => ({ t: S.kv.recipe.ogT, f: +document.querySelector('input[data-r="ogT"]').value }));
+        await page.mouse.up();
+        await page
+          .waitForFunction(() => /Recalculé/.test((document.querySelector('#hbar .hn[data-k="calc"]') || {}).textContent || ''), null, { timeout: 3000 })
+          .catch(() => {});
+        const end = await page.evaluate(() => ({ t: S.kv.recipe.ogT, og: compute().og }));
+        check(
+          'curseur DI déplacé à la souris : DI cible augmentée (champ suivi en direct), recette recalculée à la DI cible au relâchement',
+          mid.t > og0 && mid.f === mid.t && Math.abs(end.og - end.t) < 0.0015,
+          JSON.stringify({ og0, mid, end })
+        );
+        await page.evaluate(og0 => {
+          S.kv.recipe.ogT = og0;
+          adjust();
+        }, og0);
+        await page.waitForTimeout(200);
+      }
+      /* ＋ Nouvelle recette : date de brassage vide */
+      check(
+        '＋ Nouvelle recette : date de brassage vide',
+        await page.evaluate(async () => {
+          const R0 = JSON.stringify(S.kv.recipe),
+            c0 = JSON.stringify(S.kv.equip.courses || []);
+          document.getElementById('newrec').click();
+          await new Promise(r => setTimeout(r, 150));
+          const ok = S.kv.recipe.date === '' && document.querySelector('input[data-r="date"]').value === '';
+          S.kv.recipe = JSON.parse(R0);
+          S.kv.equip.courses = JSON.parse(c0);
+          conception();
+          return ok;
+        })
+      );
       /* 6.6.0 : courses — bouton info (stock actuel / après achat / après brassage, après 1 s de survol) ; article ajouté
          au caddie de la recette retiré quand le composant sort de la recette ; arômes accentués ; Process : espace crayon */
       const c66 = await page.evaluate(async () => {
@@ -6181,13 +6259,14 @@ check(
         delete R.stk;
         set('date', '2026-06-10');
         const ie = set('embou', '2026-06-01'),
-          o = { refus: R.embou === '' && ie.value === '' && !R.stk, msg: /antérieure à la date de brassage/.test(document.querySelector('#hbar').textContent), min: ie.min === '2026-06-10' };
+          o = { refus: R.embou === '' && ie.value === '', msg: /antérieure à la date de brassage/.test(document.querySelector('#hbar').textContent), min: ie.min === '2026-06-10' };
         set('embou', '2026-06-20');
         o.ok = R.embou === '2026-06-20';
         const idt = set('date', '2026-07-01');
         o.refusDate = R.date === '2026-06-10' && idt.value === '2026-06-10';
         set('embou', '');
-        o.back = R.embou === '' && !R.stk;
+        set('date', '');
+        o.back = R.embou === '' && !R.stk; /* date de brassage effacée : stock remis (6.7.0) */
         R.date = d0;
         R.embou = e0;
         if (stk0) R.stk = stk0;
@@ -6197,7 +6276,7 @@ check(
         return o;
       });
       check(
-        'date d’embouteillage antérieure à la date de brassage refusée (et inversement), sans mouvement de stock ; bouton Ko-fi de l’en-tête réduit',
+        'date d’embouteillage antérieure à la date de brassage refusée (et inversement) ; date de brassage effacée = stock remis ; bouton Ko-fi de l’en-tête réduit',
         Object.values(dt).every(Boolean),
         JSON.stringify(dt)
       );

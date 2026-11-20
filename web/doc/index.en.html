@@ -208,12 +208,21 @@
           box-shadow: none;
         }
       }
-    </style>
+          /* bouton de retour à l'accueil du site (seulement sur openmaltforge.fr, pas dans l'application) */
+      .home{position:fixed;top:12px;right:14px;z-index:10;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#ffe600;color:#1a1a1a;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+      .home:hover{background:#f5c400}
+      .home[hidden]{display:none}
+</style>
     <script>
       if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
     </script>
   </head>
   <body>
+    <a id="home" class="home" href="../" hidden>← Website home</a>
+    <script>
+      if (window.top === window && /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))
+        document.getElementById('home').hidden = false;
+    </script>
     <div class="wrap">
       <nav aria-label="Contents">
         <b>OpenMaltForge</b>
@@ -278,14 +287,15 @@
 
         <h2 id="conception">Designing a recipe</h2>
         <p>The <b>Design</b> screen holds the current recipe. Everything is recalculated as you type.</p>
+        <p>A <b>double-click on the title</b> of a section (radars included) <b>folds</b> it: only its title and yellow line remain; another double-click unfolds it. The choice is remembered.</p>
 
         <h3 id="c-recette">Recipe and targets</h3>
         <ul>
           <li><b>Recipe, Style</b> (BJCP 2021 styles), <b>Volume to bottle</b>, <b>Mash ratio (L/kg)</b>, brewing and bottling <b>dates</b>.</li>
           <li><b>Dates</b>:
             <ul>
-              <li><b>Brewing date</b>: used for the batch number (<code>year#rank</code>) on labels and in the HTML.</li>
-              <li><b>Bottling date</b>: filling it in marks the batch as <b>brewed</b>. Its components (malts, hops, yeasts, ingredients, consumables, mineral waters) are then <b>deducted from stock</b>, only once, and a message tells how many were; the <b>Batch tasting analysis</b> section appears; the recipe gets the green “Brewed” tick in the Library and the HTML shows the bottling date and the analysis. Clearing the date <b>puts the components back in stock</b> and hides the analysis. The bottling date cannot be earlier than the brewing date: such an entry is refused (red message) and the previous value is restored; likewise, the brewing date cannot be later than the bottling date.</li>
+              <li><b>Brewing date</b>: empty in a new recipe (<b>＋ New recipe</b>). Filling it in means the beer is brewed: the recipe’s components (malts, hops, yeasts, ingredients, consumables, mineral waters) are <b>deducted from stock</b>, only once, and a message tells how many were; clearing it <b>puts them back in stock</b>. It is also used for the batch number (<code>year#rank</code>) on labels and in the HTML.</li>
+              <li><b>Bottling date</b>: filling it in shows the <b>Batch tasting analysis</b> section; the recipe gets the green “Brewed” tick in the Library and the HTML shows the bottling date and the analysis. It does not touch stock. It cannot be earlier than the brewing date: such an entry is refused (red message) and the previous value is restored; likewise, the brewing date cannot be later than the bottling date.</li>
             </ul>
           </li>
           <li><b>Target OG, Target IBU</b> and the <b>Calculate</b> button: adjust the recipe to reach the original gravity and bitterness you want, without changing its make-up.
@@ -360,6 +370,7 @@
           Original and final gravities, attenuation, flocculation, IBU, colour (EBC / SRM), alcohol, IBU / OG and RBR ratios, with
           the expected range for the chosen style, then the estimated colour of the beer.
         </p>
+        <p><b>Draggable cursors</b>: the <b>OG</b> and <b>IBU</b> cursors have a small <b>round handle</b> above them. Drag it with the mouse: the <b>target OG</b> or <b>target IBU</b> changes like the cursor value (the field follows live); on release, the recipe is recalculated as with the <b>Calculate</b> button and the cursor stays where you dropped it. The other cursors are indicators and do not move.</p>
         <figure class="half">
           <img src="img/en/conception-couts.jpg" alt="Cost summary" />
           <figcaption>Costs: malts, hops, yeasts, ingredients, electricity, water, consumables, total and cost per litre.</figcaption>
@@ -436,7 +447,7 @@
         <ul>
           <li>Each database has a <b>stock</b> column (kg for malts, g for hops and ingredients, sachets for yeasts, units for consumables, litres for waters).</li>
           <li>Waters database: <b>price/L</b> and <b>stock (L)</b> for mineral waters; their cost is included in the water cost of the recipe.</li>
-          <li>When the <b>bottling date</b> of the recipe is filled in, the brew is “achieved”: its components are deducted from the stock, once only. Clearing the date puts them back in stock.</li>
+          <li>When the recipe’s <b>brewing date</b> is entered, its components are deducted from stock, only once. Clearing the date puts them back in stock.</li>
         </ul>
 
         <h2 id="bibliotheque">Library and imports</h2>

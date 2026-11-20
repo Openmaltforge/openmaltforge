@@ -208,12 +208,21 @@
           box-shadow: none;
         }
       }
-    </style>
+          /* bouton de retour à l'accueil du site (seulement sur openmaltforge.fr, pas dans l'application) */
+      .home{position:fixed;top:12px;right:14px;z-index:10;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#ffe600;color:#1a1a1a;font-weight:700;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+      .home:hover{background:#f5c400}
+      .home[hidden]{display:none}
+</style>
     <script>
       if (/[?&]theme=light/.test(location.search)) document.documentElement.classList.add('light');
     </script>
   </head>
   <body>
+    <a id="home" class="home" href="../" hidden>← Inicio del sitio</a>
+    <script>
+      if (window.top === window && /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))
+        document.getElementById('home').hidden = false;
+    </script>
     <div class="wrap">
       <nav aria-label="Índice">
         <b>OpenMaltForge</b>
@@ -278,14 +287,15 @@
 
         <h2 id="conception">Diseño de una receta</h2>
         <p>La pantalla <b>Diseño</b> reúne la receta en curso. Todo se recalcula con cada entrada.</p>
+        <p>Un <b>doble clic en el título</b> de una sección (radares incluidos) la <b>pliega</b>: solo quedan su título y su línea amarilla; otro doble clic la despliega. La elección se recuerda.</p>
 
         <h3 id="c-recette">Receta y objetivos</h3>
         <ul>
           <li><b>Receta, Estilo</b> (estilos BJCP 2021), <b>Volumen a embotellar</b>, <b>Relación de empastado (L/kg)</b>, <b>fechas</b> de elaboración y de embotellado.</li>
           <li><b>Fechas</b>:
             <ul>
-              <li><b>Fecha de elaboración</b>: sirve para el número de lote (<code>año#rango</code>) de las etiquetas y del HTML.</li>
-              <li><b>Fecha de embotellado</b>: rellenarla marca el lote como <b>realizado</b>. Sus componentes (maltas, lúpulos, levaduras, ingredientes, consumibles, aguas minerales) se <b>descuentan de las existencias</b>, una sola vez, y un mensaje indica cuántos; aparece la sección <b>Análisis organoléptico del lote</b>; la receta lleva la marca verde «Realizado» en la Biblioteca y el HTML indica la fecha de embotellado y el análisis. Borrar la fecha <b>devuelve los componentes a las existencias</b> y oculta el análisis. La fecha de embotellado no puede ser anterior a la fecha de elaboración: esa entrada se rechaza (mensaje en rojo) y se restablece el valor anterior; del mismo modo, la fecha de elaboración no puede ser posterior a la de embotellado.</li>
+              <li><b>Fecha de elaboración</b>: vacía en una receta nueva (<b>＋ Nueva receta</b>). Indicarla significa que la cerveza está elaborada: los componentes de la receta (maltas, lúpulos, levaduras, ingredientes, consumibles, aguas minerales) se <b>descuentan de las existencias</b>, una sola vez, y un mensaje indica cuántos; borrarla los <b>devuelve a las existencias</b>. También sirve para el número de lote (<code>año#rango</code>) de las etiquetas y del HTML.</li>
+              <li><b>Fecha de embotellado</b>: indicarla hace aparecer la sección <b>Análisis organoléptico del lote</b>; la receta lleva la marca verde «Realizado» en la Biblioteca y el HTML indica la fecha de embotellado y el análisis. No toca las existencias. No puede ser anterior a la fecha de elaboración: esa entrada se rechaza (mensaje en rojo) y se restablece el valor anterior; del mismo modo, la fecha de elaboración no puede ser posterior a la de embotellado.</li>
             </ul>
           </li>
           <li><b>DI objetivo, IBU objetivo</b> y botón <b>Calcular</b>: ajustan la receta para alcanzar la densidad inicial y el amargor deseados, sin cambiar su composición.
@@ -360,6 +370,7 @@
           Densidades inicial y final, atenuación, floculación, IBU, color (EBC / SRM), alcohol, relaciones IBU / DI y RBR, con el
           rango esperado para el estilo elegido, y luego el color estimado de la cerveza.
         </p>
+        <p><b>Cursores desplazables</b>: los cursores <b>DI</b> e <b>IBU</b> tienen un pequeño <b>tirador redondo</b> encima. Arrástrelo con el ratón: la <b>DI objetivo</b> o los <b>IBU objetivo</b> varían como el valor del cursor (el campo lo sigue en directo); al soltar, la receta se recalcula como con el botón <b>Calcular</b> y el cursor se queda donde lo soltó. Los demás cursores son indicadores y no se mueven.</p>
         <figure class="half">
           <img src="img/en/conception-couts.jpg" alt="Resumen de costes" />
           <figcaption>Costes: maltas, lúpulos, levaduras, ingredientes, electricidad, agua, consumibles, total y coste por litro.</figcaption>
@@ -436,7 +447,7 @@
         <ul>
           <li>Cada base tiene una columna <b>stock</b> (kg para las maltas, g para lúpulos e ingredientes, sobres para las levaduras, unidades para los consumibles, litros para las aguas).</li>
           <li>Base Aguas: <b>precio/L</b> y <b>stock (L)</b> para las aguas minerales; su coste entra en el coste del agua de la receta.</li>
-          <li>Cuando se indica la <b>fecha de embotellado</b> de la receta, la elaboración queda «realizada»: sus componentes se descuentan del stock, una sola vez. Borrar la fecha los devuelve al stock.</li>
+          <li>Cuando se indica la <b>fecha de elaboración</b> de la receta, sus componentes se descuentan de las existencias, una sola vez. Borrar la fecha los devuelve a las existencias.</li>
         </ul>
 
         <h2 id="bibliotheque">Biblioteca e importaciones</h2>
