@@ -240,6 +240,7 @@
         <a href="#courses">Lista della spesa e scorte</a>
         <a href="#bibliotheque">Libreria e importazioni</a>
         <a href="#bases">Database degli ingredienti</a>
+        <a class="s" href="#b-filtres">Filtri</a>
         <a href="#html">Resa HTML</a>
         <a href="#etiquettes">Etichette</a>
         <a href="#feuille">Scheda di cotta</a>
@@ -475,11 +476,34 @@
           <figcaption>Database dei malti: confronto di fino a 5 malti sul radar, poi la tabella (filtri, ordinamento, paginazione).</figcaption>
         </figure>
         <ul>
-          <li>Una riga di <b>filtri</b> sotto le intestazioni (testo o numero). Su una colonna numerica (malti, luppoli, lieviti, acque, stili), il filtro accetta una condizione: <code>&lt;3</code>, <code>&gt;4</code>, <code>&lt;=3</code>, <code>&gt;=4</code>, <code>3</code> o <code>=3</code> (uguale a 3; «3» diventa «=3» uscendo dal campo), <code>!=3</code>, un intervallo <code>[2;4]</code> (estremi inclusi), <code>]2;4[</code> (esclusi), <code>]2;4]</code>, <code>[2;4[</code>, o un elenco <code>2;4</code> (valori uguali a 2 o a 4); la virgola decimale è accettata, una riga senza valore viene scartata; ordinamento con un clic sull’intestazione; <b>paginazione</b> di 15 righe.</li>
+          <li>Una riga di <b>filtri</b> sotto le intestazioni (vedi <a href="#b-filtres">Filtri</a> più sotto); ordinamento con un clic sull’intestazione; <b>paginazione</b> di 15 righe.</li>
           <li>A fine riga: <b>matita</b> (modificare la riga, altrimenti in sola lettura), <b>duplicare</b>, <b>carrello</b> (lista della spesa), <b>croce</b> (eliminare). Il <b>＋</b> dell’intestazione aggiunge una riga.</li>
           <li><b>Esporta CSV</b>, <b>Incolla CSV</b> (importare righe da un foglio di calcolo) e <b>Cancella tutto</b>.</li>
           <li>Note aromatiche su una scala da 0 a 5; malti, luppoli e lieviti si confrontano su un radar (fino a 5 nomi).</li>
           <li><b>Stili</b>: i 123 stili BJCP 2021 con descrizione, intervalli (IBU, SRM, OG, FG, ABV) e profili d’acqua; <b>＋ Stile</b> per aggiungerne uno. Gli stili «speciali» senza intervalli (DI, DF, IBU, SRM, ABV: 21B, 27, da 28 a 34) ricevono, per ogni intervallo mancante, il valore più basso e quello più alto di tutti gli stili, perché il bilancio e il calcolo restino coerenti.</li>
+        </ul>
+        <h3 id="b-filtres">Filtri</h3>
+        <p>Ogni colonna ha il suo campo di filtro, subito sotto l’intestazione. Più filtri si sommano: una riga è mostrata solo se li rispetta tutti. Il pulsante <b>gomma</b>, in fondo alla riga, cancella tutti i filtri e torna all’ordinamento per nome. Su una colonna numerica (EBC, alfa, attenuazione, prezzo, scorta, ioni, intervalli degli stili…), il filtro accetta un’espressione matematica; <i>x</i> indica il valore della colonna:</p>
+        <table>
+          <tr><th>Espressione</th><th>Righe mostrate</th></tr>
+          <tr><td><code>pils</code></td><td>colonna di testo: il valore contiene «pils» (senza distinguere maiuscole né accenti)</td></tr>
+          <tr><td><code>3</code> o <code>=3</code></td><td><i>x</i> = 3; «3» viene riscritto «=3» uscendo dal campo</td></tr>
+          <tr><td><code>!=3</code> o <code>&lt;&gt;3</code></td><td><i>x</i> ≠ 3</td></tr>
+          <tr><td><code>&lt;3</code></td><td><i>x</i> &lt; 3</td></tr>
+          <tr><td><code>&lt;=3</code></td><td><i>x</i> ≤ 3</td></tr>
+          <tr><td><code>&gt;4</code></td><td><i>x</i> &gt; 4</td></tr>
+          <tr><td><code>&gt;=4</code></td><td><i>x</i> ≥ 4</td></tr>
+          <tr><td><code>[2;4]</code></td><td>2 ≤ <i>x</i> ≤ 4 (estremi inclusi)</td></tr>
+          <tr><td><code>]2;4[</code></td><td>2 &lt; <i>x</i> &lt; 4 (estremi esclusi)</td></tr>
+          <tr><td><code>]2;4]</code></td><td>2 &lt; <i>x</i> ≤ 4</td></tr>
+          <tr><td><code>[2;4[</code></td><td>2 ≤ <i>x</i> &lt; 4</td></tr>
+          <tr><td><code>2;4</code></td><td><i>x</i> = 2 o <i>x</i> = 4 (elenco: quanti valori si vuole, es. <code>2;4;6</code>)</td></tr>
+        </table>
+        <ul>
+          <li>La virgola o il punto fanno da separatore decimale (<code>&gt;=3,5</code> = <code>&gt;=3.5</code>); i numeri negativi sono accettati (<code>&gt;-1</code>) e gli spazi ignorati.</li>
+          <li>Una riga con la casella vuota viene scartata da un’espressione numerica.</li>
+          <li>Colonna <b>scorta</b>: <code>1</code> = disponibile, <code>0</code> = esaurito.</li>
+          <li>Su una colonna di testo, o finché l’espressione è incompleta (es. <code>2;</code>), quanto scritto viene cercato come testo. Il suggerimento dei campi di filtro numerici ricorda la sintassi.</li>
         </ul>
         <figure>
           <img src="img/en/styles.jpg" alt="Stili BJCP" />

@@ -240,6 +240,7 @@
         <a href="#courses">Liste de courses et stock</a>
         <a href="#bibliotheque">Bibliothèque et imports</a>
         <a href="#bases">Bases d’ingrédients</a>
+        <a class="s" href="#b-filtres">Filtres</a>
         <a href="#html">Rendu HTML</a>
         <a href="#etiquettes">Étiquettes</a>
         <a href="#feuille">Feuille de brassage</a>
@@ -475,11 +476,34 @@
           <figcaption>Base des malts : comparaison de jusqu’à 5 malts sur le radar, puis le tableau (filtres, tri, pagination).</figcaption>
         </figure>
         <ul>
-          <li>Une ligne de <b>filtres</b> sous les en-têtes (texte ou nombre). Sur une colonne de nombres (malts, houblons, levures, eaux, styles), le filtre accepte une condition : <code>&lt;3</code>, <code>&gt;4</code>, <code>&lt;=3</code>, <code>&gt;=4</code>, <code>3</code> ou <code>=3</code> (égal à 3 ; « 3 » devient « =3 » en quittant le champ), <code>!=3</code>, un intervalle <code>[2;4]</code> (bornes incluses), <code>]2;4[</code> (exclues), <code>]2;4]</code>, <code>[2;4[</code>, ou une liste <code>2;4</code> (valeurs égales à 2 ou à 4) ; la virgule décimale est acceptée, une ligne sans valeur est écartée ; tri par clic sur l’en-tête ; <b>pagination</b> par 15 lignes.</li>
+          <li>Une ligne de <b>filtres</b> sous les en-têtes (voir <a href="#b-filtres">Filtres</a> ci-dessous) ; tri par clic sur l’en-tête ; <b>pagination</b> par 15 lignes.</li>
           <li>En fin de ligne : <b>crayon</b> (modifier la ligne, en lecture seule sinon), <b>dupliquer</b>, <b>caddie</b> (liste de courses), <b>croix</b> (supprimer). Le <b>＋</b> de l’en-tête ajoute une ligne.</li>
           <li><b>Exporter CSV</b>, <b>Coller CSV</b> (importer des lignes depuis un tableur) et <b>Tout effacer</b>.</li>
           <li>Notes aromatiques sur une échelle de 0 à 5 ; malts, houblons et levures se comparent sur un radar (jusqu’à 5 noms).</li>
           <li><b>Styles</b> : les 123 styles BJCP 2021 avec description, plages (IBU, SRM, OG, FG, ABV) et profils d’eau ; <b>＋ Style</b> pour en ajouter un. Les styles « spéciaux » sans plages (DI, DF, IBU, SRM, ABV : 21B, 27, 28 à 34) reçoivent, pour chaque plage manquante, la valeur la plus basse et la plus haute de tous les styles, pour que le bilan et le calcul restent cohérents.</li>
+        </ul>
+        <h3 id="b-filtres">Filtres</h3>
+        <p>Chaque colonne a son champ de filtre, juste sous l’en-tête. Plusieurs filtres se cumulent : une ligne n’est affichée que si elle les respecte tous. Le bouton <b>gomme</b>, en bout de ligne, efface tous les filtres et revient au tri par nom. Sur une colonne de nombres (EBC, alpha, atténuation, prix, stock, ions, plages des styles…), le filtre accepte une expression mathématique ; <i>x</i> désigne la valeur de la colonne :</p>
+        <table>
+          <tr><th>Expression</th><th>Lignes affichées</th></tr>
+          <tr><td><code>pils</code></td><td>colonne de texte : la valeur contient « pils » (sans tenir compte des majuscules ni des accents)</td></tr>
+          <tr><td><code>3</code> ou <code>=3</code></td><td><i>x</i> = 3 ; « 3 » est réécrit « =3 » en quittant le champ</td></tr>
+          <tr><td><code>!=3</code> ou <code>&lt;&gt;3</code></td><td><i>x</i> ≠ 3</td></tr>
+          <tr><td><code>&lt;3</code></td><td><i>x</i> &lt; 3</td></tr>
+          <tr><td><code>&lt;=3</code></td><td><i>x</i> ≤ 3</td></tr>
+          <tr><td><code>&gt;4</code></td><td><i>x</i> &gt; 4</td></tr>
+          <tr><td><code>&gt;=4</code></td><td><i>x</i> ≥ 4</td></tr>
+          <tr><td><code>[2;4]</code></td><td>2 ≤ <i>x</i> ≤ 4 (bornes incluses)</td></tr>
+          <tr><td><code>]2;4[</code></td><td>2 &lt; <i>x</i> &lt; 4 (bornes exclues)</td></tr>
+          <tr><td><code>]2;4]</code></td><td>2 &lt; <i>x</i> ≤ 4</td></tr>
+          <tr><td><code>[2;4[</code></td><td>2 ≤ <i>x</i> &lt; 4</td></tr>
+          <tr><td><code>2;4</code></td><td><i>x</i> = 2 ou <i>x</i> = 4 (liste : autant de valeurs que voulu, ex. <code>2;4;6</code>)</td></tr>
+        </table>
+        <ul>
+          <li>La virgule ou le point servent de séparateur décimal (<code>&gt;=3,5</code> = <code>&gt;=3.5</code>) ; les nombres négatifs sont acceptés (<code>&gt;-1</code>) et les espaces ignorés.</li>
+          <li>Une ligne dont la case est vide est écartée par une expression numérique.</li>
+          <li>Colonne <b>stock</b> : <code>1</code> = en stock, <code>0</code> = hors stock.</li>
+          <li>Sur une colonne de texte, ou tant que l’expression est incomplète (ex. <code>2;</code>), la saisie est cherchée comme du texte. L’infobulle des champs de filtre numériques rappelle la syntaxe.</li>
         </ul>
         <figure>
           <img src="img/styles.jpg" alt="Styles BJCP" />

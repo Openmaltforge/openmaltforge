@@ -240,6 +240,7 @@
         <a href="#courses">Shopping list and stock</a>
         <a href="#bibliotheque">Library and imports</a>
         <a href="#bases">Ingredient databases</a>
+        <a class="s" href="#b-filtres">Filters</a>
         <a href="#html">HTML rendering</a>
         <a href="#etiquettes">Labels</a>
         <a href="#feuille">Brew sheet</a>
@@ -475,11 +476,34 @@
           <figcaption>Malts database: comparison of up to 5 malts on the radar, then the table (filters, sorting, pagination).</figcaption>
         </figure>
         <ul>
-          <li>A row of <b>filters</b> under the headers (text or number). On a numeric column (malts, hops, yeasts, waters, styles), the filter accepts a condition: <code>&lt;3</code>, <code>&gt;4</code>, <code>&lt;=3</code>, <code>&gt;=4</code>, <code>3</code> or <code>=3</code> (equal to 3; “3” becomes “=3” when leaving the field), <code>!=3</code>, a range <code>[2;4]</code> (bounds included), <code>]2;4[</code> (excluded), <code>]2;4]</code>, <code>[2;4[</code>, or a list <code>2;4</code> (values equal to 2 or 4); a decimal comma is accepted, a row without a value is left out; sorting by clicking the header; <b>pagination</b> by 15 rows.</li>
+          <li>A row of <b>filters</b> under the headers (see <a href="#b-filtres">Filters</a> below); sorting by clicking the header; <b>pagination</b> by 15 rows.</li>
           <li>At the end of the row: <b>pencil</b> (edit the row, read-only otherwise), <b>duplicate</b>, <b>cart</b> (shopping list), <b>cross</b> (delete). The <b>＋</b> in the header adds a row.</li>
           <li><b>Export CSV</b>, <b>Paste CSV</b> (import rows from a spreadsheet) and <b>Clear all</b>.</li>
           <li>Aroma notes on a scale of 0 to 5; malts, hops and yeasts can be compared on a radar (up to 5 names).</li>
           <li><b>Styles</b>: the 123 BJCP 2021 styles with description, ranges (IBU, SRM, OG, FG, ABV) and water profiles; <b>＋ Style</b> to add one. “Specialty” styles without ranges (OG, FG, IBU, SRM, ABV: 21B, 27, 28 to 34) get, for each missing range, the lowest and highest values of all styles, so the summary and the calculation stay consistent.</li>
+        </ul>
+        <h3 id="b-filtres">Filters</h3>
+        <p>Each column has its own filter box, just under the header. Several filters add up: a row is shown only if it meets all of them. The <b>eraser</b> button at the end of the row clears all filters and goes back to sorting by name. On a numeric column (EBC, alpha, attenuation, price, stock, ions, style ranges…), the filter accepts a mathematical expression; <i>x</i> stands for the column value:</p>
+        <table>
+          <tr><th>Expression</th><th>Rows shown</th></tr>
+          <tr><td><code>pils</code></td><td>text column: the value contains “pils” (ignoring case and accents)</td></tr>
+          <tr><td><code>3</code> or <code>=3</code></td><td><i>x</i> = 3; “3” is rewritten “=3” when leaving the field</td></tr>
+          <tr><td><code>!=3</code> or <code>&lt;&gt;3</code></td><td><i>x</i> ≠ 3</td></tr>
+          <tr><td><code>&lt;3</code></td><td><i>x</i> &lt; 3</td></tr>
+          <tr><td><code>&lt;=3</code></td><td><i>x</i> ≤ 3</td></tr>
+          <tr><td><code>&gt;4</code></td><td><i>x</i> &gt; 4</td></tr>
+          <tr><td><code>&gt;=4</code></td><td><i>x</i> ≥ 4</td></tr>
+          <tr><td><code>[2;4]</code></td><td>2 ≤ <i>x</i> ≤ 4 (bounds included)</td></tr>
+          <tr><td><code>]2;4[</code></td><td>2 &lt; <i>x</i> &lt; 4 (bounds excluded)</td></tr>
+          <tr><td><code>]2;4]</code></td><td>2 &lt; <i>x</i> ≤ 4</td></tr>
+          <tr><td><code>[2;4[</code></td><td>2 ≤ <i>x</i> &lt; 4</td></tr>
+          <tr><td><code>2;4</code></td><td><i>x</i> = 2 or <i>x</i> = 4 (list: as many values as you like, e.g. <code>2;4;6</code>)</td></tr>
+        </table>
+        <ul>
+          <li>A comma or a point can be the decimal separator (<code>&gt;=3,5</code> = <code>&gt;=3.5</code>); negative numbers are accepted (<code>&gt;-1</code>) and spaces are ignored.</li>
+          <li>A row whose cell is empty is left out by a numeric expression.</li>
+          <li><b>Stock</b> column: <code>1</code> = in stock, <code>0</code> = out of stock.</li>
+          <li>On a text column, or while the expression is incomplete (e.g. <code>2;</code>), the input is searched as text. The tooltip of numeric filter boxes recalls the syntax.</li>
         </ul>
         <figure>
           <img src="img/en/styles.jpg" alt="BJCP styles" />

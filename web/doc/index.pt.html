@@ -240,6 +240,7 @@
         <a href="#courses">Lista de compras e stock</a>
         <a href="#bibliotheque">Biblioteca e importações</a>
         <a href="#bases">Bases de ingredientes</a>
+        <a class="s" href="#b-filtres">Filtros</a>
         <a href="#html">Renderização HTML</a>
         <a href="#etiquettes">Rótulos</a>
         <a href="#feuille">Folha de brassagem</a>
@@ -475,11 +476,34 @@
           <figcaption>Base dos maltes: comparação de até 5 maltes no radar, e depois a tabela (filtros, ordenação, paginação).</figcaption>
         </figure>
         <ul>
-          <li>Uma linha de <b>filtros</b> sob os cabeçalhos (texto ou número). Numa coluna numérica (maltes, lúpulos, leveduras, águas, estilos), o filtro aceita uma condição: <code>&lt;3</code>, <code>&gt;4</code>, <code>&lt;=3</code>, <code>&gt;=4</code>, <code>3</code> ou <code>=3</code> (igual a 3; «3» passa a «=3» ao sair do campo), <code>!=3</code>, um intervalo <code>[2;4]</code> (limites incluídos), <code>]2;4[</code> (excluídos), <code>]2;4]</code>, <code>[2;4[</code>, ou uma lista <code>2;4</code> (valores iguais a 2 ou a 4); a vírgula decimal é aceite, uma linha sem valor é afastada; ordenação com um clique no cabeçalho; <b>paginação</b> de 15 linhas.</li>
+          <li>Uma linha de <b>filtros</b> sob os cabeçalhos (ver <a href="#b-filtres">Filtros</a> abaixo); ordenação com um clique no cabeçalho; <b>paginação</b> de 15 linhas.</li>
           <li>No fim da linha: <b>lápis</b> (modificar a linha, senão só de leitura), <b>duplicar</b>, <b>carrinho</b> (lista de compras), <b>cruz</b> (eliminar). O <b>＋</b> do cabeçalho acrescenta uma linha.</li>
           <li><b>Exportar CSV</b>, <b>Colar CSV</b> (importar linhas de uma folha de cálculo) e <b>Limpar tudo</b>.</li>
           <li>Notas aromáticas numa escala de 0 a 5; maltes, lúpulos e leveduras comparam-se num radar (até 5 nomes).</li>
           <li><b>Estilos</b>: os 123 estilos BJCP 2021 com descrição, intervalos (IBU, SRM, OG, FG, ABV) e perfis de água; <b>＋ Estilo</b> para adicionar um. Os estilos «especiais» sem intervalos (DI, DF, IBU, SRM, ABV: 21B, 27, 28 a 34) recebem, para cada intervalo em falta, o valor mais baixo e o mais alto de todos os estilos, para que o balanço e o cálculo se mantenham coerentes.</li>
+        </ul>
+        <h3 id="b-filtres">Filtros</h3>
+        <p>Cada coluna tem o seu campo de filtro, logo abaixo do cabeçalho. Vários filtros somam-se: uma linha só é mostrada se os respeitar todos. O botão <b>borracha</b>, no fim da linha, apaga todos os filtros e volta à ordenação por nome. Numa coluna numérica (EBC, alfa, atenuação, preço, stock, iões, intervalos dos estilos…), o filtro aceita uma expressão matemática; <i>x</i> designa o valor da coluna:</p>
+        <table>
+          <tr><th>Expressão</th><th>Linhas mostradas</th></tr>
+          <tr><td><code>pils</code></td><td>coluna de texto: o valor contém «pils» (sem distinguir maiúsculas nem acentos)</td></tr>
+          <tr><td><code>3</code> ou <code>=3</code></td><td><i>x</i> = 3; «3» é reescrito «=3» ao sair do campo</td></tr>
+          <tr><td><code>!=3</code> ou <code>&lt;&gt;3</code></td><td><i>x</i> ≠ 3</td></tr>
+          <tr><td><code>&lt;3</code></td><td><i>x</i> &lt; 3</td></tr>
+          <tr><td><code>&lt;=3</code></td><td><i>x</i> ≤ 3</td></tr>
+          <tr><td><code>&gt;4</code></td><td><i>x</i> &gt; 4</td></tr>
+          <tr><td><code>&gt;=4</code></td><td><i>x</i> ≥ 4</td></tr>
+          <tr><td><code>[2;4]</code></td><td>2 ≤ <i>x</i> ≤ 4 (limites incluídos)</td></tr>
+          <tr><td><code>]2;4[</code></td><td>2 &lt; <i>x</i> &lt; 4 (limites excluídos)</td></tr>
+          <tr><td><code>]2;4]</code></td><td>2 &lt; <i>x</i> ≤ 4</td></tr>
+          <tr><td><code>[2;4[</code></td><td>2 ≤ <i>x</i> &lt; 4</td></tr>
+          <tr><td><code>2;4</code></td><td><i>x</i> = 2 ou <i>x</i> = 4 (lista: tantos valores quantos quiser, ex. <code>2;4;6</code>)</td></tr>
+        </table>
+        <ul>
+          <li>A vírgula ou o ponto servem de separador decimal (<code>&gt;=3,5</code> = <code>&gt;=3.5</code>); os números negativos são aceites (<code>&gt;-1</code>) e os espaços ignorados.</li>
+          <li>Uma linha com a célula vazia é afastada por uma expressão numérica.</li>
+          <li>Coluna <b>stock</b>: <code>1</code> = em stock, <code>0</code> = sem stock.</li>
+          <li>Numa coluna de texto, ou enquanto a expressão estiver incompleta (ex. <code>2;</code>), o que se escreve é procurado como texto. A dica dos campos de filtro numéricos recorda a sintaxe.</li>
         </ul>
         <figure>
           <img src="img/en/styles.jpg" alt="Estilos BJCP" />
