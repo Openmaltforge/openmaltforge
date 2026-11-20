@@ -1960,9 +1960,7 @@ function conception0() {
 <tr><td>Eau d’empâtage + malt</td><td class="pc" id="w-vm"></td></tr>
 <tr><td>Eau de rinçage</td><td class="pc" id="w-rinc"></td></tr>
 <tr><td>Quantité totale d’eau nécessaire (hors glace)</td><td class="pc" id="w-nog"></td></tr>
-<tr><td>Glace dans le fermenteur (L)</td><td><input type="number" min="0" step="0.5" data-r="glace" value="${R.glace ?? 6}"></td></tr>
 <tr class="sum"><td>Empâtage + rinçage + glace</td><td class="pc" id="w-tot"></td></tr>
-<tr><td>T° du moût en fin de transfert</td><td class="pc" id="w-tf"></td></tr>
 <tr><td colspan="2" id="w-warn" style="color:#ffb4b4"></td></tr></table></div><div class="panel"><h3>Resucrage & CO₂</h3><table id="rtab" class="kv"><tr><td>Sucre de resucrage (g/L)</td><td><input type="number" min="0" step="0.1" data-r="sucre" value="${R.sucre ?? ''}"></td></tr>
 <tr><td>Température de la bière (°C)</td><td><input type="number" min="10" max="30" step="0.5" data-r="tcarbo" value="${R.tcarbo ?? ''}" placeholder="20"></td></tr>
 <tr><td>CO₂ résiduel à cette température (vol)</td><td class="pc" id="r-res"></td></tr>
@@ -3080,8 +3078,15 @@ function wIn(k) {
   if (['ratio', 'vol', 'eff', 'evap'].includes(k)) return +E[k] || 0;
   if (k === 'bout') return +E.vol || 0; /* volume à embouteiller = champ de l'écran Conception (source unique) */
   if (k === 'vmoût') return (+E.vol || 0) + wIn('pferm') - wIn('resuc');
-  if (k === 'glace')
+  if (k === 'glace') {
+    /* 6.8.0 : glace = « Ajouts » saisis des étapes du Process dont le nom contient « glace » (ou de rôle glace) ;
+       à défaut, ancienne valeur de la recette, sinon la valeur par défaut */
+    const G = ensureProc()
+      .flatMap(p => p.rows)
+      .filter(r => (/glace/i.test(r.n || '') || r.k === 'glace') && r.a !== undefined && r.a !== '');
+    if (G.length) return G.reduce((t, r) => t + (+r.a || 0), 0);
     return R.glace === undefined || R.glace === '' || R.glace === null || isNaN(R.glace) ? WD.glace : +R.glace;
+  }
   if (k === 'duree') {
     const b = mrow('boil');
     return (+(b && b.m) || 60) / 60;
@@ -3187,7 +3192,10 @@ function wcalc() {
   o.d2 = 1 + o.pts / o.vpreb / 1000;
   o.d3 = 1 + o.pts / o.vpost / 1000;
   o.d4 = 1 + o.pts / o.mg / 1000;
-  o.tf = o.mg ? ((o.mg - ice) * tm - ice * (80 + 0.5 * Math.abs(ti))) / o.mg : 0;
+  /* 6.8.0 : glace = « Ajouts » des étapes du Process dont le nom contient « glace » (ou de rôle glace) */
+  const gl = pr.rows.filter(x => /glace/i.test(x.r.n || '') || x.r.k === 'glace');
+  const iceT = gl.length ? gl.reduce((a, x) => a + (+x.a || 0), 0) : ice;
+  o.tf = o.mg ? ((o.mg - iceT) * tm - iceT * (80 + 0.5 * Math.abs(ti))) / o.mg : 0;
   /* DI (OG) = cible de l'écran Conception : fixe les points extraits pour que la densité après la glace soit égale à la cible */
   const ot = parseFloat(S.kv.recipe.ogT);
   if (ot > 1 && o.mg > 0) {
@@ -3655,7 +3663,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.7.1',
+const VER = '6.8.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4262,7 +4270,7 @@ function biblio() {
       c,
       name: r.name || '',
       brasseur: r.brasseur || '',
-      embou: r.recipe.embou ? 1 : 0,
+      embou: r.recipe.date ? 1 : 0,
       style: r.style || '',
       og: c.og,
       fg: c.fg,
@@ -4330,7 +4338,7 @@ function biblio() {
   const cut = t => `<td class="cut">${t ? `<div class="cutv" title="${esc(t)}">${hh(t)}</div>` : ''}</td>`;
   const rows = LV.map(
     ({ i, r, c }) =>
-      `<tr><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.embou ? '<span class="okc" title="Embouteillé le ' + fd(r.recipe.embou) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxUnres(r.recipe).length ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
+      `<tr><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxUnres(r.recipe).length ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
   ).join('');
   const BFL = {
       name: 'Nom',
@@ -4352,7 +4360,7 @@ function biblio() {
     bfRow = `<tr class="flt"><th>${bfi('name')}</th><th>${bfi('brasseur')}</th><th class="ckc">${bfi('embou')}</th><th>${bfi('style')}</th><th>${bfi('og')}</th><th>${bfi('fg')}</th><th>${bfi('ibu')}</th><th>${bfi('ebc')}</th><th>${bfi('abv')}</th><th>${bfi('malts')}</th><th>${bfi('hops')}</th><th>${bfi('yeasts')}</th><th>${bfx}</th></tr>`,
     bfBar = `<div class="bflt noprint">${BFC.map(bfi).join('')}${bfx}</div>`;
   const th = (c, l, x) =>
-    `<th class="srt${x || ''}" data-sort="${c}"${c === 'embou' ? ' title="Coche verte = date d’embouteillage renseignée"' : ''}>${l}${arrow('biblio', c)}</th>`;
+    `<th class="srt${x || ''}" data-sort="${c}"${c === 'embou' ? ' title="Coche verte = date de brassage renseignée"' : ''}>${l}${arrow('biblio', c)}</th>`;
   main.innerHTML = `<div class="panel" style="margin:10px 12px"><h3>Bibliothèque de recettes (${fa.length ? L.length + ' / ' : ''}${S.biblio.length})<button id="bview" title="Basculer entre la vue liste et la vue cartes">${cv ? '☰ Vue liste' : '▦ Vue cartes'}</button><label class="btn">Import beer.xml<input type="file" id="bximp" accept=".xml,.beerxml,text/xml" multiple hidden></label><label class="btn" title="Importer une recette depuis un PDF (Brewfather, BeerSmith)">Import PDF<input type="file" id="pdfimp" accept=".pdf,application/pdf" multiple hidden></label></h3>${cv ? bxCards(L, bfBar) : ''}<div class="scr"${cv ? ' style="display:none"' : ''}><table class="db lib"><colgroup><col class="c-nm"><col class="c-br"><col class="c-ok"><col class="c-st"><col class="c-n"><col class="c-n"><col class="c-n"><col class="c-n"><col class="c-n"><col class="c-l"><col class="c-l"><col class="c-l"><col></colgroup>${cv ? '' : bfRow}<tr class="hd">${th('name', 'Nom')}${th('brasseur', 'Brasseur')}${th('embou', 'Réalisé', ' ckc')}${th('style', 'Style')}${th('og', 'DI')}${th('fg', 'DF')}${th('ibu', 'IBU')}${th('ebc', 'EBC')}${th('abv', 'ABV %')}${th('malts', 'Malts')}${th('hops', 'Houblons')}${th('yeasts', 'Levures')}<th></th></tr>${rows || '<tr><td colspan="13" style="padding:18px;color:var(--m)">' + (fa.length ? 'Aucune recette ne correspond aux filtres.' : 'Aucune recette enregistrée. Utilisez « Sauvegarder » (en haut à droite) : la recette en cours de conception est ajoutée à la bibliothèque.') + '</td></tr>'}</table></div>${paged ? `<div class="pager noprint">${pgBar('biblio', L.length)}</div>` : ''}</div>`;
   bxScrollInit();
   if (paged) pgFill(main.querySelector('table.lib'), LV.length);
@@ -5216,7 +5224,7 @@ if (typeof document !== 'undefined')
     d3: 'Densité = 1 + (points de sucre ÷ volume post-ébullition) ÷ 1000.',
     d4: 'DI = 1 + (points de sucre ÷ volume de moût cible, glace fondue) ÷ 1000.',
     vgr: 'Eau d’empâtage + volume occupé par les grains (poids ÷ occupation L/kg). Ne doit pas dépasser « Volume maxi empâtage + malt dans la cuve » (Contraintes & températures) : sinon le champ passe en rouge.',
-    glace: 'Volume de glace dans le fermenteur = valeur saisie dans l’écran Conception.',
+    glace: 'Volume de glace dans le fermenteur = « Ajouts » des étapes du Process dont le nom contient « glace ».',
     rinc: 'Eau de rinçage = volume pré-ébullition − volume pré-rinçage.',
     vpreb: 'Volume pré-ébullition = volume post-ébullition + évaporation × durée d’ébullition.',
     vpost: 'Volume post-ébullition = volume dans le fermenteur + pertes de fond de cuve.',
@@ -5313,7 +5321,7 @@ if (typeof document !== 'undefined')
     const w = el.dataset.w,
       e = el.dataset.e;
     if (w === 'kg') return 'Poids total des malts de la recette (écran Conception).';
-    if (w === 'glace') return 'Glace saisie dans « Quantités d’eau » de l’écran Conception.';
+    if (w === 'glace') return 'Glace = « Ajouts » des étapes du Process dont le nom contient « glace ».';
     if (w === 'duree') return 'Durée d’ébullition des paliers d’empâtage (Conception), en minutes.';
     if (e === 'ratio' || w === 'ratio') return 'Ratio eau/grain saisi dans l’écran Conception.';
     if (el.dataset.t && el.dataset.c === 'ppg') return 'PPG = potentiel (L°/kg) ÷ 8,345 (calculé).';

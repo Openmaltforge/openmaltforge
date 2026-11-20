@@ -294,8 +294,8 @@
           <li><b>Recipe, Style</b> (BJCP 2021 styles), <b>Volume to bottle</b>, <b>Mash ratio (L/kg)</b>, brewing and bottling <b>dates</b>.</li>
           <li><b>Dates</b>:
             <ul>
-              <li><b>Brewing date</b>: empty in a new recipe (<b>＋ New recipe</b>). Filling it in means the beer is brewed: the recipe’s components (malts, hops, yeasts, ingredients, consumables, mineral waters) are <b>deducted from stock</b>, only once, and a message tells how many were; clearing it <b>puts them back in stock</b>. It is also used for the batch number (<code>year#rank</code>) on labels and in the HTML.</li>
-              <li><b>Bottling date</b>: filling it in shows the <b>Batch tasting analysis</b> section; the recipe gets the green “Brewed” tick in the Library and the HTML shows the bottling date and the analysis. It does not touch stock. It cannot be earlier than the brewing date: such an entry is refused (red message) and the previous value is restored; likewise, the brewing date cannot be later than the bottling date.</li>
+              <li><b>Brewing date</b>: empty in a new recipe (<b>＋ New recipe</b>). Filling it in means the beer is brewed: the recipe’s components (malts, hops, yeasts, ingredients, consumables, mineral waters) are <b>deducted from stock</b>, only once, and a message tells how many were, and the recipe gets the <b>green “Brewed” tick</b> in the Library (list and cards); clearing it <b>puts the components back in stock</b> and removes the tick. It is also used for the batch number (<code>year#rank</code>) on labels and in the HTML.</li>
+              <li><b>Bottling date</b>: filling it in shows the <b>Batch tasting analysis</b> section; the HTML shows the bottling date and the analysis. It touches neither stock nor the “Brewed” tick. It cannot be earlier than the brewing date: such an entry is refused (red message) and the previous value is restored; likewise, the brewing date cannot be later than the bottling date.</li>
             </ul>
           </li>
           <li><b>Target OG, Target IBU</b> and the <b>Calculate</b> button: adjust the recipe to reach the original gravity and bitterness you want, without changing its make-up.
@@ -354,7 +354,7 @@
         </figure>
         <figure class="half">
           <img src="img/en/conception-eau-quantites.jpg" alt="Water quantities" />
-          <figcaption>Water quantities: mash, sparge, ice, wort temperature at the end of the transfer.</figcaption>
+          <figcaption>Water quantities: mash water, mash water + malt, sparge water and total. Ice is set in the Process (Settings), which also gives the wort temperature at the end of the transfer.</figcaption>
         </figure>
         <figure class="half">
           <img src="img/en/conception-resucrage.jpg" alt="Priming and CO2" />
@@ -536,7 +536,7 @@
         </figure>
         <ul>
           <li><b>Equipment &amp; process</b>: equipment name, volume to bottle, mash efficiency; <b>Default values</b>: boil time, evaporation, initial water temperature, heating rate, cooling, grain absorption, target OG and IBU, mash ratio (applied to each new recipe). The recipe’s mash ratio is entered in the Design screen.</li>
-          <li><b>Process — water losses and additions</b>: the process in phases (by default: mash → pre-sparge, sparge → ice, bottling), step by step, with the volume and the gravity calculated on every row. <b>＋ Phase</b> adds a phase, <b>＋</b> (at the head of the columns) adds a step to the phase; the <b>pencil</b> at the end of each row makes the phase name, or the step name, losses and additions, editable (<b>OK</b> or Enter to confirm); ▲ ▼ move a step (at the edge of a phase it moves into the neighbouring phase) or a phase; ✕ deletes (a phase that contains steps asks for confirmation). An empty box takes the automatic value from the Settings. The OG row follows the ice phase, the FG row ends the last phase. <b>↺ default</b> returns to the original process.</li>
+          <li><b>Process — water losses and additions</b>: the process in phases (by default: mash → pre-sparge, sparge → ice, bottling), step by step, with the volume and the gravity calculated on every row. <b>＋ Phase</b> adds a phase, <b>＋</b> (at the head of the columns) adds a step to the phase; the <b>pencil</b> at the end of each row makes the phase name, or the step name, losses and additions, editable (<b>OK</b> or Enter to confirm); ▲ ▼ move a step (at the edge of a phase it moves into the neighbouring phase) or a phase; ✕ deletes (a phase that contains steps asks for confirmation). An empty box takes the automatic value from the Settings. The OG row follows the ice phase, the FG row ends the last phase. <b>↺ default</b> returns to the original process. The <b>Additions</b> of the steps whose name contains “glace” (ice) give the amount of ice used to calculate the <b>Wort temperature in the fermenter at the end of the transfer</b> (Brewing parameters); if there are several, their additions are added together.</li>
           <li><b>Brewing settings</b>: basic data, losses and additions, constraints and temperatures; an empty box takes the automatic value (recipe or equipment). A red field signals that a limit is exceeded (for example the maximum volume of the tun).</li>
           <li><b>Electricity needs</b>: power and duration of each item, kWh and cost.</li>
           <li><b>Hop utilisation coefficients</b> per use, applied to the Tinseth IBUs.</li>

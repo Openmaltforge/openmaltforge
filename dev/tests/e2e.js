@@ -1164,16 +1164,37 @@ async function scenarioApp(label) {
     await page.fill('[data-r="sucre"]', '8');
     await page.fill('[data-r="tcarbo"]', '20');
     await wait(150);
-    await page.fill('[data-r="glace"]', '5');
-    await wait(150);
+    /* 6.8.0 : plus de glace ni de T° de fin de transfert dans « Quantités d’eau » ; la T° de fin de transfert utilise les
+       « Ajouts » des étapes du Process dont le nom contient « glace » */
     check(
-      'glace saisie dans Quantités d’eau, reprise en lecture seule dans Paramètres',
-      await page.evaluate(
-        () =>
-          S.kv.recipe.glace === 5 &&
-          wIn('glace') === 5 &&
+      'Quantités d’eau sans glace ni T° de fin de transfert ; T° du moût en fin de transfert calculée avec les ajouts des étapes « glace » du Process',
+      await page.evaluate(() => {
+        const t = document.querySelector('#wtab').innerText,
+          P = ensureProc(),
+          g = P.flatMap(p => p.rows).find(r => r.k === 'glace'),
+          a0 = g.a,
+          tf = a => {
+            const o = wcalc(),
+              tm = wIn('tmout'),
+              ti = wIn('tglace');
+            return { got: o.tf, exp: o.mg ? ((o.mg - a) * tm - a * (80 + 0.5 * Math.abs(ti))) / o.mg : 0 };
+          };
+        g.a = 9;
+        const r1 = tf(9);
+        P[0].rows.push({ k: 'x1', n: 'Ajout de glace pilée', a: 2 });
+        const r2 = tf(11);
+        P[0].rows.pop();
+        if (a0 === undefined) delete g.a;
+        else g.a = a0;
+        return (
+          !/Glace dans le fermenteur|T° du moût/.test(t) &&
+          !document.querySelector('[data-r="glace"]') &&
+          !document.querySelector('#w-tf') &&
+          Math.abs(r1.got - r1.exp) < 1e-9 &&
+          Math.abs(r2.got - r2.exp) < 1e-9 &&
           !document.querySelector('#wtab').innerText.includes('(E – M)')
-      )
+        );
+      })
     );
     await page.evaluate(() => {
       S.kv.recipe.malts = [{ n: 'Pilsen', g: 30000 }];
@@ -1199,11 +1220,11 @@ async function scenarioApp(label) {
     );
     await nav(page, 'params');
     check(
-      'Paramètres : glace non modifiable',
+      'Paramètres : glace non modifiable (reprise des ajouts « glace » du Process)',
       await page.evaluate(
         () =>
           document.querySelector('.wi[data-w="glace"]').readOnly &&
-          +document.querySelector('.wi[data-w="glace"]').value === 5
+          Math.abs(+document.querySelector('.wi[data-w="glace"]').value - wIn('glace')) < 1e-6
       )
     );
     await nav(page, 'conception');
@@ -1816,11 +1837,11 @@ async function scenarioApp(label) {
             page.evaluate(() => document.querySelectorAll('table.lib tr:not(.flt):not(.hd) .acts').length);
           const tot = await cnt(),
             ne = await page.evaluate(() => {
-              const b = S.biblio[0];
-              window.__eb = b.recipe.embou;
-              b.recipe.embou = '2026-01-01';
+              /* 6.8.0 : « Réalisé » = date de brassage renseignée ; une seule recette datée pour le test */
+              window.__eb = S.biblio.map(x => x.recipe.date);
+              S.biblio.forEach((x, i) => (x.recipe.date = i ? '' : '2026-01-01'));
               biblio();
-              return S.biblio.filter(x => x.recipe.embou).length;
+              return S.biblio.filter(x => x.recipe.date).length;
             });
           const f = async v => {
             await page.fill('[data-bf="embou"]', v);
@@ -1833,7 +1854,7 @@ async function scenarioApp(label) {
             rn = await f('non'),
             rx = await f('');
           await page.evaluate(() => {
-            S.biblio[0].recipe.embou = window.__eb;
+            S.biblio.forEach((x, i) => (x.recipe.date = window.__eb[i]));
             document.querySelector('#bfclr').click();
           });
           await wait(150);
@@ -4179,6 +4200,7 @@ check(
     );
     await page.evaluate(() => {
       S.kv.recipe.name = 'Test brassé';
+      S.kv.recipe.date = S.kv.recipe.date || '2026-07-01'; /* 6.8.0 : coche « Réalisé » = date de brassage */
       upsertRecipe();
     });
     await nav(page, 'biblio');

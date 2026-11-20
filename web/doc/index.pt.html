@@ -294,8 +294,8 @@
           <li><b>Receita, Estilo</b> (estilos BJCP 2021), <b>Volume a engarrafar</b>, <b>Rácio de maceração (L/kg)</b>, <b>datas</b> de brassagem e de engarrafamento.</li>
           <li><b>Datas</b>:
             <ul>
-              <li><b>Data de brassagem</b>: vazia numa receita nova (<b>＋ Nova receita</b>). Preenchê-la indica que a cerveja foi produzida: os componentes da receita (maltes, lúpulos, leveduras, ingredientes, consumíveis, águas minerais) são <b>descontados do stock</b>, uma única vez, e uma mensagem indica quantos; apagá-la <b>devolve-os ao stock</b>. Serve também para o número de lote (<code>ano#posição</code>) dos rótulos e do HTML.</li>
-              <li><b>Data de engarrafamento</b>: preenchê-la faz aparecer a secção <b>Análise organolética do lote</b>; a receita recebe o visto verde «Realizado» na Biblioteca e o HTML indica a data de engarrafamento e a análise. Não mexe no stock. Não pode ser anterior à data de brassagem: essa entrada é recusada (mensagem a vermelho) e o valor anterior é reposto; do mesmo modo, a data de brassagem não pode ser posterior à de engarrafamento.</li>
+              <li><b>Data de brassagem</b>: vazia numa receita nova (<b>＋ Nova receita</b>). Preenchê-la indica que a cerveja foi produzida: os componentes da receita (maltes, lúpulos, leveduras, ingredientes, consumíveis, águas minerais) são <b>descontados do stock</b>, uma única vez, e uma mensagem indica quantos, e a receita recebe o <b>visto verde «Realizado»</b> na Biblioteca (lista e cartões); apagá-la <b>devolve os componentes ao stock</b> e retira o visto. Serve também para o número de lote (<code>ano#posição</code>) dos rótulos e do HTML.</li>
+              <li><b>Data de engarrafamento</b>: preenchê-la faz aparecer a secção <b>Análise organolética do lote</b>; o HTML indica a data de engarrafamento e a análise. Não mexe no stock nem no visto «Realizado». Não pode ser anterior à data de brassagem: essa entrada é recusada (mensagem a vermelho) e o valor anterior é reposto; do mesmo modo, a data de brassagem não pode ser posterior à de engarrafamento.</li>
             </ul>
           </li>
           <li><b>DI alvo, IBU alvo</b> e botão <b>Calcular</b>: ajustam a receita para atingir a densidade inicial e o amargor pretendidos, sem mudar a sua composição.
@@ -354,7 +354,7 @@
         </figure>
         <figure class="half">
           <img src="img/en/conception-eau-quantites.jpg" alt="Quantidades de água" />
-          <figcaption>Quantidades de água: maceração, lavagem, gelo, temperatura do mosto no fim da transferência.</figcaption>
+          <figcaption>Quantidades de água: água de maceração, água de maceração + malte, água de lavagem e total. O gelo ajusta-se no processo (Definições), que também dá a temperatura do mosto no fim da transferência.</figcaption>
         </figure>
         <figure class="half">
           <img src="img/en/conception-resucrage.jpg" alt="Priming e CO2" />
@@ -536,7 +536,7 @@
         </figure>
         <ul>
           <li><b>Equipamento e processo</b>: nome do equipamento, volume a engarrafar, rendimento de maceração; <b>Valores padrão</b>: duração da fervura, evaporação, temperatura inicial da água, aquecimento, arrefecimento, absorção das drêches, DI e IBU alvo, rácio de maceração (aplicados a cada nova receita). O rácio de maceração da receita introduz-se na Conceção.</li>
-          <li><b>Processo — perdas e adições de água</b>: o processo em fases (por omissão: maceração → pré-lavagem, lavagem → gelo, engarrafamento), etapa a etapa, com o volume e a densidade calculados em cada linha. <b>＋ Fase</b> adiciona uma fase, <b>＋</b> (no cabeçalho das colunas) adiciona uma etapa à fase; o <b>lápis</b> no fim de cada linha torna editáveis o nome da fase ou o nome, as perdas e as adições da etapa (<b>OK</b> ou Enter para validar); ▲ ▼ deslocam uma etapa (no limite de uma fase passa para a fase vizinha) ou uma fase; ✕ elimina (uma fase que contém etapas pede confirmação). Uma caixa vazia retoma o valor automático das Definições. A linha DI segue a fase do gelo, a linha DF termina a última fase. <b>↺ predefinição</b> volta ao processo de origem.</li>
+          <li><b>Processo — perdas e adições de água</b>: o processo em fases (por omissão: maceração → pré-lavagem, lavagem → gelo, engarrafamento), etapa a etapa, com o volume e a densidade calculados em cada linha. <b>＋ Fase</b> adiciona uma fase, <b>＋</b> (no cabeçalho das colunas) adiciona uma etapa à fase; o <b>lápis</b> no fim de cada linha torna editáveis o nome da fase ou o nome, as perdas e as adições da etapa (<b>OK</b> ou Enter para validar); ▲ ▼ deslocam uma etapa (no limite de uma fase passa para a fase vizinha) ou uma fase; ✕ elimina (uma fase que contém etapas pede confirmação). Uma caixa vazia retoma o valor automático das Definições. A linha DI segue a fase do gelo, a linha DF termina a última fase. <b>↺ predefinição</b> volta ao processo de origem. As <b>Adições</b> das etapas cujo nome contém «glace» (gelo) dão a quantidade de gelo usada para calcular a <b>Temperatura do mosto no fermentador no fim da transferência</b> (Definições de brassagem); se houver várias, as suas adições somam-se.</li>
           <li><b>Definições de brassagem</b>: dados de base, perdas e adições, restrições e temperaturas; uma caixa vazia assume o valor automático (receita ou equipamento). Um campo vermelho assinala uma ultrapassagem (por exemplo o volume máximo da cuba).</li>
           <li><b>Necessidades de eletricidade</b>: potência e duração de cada posto, kWh e custo.</li>
           <li><b>Coeficientes de utilização do lúpulo</b> por utilização, aplicados aos IBU de Tinseth.</li>
