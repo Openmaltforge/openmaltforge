@@ -355,7 +355,7 @@
         </figure>
         <figure class="half">
           <img src="img/en/conception-eau-quantites.jpg" alt="Water quantities" />
-          <figcaption>Water quantities: mash water, sparge water and the “Mash + sparge + other” total, which adds up all the Process water additions (ice, priming and custom additions included).</figcaption>
+          <figcaption>Water quantities: mash water, sparge water and their “Mash + sparge” total. The brew’s total water (ice, priming and custom additions included) is the Process “Total water volume” (Settings).</figcaption>
         </figure>
         <figure class="half">
           <img src="img/en/conception-resucrage.jpg" alt="Priming and CO2" />
@@ -519,7 +519,7 @@
           <img src="img/en/html.jpg" alt="HTML rendering of the recipe" />
           <figcaption>HTML code of the recipe sheet, to copy (“Copy” button) for a website or a forum.</figcaption>
         </figure>
-        <p>The <b>EAU</b> (water) table follows the Design screen’s “Water quantities” (mash water, sparge water, mash + sparge + other total); <b>PARAMETRES</b> also gives the boil time (no brew number or electricity in this output), and the <b>PROCESS</b> table follows the Process phases.</p>
+        <p>The <b>EAU</b> (water) table follows the Design screen’s “Water quantities” (mash water, sparge water, mash + sparge total); <b>PARAMETRES</b> also gives the boil time (no brew number or electricity in this output), and the <b>PROCESS</b> table follows the Process phases.</p>
 
         <h2 id="etiquettes">Labels</h2>
         <figure>
@@ -563,7 +563,7 @@
           <li><b>Equipment &amp; process</b>: equipment name, <b>maximum mash volume</b> (a red field and a warning show when mash water + malt reach it), mash efficiency, <b>dead volume under the basket</b> and <b>hourly evaporation rate</b>; <b>Default values</b>: heating, cooling, target OG and IBU, mash ratio (applied to each new recipe; the boil time is set in the mash steps of the Design screen). The volume to bottle and the recipe’s mash ratio are entered on the Design screen.</li>
           <li><b>Process</b>: the process in phases (by default: mash → pre-sparge, sparge → ice, bottling), step by step, with the volume and the gravity calculated on every row. <b>＋ Phase</b> adds a phase, <b>＋</b> (at the head of the columns) adds a step to the phase; the <b>pencil</b> at the end of each row makes the phase name, or the step name, losses and additions, editable (<b>OK</b> or Enter to confirm); ▲ ▼ move a step (at the edge of a phase it moves into the neighbouring phase) or a phase; ✕ deletes (a phase that contains steps asks for confirmation). An empty box takes the automatic value from the Settings. The OG row follows the ice phase, the FG row ends the last phase. Before the <b>wort contraction on cooling</b>, volumes are measured hot: the gravity (read on a cooled sample) is calculated on the equivalent cold volume, so the contraction does not change the gravity. <b>↺ default</b> returns to the original process. The <b>Additions</b> of the steps whose name contains “glace” (ice) give the amount of ice used to calculate the <b>Wort temperature in the fermenter at the end of the transfer</b> (Brewing parameters); if there are several, their additions are added together. The <b>total water volume</b> adds up all the Process “Additions” (mash, dead volume, sparge, ice, priming, custom additions). The <b>initial water temperature</b> (used for electricity) is the last row of the volumes table, under the Process.</li>
           <li><b>Brewing settings</b>: a single list, in this order: maximum stainless fermenter volume, loss at the bottom of the fermenter, crushed dry malt displacement, water retention by the grains grain potential (calculated from the malts, read-only) and <b>grain absorption</b> (L/kg); an empty box takes the automatic value. The other values are set where they are used: Design (grains, ratio, volume to bottle, boil time), Process (trub, contraction, priming, ice) and Equipment &amp; process.</li>
-          <li><b>Electricity needs</b>: power and duration of each item, kWh and cost.</li>
+          <li><b>Electricity needs</b>: power and duration of each item, kWh and cost. The “Sparge water heating (12 → 78 °C)” label uses the <b>initial water temperature</b> (Process) and the sparge step temperature: it changes with them.</li>
           <li><b>Hop utilisation coefficients</b> per use, applied to the Tinseth IBUs.</li>
           <li><b>Label logo</b>: choose an image.</li>
           <li><b>Fonts</b>: Google Fonts stored in the database; <b>Import</b> (several files at once), filter, preview on hover. The interface fonts, marked with a padlock, cannot be deleted; when another font is deleted, a dialog offers a replacement font.</li>

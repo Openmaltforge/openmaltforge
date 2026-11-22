@@ -316,7 +316,7 @@ async function scenarioApp(label) {
         return (
           [
             'Eau d’empâtage:',
-            'Empâtage + rinçage + divers:',
+            'Empâtage + rinçage:',
             'Durée d’ébullition (min):',
             'Sachets',
             'Floculation',
@@ -1331,7 +1331,19 @@ async function scenarioApp(label) {
           def.join() === 'chauffe,refroid,ogT,ibuT,ratioD' &&
           !p.querySelector('[data-e="boilD"]') &&
           !!document.querySelector('.wt input.t0in[data-e="t0"]') &&
-          document.querySelector('.wt input.t0in').closest('tr') === document.querySelector('.wt input.t0in').closest('table').querySelector('tr:last-child')
+          document.querySelector('.wt input.t0in').closest('tr') === document.querySelector('.wt input.t0in').closest('table').querySelector('tr:last-child') &&
+          (() => {
+            /* 6.10.1 : le libellé « Chauffe eau de rinçage (12 → 78 °C) » des besoins en électricité suit la T° initiale */
+            const t = document.querySelector('.wt input.t0in'),
+              v0 = t.value,
+              lab = () => [...document.querySelectorAll('tr.ea input.nm')].map(x => x.value).find(x => /Chauffe eau de rinçage/.test(x)) || '';
+            t.value = '15';
+            t.dispatchEvent(new Event('input', { bubbles: true }));
+            const ok = /\(15 → /.test(lab());
+            t.value = v0;
+            t.dispatchEvent(new Event('input', { bubbles: true }));
+            return ok && new RegExp('\\(' + v0 + ' → ').test(lab());
+          })()
         );
       })
     );
@@ -4486,7 +4498,7 @@ check(
           /Phase 1/.test(h) &&
           /Phase 2/.test(h) &&
           /DF \(densité finale/.test(h) &&
-          /Empâtage \+ rinçage \+ divers/.test(h) &&
+          /Empâtage \+ rinçage:/.test(h) &&
           /Ajouts de minéraux/.test(h) &&
           /RATIO SO\/CL<\/td><td>[0-9]/.test(h) &&
           /CO2-vol<\/td><td>[0-9]/.test(h) &&
@@ -4497,7 +4509,7 @@ check(
           'PROCESS',
           'Phase 1',
           'DF (densité finale',
-          'Empâtage + rinçage + divers',
+          'Empâtage + rinçage',
           'Ajouts de minéraux',
           'Écorce',
           'Densité post-ébullition'
@@ -6320,6 +6332,28 @@ check(
         mh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await w(50);
         o.single = o.single && !document.querySelectorAll('#main .panel.fold').length;
+        /* 6.10.1 : Eau & minéraux repliée — chevron juste après le titre, avant le bouton ＋ (pas en bout de ligne) ;
+           6.10.2 : titre sans « mg/L » */
+        const wh = document.querySelector('#wmin > h3');
+        o.chev = !wh.querySelector('small') && !/mg\/L/.test(wh.textContent);
+        wh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        {
+          const c = wh.querySelector('.foldc'),
+            bt = wh.querySelector('button[data-wadd]'),
+            tn = [...wh.childNodes].find(n => n.nodeType === 3 && n.data.trim()),
+            rg = document.createRange();
+          rg.selectNodeContents(tn);
+          o.chev =
+            o.chev &&
+            !!c &&
+            c.nextElementSibling === bt &&
+            c.getBoundingClientRect().left - rg.getBoundingClientRect().right < 20 &&
+            c.getBoundingClientRect().right < bt.getBoundingClientRect().left;
+        }
+        wh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+        await w(50);
+        o.chev = o.chev && !wh.querySelector('.foldc');
         /* bilan : IBU juste sous la DI */
         const bl = [...document.querySelectorAll('#bilan .bi .bl span')].map(x => x.textContent);
         o.order = /Densité initiale/.test(bl[0]) && /^IBU/.test(bl[1]);
@@ -6404,7 +6438,13 @@ check(
         show('conception');
         await w(150);
         const t = document.querySelector('#wtab').innerText;
-        o.wtab = !/Eau d’empâtage \+ malt|hors glace/.test(t) && /Empâtage \+ rinçage \+ divers/.test(t);
+        o.wtab = !/Eau d’empâtage \+ malt|hors glace/.test(t) && /Empâtage \+ rinçage\s/.test(t) && !/divers/.test(t);
+        /* 6.10.1 : total = eau d’empâtage + eau de rinçage */
+        {
+          const wc = wcalc(),
+            v = x => parseFloat(document.querySelector(x).textContent.replace(/\s/g, '').replace(',', '.'));
+          o.wtot = Math.abs(v('#w-tot') - (wc.v0 + wc.rinc)) < 0.006 && Math.abs(wc.tot - (wc.v0 + wc.rinc)) > 0.01;
+        }
         /* date de brassage modifiée → recette enregistrée dans la bibliothèque */
         const R = S.kv.recipe,
           d0 = R.date,
@@ -6424,7 +6464,7 @@ check(
         return o;
       });
       check(
-        'styles sans plages (DI, IBU, SRM, DF, ABV) : plus basse et plus haute valeurs de tous les styles ; Quantités d’eau sans « Eau d’empâtage + malt » ni « hors glace », total « … + divers » ; changement de date de brassage = recette enregistrée',
+        'styles sans plages (DI, IBU, SRM, DF, ABV) : plus basse et plus haute valeurs de tous les styles ; Quantités d’eau sans « Eau d’empâtage + malt » ni « hors glace », total « Empâtage + rinçage » = empâtage + rinçage (6.10.1) ; changement de date de brassage = recette enregistrée',
         Object.values(c69).every(Boolean),
         JSON.stringify(c69)
       );
@@ -7711,10 +7751,10 @@ async function scenarioI18n() {
       })
     );
     check(
-      'HTML (6.10.0) : plus de ligne « Brassin N° » ni de tableau ÉLECTRICITÉ ; version du gabarit 6',
+      'HTML (6.10.0) : plus de ligne « Brassin N° » ni de tableau ÉLECTRICITÉ ; version du gabarit 7',
       await page.evaluate(() => {
         const h = htmlCode();
-        return !/Brassin N°/.test(h) && !/ÉLECTRICITÉ/.test(h) && /PARAMETRES/.test(h) && /LEVURE/.test(h) && HTMLV === 6;
+        return !/Brassin N°/.test(h) && !/ÉLECTRICITÉ/.test(h) && /PARAMETRES/.test(h) && /LEVURE/.test(h) && HTMLV === 7;
       })
     );
     {

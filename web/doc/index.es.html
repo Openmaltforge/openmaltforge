@@ -355,7 +355,7 @@
         </figure>
         <figure class="half">
           <img src="img/en/conception-eau-quantites.jpg" alt="Cantidades de agua" />
-          <figcaption>Cantidades de agua: agua de empastado, agua de lavado y total «Empastado + lavado + varios», que suma todos los añadidos de agua del proceso (hielo, cebado y añadidos personalizados incluidos).</figcaption>
+          <figcaption>Cantidades de agua: agua de empastado, agua de lavado y su total «Empastado + lavado». El agua total de la cocción (hielo, cebado y añadidos personalizados incluidos) es el «Volumen de agua total» del Proceso (Ajustes).</figcaption>
         </figure>
         <figure class="half">
           <img src="img/en/conception-resucrage.jpg" alt="Priming y CO2" />
@@ -519,7 +519,7 @@
           <img src="img/en/html.jpg" alt="Vista HTML de la receta" />
           <figcaption>Código HTML de la ficha de la receta, para copiar (botón «Copiar») en un sitio web o un foro.</figcaption>
         </figure>
-        <p>La tabla <b>EAU</b> (agua) sigue las «Cantidades de agua» del Diseño (agua de empastado, agua de lavado, total empastado + lavado + otros); <b>PARAMETRES</b> da también la duración de la ebullición (sin número de cocción ni electricidad en este resultado), y la tabla <b>PROCESS</b> sigue las fases del Proceso.</p>
+        <p>La tabla <b>EAU</b> (agua) sigue las «Cantidades de agua» del Diseño (agua de empastado, agua de lavado, total empastado + lavado); <b>PARAMETRES</b> da también la duración de la ebullición (sin número de cocción ni electricidad en este resultado), y la tabla <b>PROCESS</b> sigue las fases del Proceso.</p>
 
         <h2 id="etiquettes">Etiquetas</h2>
         <figure>
@@ -563,7 +563,7 @@
           <li><b>Equipo y proceso</b>: nombre del equipo, <b>volumen máximo de empastado</b> (un campo rojo y un aviso lo indican cuando el agua de empastado + la malta lo alcanzan), rendimiento del empastado, <b>volumen muerto bajo la cesta</b> y <b>tasa de evaporación horaria</b>; <b>Valores por defecto</b>: calentamiento, enfriamiento, DI e IBU objetivo, relación de empastado (aplicados a cada receta nueva; la duración de la ebullición se ajusta en los escalones del Diseño). El volumen a embotellar y la relación de empastado de la receta se introducen en el Diseño.</li>
           <li><b>Proceso</b>: el proceso en fases (por defecto: empastado → prelavado, lavado → hielo, embotellado), etapa por etapa, con el volumen y la densidad calculados en cada fila. <b>＋ Fase</b> añade una fase, <b>＋</b> (en la cabecera de las columnas) añade una etapa a la fase; el <b>lápiz</b> al final de cada fila permite modificar el nombre de la fase o el nombre, las pérdidas y las adiciones de la etapa (<b>OK</b> o Intro para validar); ▲ ▼ desplazan una etapa (en el borde de una fase pasa a la fase vecina) o una fase; ✕ elimina (una fase que contiene etapas pide confirmación). Una casilla vacía toma el valor automático de los Ajustes. La fila DI sigue a la fase del hielo, la fila DF cierra la última fase. Antes de la <b>contracción del mosto al enfriarse</b>, los volúmenes se miden en caliente: la densidad (leída en una muestra enfriada) se calcula sobre el volumen frío equivalente, de modo que la contracción no cambia la densidad. <b>↺ por defecto</b> vuelve al proceso original. Los <b>Añadidos</b> de las etapas cuyo nombre contiene «glace» (hielo) dan la cantidad de hielo usada para calcular la <b>Temperatura del mosto en el fermentador al final del trasvase</b> (Ajustes de elaboración); si hay varias, sus añadidos se suman. El <b>volumen de agua total</b> suma todos los «Añadidos» del proceso (empastado, volumen muerto, lavado, hielo, cebado, añadidos personalizados). La <b>temperatura inicial del agua</b> (usada para la electricidad) es la última línea de la tabla de volúmenes, bajo el Proceso.</li>
           <li><b>Ajustes de elaboración</b>: una sola lista, en este orden: volumen máximo del fermentador inox, pérdida en el fondo del fermentador, ocupación de la malta seca molida, retención de agua por el grano potencial del grano (calculado a partir de las maltas, solo lectura) y <b>absorción del bagazo</b> (L/kg); una casilla vacía toma el valor automático. Los demás valores se ajustan donde se usan: Diseño (grano, relación, volumen a embotellar, duración de la ebullición), Proceso (trub, contracción, cebado, hielo) y Equipo y proceso.</li>
-          <li><b>Necesidades de electricidad</b>: potencia y duración de cada puesto, kWh y coste.</li>
+          <li><b>Necesidades de electricidad</b>: potencia y duración de cada puesto, kWh y coste. La etiqueta «Calentamiento del agua de lavado (12 → 78 °C)» toma la <b>temperatura inicial del agua</b> (Proceso) y la temperatura del escalón de lavado: cambia con ellas.</li>
           <li><b>Coeficientes de utilización del lúpulo</b> por uso, aplicados a los IBU de Tinseth.</li>
           <li><b>Logotipo de las etiquetas</b>: elegir una imagen.</li>
           <li><b>Fuentes</b>: fuentes de Google Fonts guardadas en la base; <b>Importar</b> (varios archivos a la vez), filtro, vista previa al pasar el ratón. Las fuentes de la interfaz, marcadas con un candado, no se pueden eliminar; al eliminar otra fuente, una ventana propone una fuente de sustitución.</li>

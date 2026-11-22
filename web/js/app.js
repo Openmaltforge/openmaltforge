@@ -1932,7 +1932,7 @@ function fillWater() {
   set('w-v0', f(o.v0, 2));
   set('w-rinc', f(o.rinc, 2));
   set('w-nog', f(o.v0 + o.rinc, 2));
-  set('w-tot', f(o.tot, 2));
+  set('w-tot', f(o.v0 + o.rinc, 2)); /* 6.10.1 : eau d’empâtage + eau de rinçage */
   set('w-tf', f(o.tf, 1) + ' °C');
   set('w-vm', f(o.v0 + kg, 2));
   [
@@ -1974,7 +1974,7 @@ function conception0() {
 <div class="grid"><div class="col">${tbl('malts', '🌾 Malts')}${tbl('hops', '🌿 Houblons')}${tbl('yeasts', '🧫 Levures')}${mineralPanel()}${tblMix()}<div id="courses">${coursesBox()}</div>${orgPanel()}</div>
 <div class="col"><div class="panel"><h3>Bilan de la recette</h3><div id="bilan"></div></div>${mashPanel()}<div class="panel"><h3>Quantités d’eau</h3><table id="wtab" class="kv"><tr><td>Eau d’empâtage <span class="al" id="w-al" style="display:none">⚠</span></td><td class="pc" id="w-v0"></td></tr>
 <tr><td>Eau de rinçage</td><td class="pc" id="w-rinc"></td></tr>
-<tr class="sum"><td>Empâtage + rinçage + divers</td><td class="pc" id="w-tot"></td></tr>
+<tr class="sum"><td>Empâtage + rinçage</td><td class="pc" id="w-tot"></td></tr>
 <tr><td colspan="2" id="w-warn" style="color:#ffb4b4"></td></tr></table></div><div class="panel"><h3>Resucrage & CO₂</h3><table id="rtab" class="kv"><tr><td>Sucre de resucrage (g/L)</td><td><input type="number" min="0" step="0.1" data-r="sucre" value="${R.sucre ?? ''}"></td></tr>
 <tr><td>Température de la bière (°C)</td><td><input type="number" min="10" max="30" step="0.5" data-r="tcarbo" value="${R.tcarbo ?? ''}" placeholder="20"></td></tr>
 <tr><td>CO₂ résiduel à cette température (vol)</td><td class="pc" id="r-res"></td></tr>
@@ -2105,7 +2105,7 @@ const minRows = () =>
 function mineralPanel() {
   const R = S.kv.recipe,
     W = R.water;
-  let h = `<div class="panel" id="wmin"><h3>💧 Eau & minéraux <small>mg/L</small><button data-wadd="1">＋</button></h3><div class="scr"><table class="wm"><tr><th>Eau</th><th>Litres</th><th>%</th>${IONS.map(k => `<th>${EIL[k]}</th>`).join('')}<th></th></tr>`;
+  let h = `<div class="panel" id="wmin"><h3>💧 Eau & minéraux<button data-wadd="1">＋</button></h3><div class="scr"><table class="wm"><tr><th>Eau</th><th>Litres</th><th>%</th>${IONS.map(k => `<th>${EIL[k]}</th>`).join('')}<th></th></tr>`;
   W.forEach((x, i) => {
     h += `<tr><td><input class="nm rin" list="dl-eaux" data-wi="${i}" data-wf="n" value="${esc(x.n)}" placeholder="3 lettres min…"></td><td><input class="rin" type="number" min="0" step="0.1" data-wi="${i}" data-wf="l" value=""${WMODE === 'p' ? ' readonly' : ''}></td><td><input class="rin" type="number" min="0" step="0.1" data-wi="${i}" data-wf="p" value="${esc(x.p ?? 0)}"${WMODE === 'g' ? ' readonly' : ''}></td>${IONS.map(k => `<td class="pc" id="wv-${i}-${k}"></td>`).join('')}<td class="xc"><button class="cart" tabindex="-1" aria-hidden="true" hidden>🛒</button><button class="x" data-wdel="${i}" title="Supprimer">✕</button></td></tr>`;
   });
@@ -2912,6 +2912,9 @@ function updParams() {
       em = $('#em' + i);
     if (em) {
       em.value = m.toFixed(1);
+      /* 6.10.1 : libellé recalculé (ex. « Chauffe eau de rinçage (12 → 78 °C) » suit la T° initiale de l’eau) */
+      const nm = em.closest('tr').querySelector('input.nm');
+      if (nm && nm.value !== S.elec[i].name) nm.value = S.elec[i].name;
     }
     tk += k;
     tc += c;
@@ -3774,7 +3777,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.0',
+const VER = '6.10.2',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -3965,7 +3968,7 @@ function htmlCode() {
       /* 6.10.0 : mêmes lignes que « Quantités d’eau » (Conception) ; total = tous les ajouts du Process */
       tr(td('Eau d’empâtage:', nf(wo.v0, 1), rv('v_emp'))),
       tr(td('Eau de rinçage:', nf(wo.rinc, 1), rv('v_rinc'))),
-      tr(td('Empâtage + rinçage + divers:', nf(wo.tot, 1), '-'), 'total'),
+      tr(td('Empâtage + rinçage:', nf(wo.v0 + wo.rinc, 1), '-'), 'total'),
       tr(td('Volume début d’ébullition:', nf(b.vPre, 1), rv('v_debeb'))),
       tr(td('Volume fin d’ébullition:', nf(b.vEnd, 1), rv('v_fineb'))),
       tr(td('Moût dans le fermenteur (glace fondue):', nf(b.o.mg, 1), '-'))
@@ -4152,7 +4155,7 @@ function htmlCode() {
   ].join('\n');
 }
 /* le code HTML stocké pour chaque recette de la bibliothèque est recalculé quand le gabarit change (HTMLV) — jamais de liste de courses dedans */
-const HTMLV = 6;
+const HTMLV = 7;
 function htmlRefreshAll() {
   const E = S.kv.equip;
   if (E.htmlv === HTMLV) return false;
@@ -4508,8 +4511,9 @@ function foldApply() {
       c = document.createElement('span');
       c.className = 'foldc';
       c.innerHTML = ic('down');
-      const b = [...h.children].find(x => x.tagName !== 'SPAN' || !x.classList.contains('ic'));
-      h.insertBefore(c, b && b.tagName === 'BUTTON' ? b : null);
+      /* 6.10.1 : juste après le titre (et son <small>), avant les boutons ou éléments alignés à droite */
+      const b = [...h.children].find(x => x.tagName === 'BUTTON' || (x.tagName === 'SPAN' && !x.classList.contains('ic')));
+      h.insertBefore(c, b || null);
     } else if (!on && c) c.remove();
     if (!h.title) h.title = noIc(tx(h.closest('#radars') ? 'Double-clic : replier / déplier la ligne des radars' : 'Double-clic : replier / déplier la section'));
   });
