@@ -5793,3 +5793,24 @@ main .wt input.t0in {
 :root.light .ptab td.pact button[data-ped].okb {
   background: #f4f6f9 !important;
 }
+
+/* 6.10.7 — Bases (malts, houblons, levures, eaux, ingrédients, consommables, styles) : les champs d’une ligne remplissent
+   toute la largeur de leur colonne (plus de mots tronqués quand l’en-tête est plus large) ; l’ancienne largeur reste le minimum */
+table.db:not(.rt):not(.lib) td > input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 58px;
+}
+table.db:not(.rt):not(.lib) td:first-child > input {
+  min-width: 180px;
+}
+table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='name'] { min-width: 300px; }
+table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='type'] { min-width: 170px; }
+table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='dose_g_L'],
+table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='prix_g'] { min-width: 100px; }
+table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='usage'] { min-width: 380px; }
+@media (max-width: 520px) {
+  table.db:not(.rt):not(.lib) td:first-child > input {
+    min-width: 130px;
+  }
+}

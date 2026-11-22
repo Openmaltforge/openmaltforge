@@ -1967,6 +1967,35 @@ async function scenarioApp(label) {
           );
         }
         {
+          /* 6.10.7 : champs des lignes des bases = toute la largeur de la colonne, aucun texte tronqué */
+          const fw = await page.evaluate(async () => {
+            const w = ms => new Promise(r => setTimeout(r, ms)),
+              o = {};
+            for (const t of ['malts', 'hops', 'yeasts', 'eaux', 'ings', 'conso']) {
+              show(t);
+              await w(150);
+              const e = document.querySelector('#main button[data-ed]');
+              if (e) e.click();
+              await w(150);
+              const I = [...document.querySelectorAll('#main table.db tr[data-ri] td > input')].filter(i => i.offsetParent) /* page affichée */;
+              o[t] = [
+                I.length > 0,
+                I.filter(i => Math.abs(i.getBoundingClientRect().width - i.parentElement.clientWidth + parseFloat(getComputedStyle(i.parentElement).paddingLeft) + parseFloat(getComputedStyle(i.parentElement).paddingRight)) > 1).length,
+                I.filter(i => i.scrollWidth > i.clientWidth + 1).length
+              ].join('|');
+              const k = document.querySelector('#main button[data-ed]:not(.pen)');
+              if (k) k.click();
+              await w(100);
+            }
+            return o;
+          });
+          check(
+            'bases : champs des lignes sur toute la largeur de leur colonne, sans texte tronqué (6.10.7)',
+            Object.values(fw).every(v => v === 'true|0|0'),
+            JSON.stringify(fw)
+          );
+        }
+        {
           const cp = await page.evaluate(async () => {
             window.__bcManual = true;
             show('malts');

@@ -2696,11 +2696,17 @@ const dbShow = (o, c, ro) => (ro && c !== 'name' && typeof o[c] === 'string' ? t
 function dbRows(t, ed) {
   const cols = COLS[t],
     ro = true,
-    calc = c => t === 'malts' && (c === 'ppg' || c === 'b46');
+    calc = c => t === 'malts' && (c === 'ppg' || c === 'b46'),
+    /* 6.10.7 : colonnes de texte au moins aussi larges que leur valeur la plus longue (toutes les pages, 60 car. au plus) */
+    mw = {};
+  cols.forEach(c => {
+    const n = Math.min(60, Math.max(0, ...S[t].map((o, i) => String(dbShow(o, c, i !== ed) ?? '').length)));
+    if (n > 8) mw[c] = ` style="min-width:calc(${n}ch + 14px)"`;
+  });
   return S[t]
     .map(
       (o, i) =>
-        `<tr data-ri="${i}">${cols.map(c => `<td><input${calc(c) ? ' class="calc"' : ''} data-t="${t}" data-i="${i}" data-c="${c}" value="${esc(dbShow(o, c, i !== ed))}"${calc(c) || (ro && i !== ed) ? ' readonly' : ''}></td>`).join('')}<td class="act">${ro ? `<button data-ed="${i}" class="${i === ed ? '' : 'pen'}" title="Modifier">${i === ed ? 'OK' : '✎'}</button>` : ''}<button class="dup" data-dup="${i}" title="Dupliquer">⧉</button><button class="cart" data-cartd="${t}" data-i="${i}" hidden>🛒</button>${o.sys ? '' : `<button class="x" data-dr="${i}" title="Supprimer">✕</button>`}</td></tr>`
+        `<tr data-ri="${i}">${cols.map(c => `<td><input${calc(c) ? ' class="calc"' : ''} data-t="${t}" data-i="${i}" data-c="${c}" value="${esc(dbShow(o, c, i !== ed))}"${calc(c) || (ro && i !== ed) ? ' readonly' : ''}${mw[c] || ''}></td>`).join('')}<td class="act">${ro ? `<button data-ed="${i}" class="${i === ed ? '' : 'pen'}" title="Modifier">${i === ed ? 'OK' : '✎'}</button>` : ''}<button class="dup" data-dup="${i}" title="Dupliquer">⧉</button><button class="cart" data-cartd="${t}" data-i="${i}" hidden>🛒</button>${o.sys ? '' : `<button class="x" data-dr="${i}" title="Supprimer">✕</button>`}</td></tr>`
     )
     .join('');
 }
@@ -3778,7 +3784,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.6',
+const VER = '6.10.7',
   MASH = [
     'Palier Saccharification',
     'Palier I',
