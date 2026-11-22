@@ -3777,7 +3777,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.2',
+const VER = '6.10.3',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4406,7 +4406,7 @@ function biblio() {
   const cut = t => `<td class="cut">${t ? `<div class="cutv" title="${esc(t)}">${hh(t)}</div>` : ''}</td>`;
   const rows = LV.map(
     ({ i, r, c }) =>
-      `<tr><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxUnres(r.recipe).length ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
+      `<tr tabindex="-1"><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxUnres(r.recipe).length ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
   ).join('');
   const BFL = {
       name: 'Nom',

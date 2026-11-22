@@ -2746,6 +2746,53 @@ check(
           );
         }
         {
+          /* 6.10.3 : clic sur une ligne de la bibliothèque = surbrillance, comme les bases (malts, houblons…) */
+          await page.evaluate(async () => {
+            S.biblio.push({
+              id: 'zzsel',
+              name: 'ZZ Sel',
+              style: '',
+              date: '',
+              vol: 20,
+              brasseur: 'x',
+              recipe: { malts: [], hops: [], yeasts: [], ings: [], mash: [] }
+            });
+            show('biblio');
+            await new Promise(r => setTimeout(r, 200));
+          });
+          const sel = { exists: false };
+          const row = page.locator('table.lib tr', { hasText: 'ZZ Sel' }).first();
+          if (await row.count()) {
+            sel.exists = true;
+            const bg = () =>
+              page.evaluate(() => {
+                const tr = [...document.querySelectorAll('table.lib tr')].find(r => r.textContent.includes('ZZ Sel'));
+                return getComputedStyle(tr.querySelector('td.nm')).backgroundColor;
+              });
+            sel.before = await bg();
+            await row.locator('td.nm').click();
+            await page.waitForTimeout(80);
+            sel.on = await bg();
+            sel.outline = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+            await page.locator('#main .panel > h3').first().click({ position: { x: 5, y: 5 } });
+            await page.waitForTimeout(80);
+            sel.off = await bg();
+          }
+          await page.evaluate(() => {
+            S.biblio = S.biblio.filter(b => b.id !== 'zzsel');
+            biblio();
+          });
+          check(
+            'Bibliothèque (liste) : clic sur une ligne = surbrillance comme les bases, retirée au clic ailleurs, sans contour',
+            sel.exists &&
+              sel.on !== sel.before &&
+              /rgba\(255, 200, 60/.test(sel.on) &&
+              sel.off === sel.before &&
+              sel.outline === 'none',
+            JSON.stringify(sel)
+          );
+        }
+        {
           const mv = await page.evaluate(async () => {
             window.__bcClear = false;
             const w = ms => new Promise(r => setTimeout(r, ms)),

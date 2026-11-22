@@ -4968,6 +4968,11 @@ table.db tr.sel > td:first-child {
   background: rgba(255, 170, 0, 0.18) !important;
 }
 
+/* bibliothèque : ligne focalisable (tabindex=-1) → même surbrillance au clic que les bases (focus-within), sans contour */
+table.lib tr[tabindex]:focus {
+  outline: none;
+}
+
 /* largeurs des colonnes de la bibliothèque (colgroup : la 1re ligne du tableau est la ligne de filtres) */
 table.lib col.c-nm {
   width: 20%;
