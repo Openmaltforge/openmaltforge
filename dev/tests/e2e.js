@@ -618,8 +618,18 @@ async function scenarioApp(label) {
     const cell = await page.$$eval('table.lib tr:nth-child(3) td', e => e.map(x => x.textContent));
     /* 6.9.0 : la nouvelle recette est tirée au hasard — on vérifie que chaque cellule ne contient que des noms de la base */
     const namesOk = await page.evaluate(
-      ([m, h]) =>
-        !!m && !!h && m.split(', ').every(n => find('malts', n)) && h.split(', ').every(n => find('hops', n)),
+      ([m, h]) => {
+        /* 6.10.6 : un nom peut contenir « , » (ex. « … (Organic Malt, Château …) ») : morceaux recollés */
+        const ok = (t, k) => {
+          let cur = '';
+          for (const p of t.split(', ')) {
+            cur = cur ? cur + ', ' + p : p;
+            if (find(k, cur)) cur = '';
+          }
+          return cur === '';
+        };
+        return !!m && !!h && ok(m, 'malts') && ok(h, 'hops');
+      },
       [cell[9], cell[10]]
     );
     check('bibliothèque : malts et houblons = noms seulement', namesOk, cell[9] + ' / ' + cell[10]);
@@ -6494,11 +6504,12 @@ check(
             !!c &&
             c.nextElementSibling === bt &&
             c.getBoundingClientRect().left - rg.getBoundingClientRect().right < 20 &&
-            c.getBoundingClientRect().right < bt.getBoundingClientRect().left;
+            /* 6.10.6 : bouton ＋ masqué tant que la section est repliée */
+            getComputedStyle(bt).display === 'none';
         }
         wh.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
         await w(50);
-        o.chev = o.chev && !wh.querySelector('.foldc');
+        o.chev = o.chev && !wh.querySelector('.foldc') && getComputedStyle(wh.querySelector('button[data-wadd]')).display !== 'none';
         /* bilan : IBU juste sous la DI */
         const bl = [...document.querySelectorAll('#bilan .bi .bl span')].map(x => x.textContent);
         o.order = /Densité initiale/.test(bl[0]) && /^IBU/.test(bl[1]);
@@ -6508,7 +6519,7 @@ check(
         return o;
       });
       check(
-        'icône hop des Houblons ; double-clic : titre d’un radar = ligne des radars repliée, titre d’une section = elle seule (chevron, même largeur, mémorisé) ; poignées sur les seuls curseurs DI et IBU, IBU sous la DI',
+        'icône hop des Houblons ; double-clic : titre d’un radar = ligne des radars repliée, titre d’une section = elle seule (chevron, même largeur, mémorisé, boutons du titre masqués) ; poignées sur les seuls curseurs DI et IBU, IBU sous la DI',
         Object.values(c67).every(Boolean),
         JSON.stringify(c67)
       );

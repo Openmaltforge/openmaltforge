@@ -5691,6 +5691,11 @@ header a.kofi img {
 #main .panel.fold > :not(h3):not(h4) {
   display: none !important;
 }
+/* 6.10.6 : section repliée = titre seul, sans ses boutons (＋, impression…) */
+#main .panel.fold > h3 > button,
+#main .panel.fold > h4 > button {
+  display: none !important;
+}
 #main .panel.fold {
   padding-bottom: 2px;
   height: auto !important;
