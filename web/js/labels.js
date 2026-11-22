@@ -1881,7 +1881,9 @@ function fddClose() {
   FDD = null;
 }
 function fddOpen(i) {
-  const s = i.parentNode.querySelector('select.fsel');
+  /* select.ssel : style de la Conception (6.10.4) — même liste, filtrée à partir de 3 lettres (15 au plus), comme les
+     autres autocomplétions */
+  const s = i.parentNode.querySelector('select.fsel, select.ssel');
   if (!s) return;
   if (!FDD || FDD.i !== i) {
     fddClose();
@@ -1897,8 +1899,13 @@ function fddOpen(i) {
     FDD = { i, s, box, k: -1, opts: [] };
     i.setAttribute('aria-expanded', 'true');
   }
-  const v = nrm(i.value || '');
-  FDD.opts = [...s.options].filter(o => !v || nrm(o.textContent).includes(v));
+  const v = nrm(i.value || ''),
+    m3 = s.classList.contains('ssel');
+  FDD.opts = [...s.options].filter(o => !v || (m3 && v.length < 3) || nrm(o.textContent).includes(v));
+  if (m3 && v.length >= 3) FDD.opts = FDD.opts.slice(0, 15);
+  /* liste des styles : même taille de texte que le champ (les polices restent en 16 px pour voir leur dessin) */
+  FDD.box.classList.toggle('sty', m3);
+  FDD.box.style.fontSize = m3 ? getComputedStyle(i).fontSize : '';
   FDD.k = FDD.opts.findIndex(o => o.value === s.value);
   FDD.box.textContent = '';
   FDD.opts.forEach((o, k) => {
@@ -1911,7 +1918,7 @@ function fddOpen(i) {
     if (o.style.fontFamily) d.style.fontFamily = o.style.fontFamily;
     FDD.box.appendChild(d);
   });
-  if (!FDD.opts.length) FDD.box.innerHTML = '<div class="fdv">Aucune police</div>';
+  if (!FDD.opts.length) FDD.box.innerHTML = `<div class="fdv">${m3 ? 'Aucun style' : 'Aucune police'}</div>`;
   const r = i.getBoundingClientRect();
   Object.assign(FDD.box.style, {
     left: r.left + window.scrollX + 'px',

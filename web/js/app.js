@@ -1965,7 +1965,7 @@ function conception0() {
     if (d) m.n = labM(d);
   });
   main.innerHTML = `<div class="top"><label>Recette<input data-r="name" value="${esc(R.name)}" style="width:220px"></label>
-<label>Style<select data-r="style" style="max-width:300px">${S.styles.some(s => s.name === R.style) ? '' : `<option selected>${hh(R.style)}</option>`}${S.styles.map(s => `<option${s.name === R.style ? ' selected' : ''}>${hh(s.name)}</option>`).join('')}</select></label>
+<label>Style<span class="fselr"><select data-r="style" class="ssel" hidden>${S.styles.some(s => s.name === R.style) ? '' : `<option selected>${hh(R.style)}</option>`}${S.styles.map(s => `<option${s.name === R.style ? ' selected' : ''}>${hh(s.name)}</option>`).join('')}</select><input class="sin" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" value="${esc(R.style || '')}" placeholder="Choisir ou saisir un style…" title="Liste déroulante ou saisie avec autocomplétion (3 lettres min.)"></span></label>
 <label>Volume à embouteiller (L)<input type="number" min="1" step="1" data-e="vol" value="${S.kv.equip.vol}"></label>
 <label>Ratio d’empâtage (L/kg)<span class="rin2"><input type="number" min="0" step="0.1" data-e="ratio" id="ratioro" value="${S.kv.equip.ratio}"><span class="al" id="ratio-al" style="display:none">⚠</span></span></label>
 <label>Date de brassage<input type="date" data-r="date" value="${R.date || ''}"></label><label>Date d’embouteillage<input type="date" data-r="embou" min="${R.date || ''}" value="${R.embou || ''}"></label>
@@ -3777,7 +3777,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.3',
+const VER = '6.10.4',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -5040,6 +5040,66 @@ document.addEventListener('input', e => {
     if (d.f === 'g') pclr(d.k);
     refresh();
     save();
+  }
+});
+/* 6.10.4 : style de la Conception — liste déroulante (tous les styles au focus) ou saisie avec autocomplétion
+   (à partir de 3 lettres, 15 propositions au plus), même liste que les polices des étiquettes (fddOpen, labels.js) ;
+   le <select data-r="style"> caché reste la source de la valeur. Saisie inconnue : style précédent rétabli. */
+const stySel = i => i.parentNode.querySelector('select.ssel');
+const styText = s => (s.options[s.selectedIndex] || {}).textContent || '';
+function styApply(i) {
+  const s = stySel(i),
+    v = nrm(i.value.trim());
+  let o = null;
+  if (v) {
+    const op = [...s.options];
+    o = op.find(x => nrm(x.textContent) === v) || null;
+    if (!o && v.length >= 3) {
+      const st = op.filter(x => nrm(x.textContent).startsWith(v)),
+        inc = op.filter(x => nrm(x.textContent).includes(v));
+      o = st.length === 1 ? st[0] : inc.length === 1 ? inc[0] : null;
+    }
+  }
+  if (o && s.value !== o.value) {
+    s.value = o.value;
+    s.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  i.value = styText(s);
+}
+document.addEventListener('focusin', e => {
+  const i = e.target;
+  if (!i.classList || !i.classList.contains('sin')) return;
+  /* champ vidé au focus : la liste propose tous les styles (la valeur actuelle reste en filigrane) */
+  i.placeholder = i.value || tx('Choisir ou saisir un style…');
+  i.value = '';
+  fddOpen(i);
+});
+document.addEventListener('input', e => {
+  const i = e.target;
+  if (i.classList && i.classList.contains('sin')) fddOpen(i);
+});
+document.addEventListener('focusout', e => {
+  const i = e.target;
+  if (!i.classList || !i.classList.contains('sin')) return;
+  if (FDD && FDD.i === i) fddClose();
+  styApply(i);
+  i.placeholder = tx('Choisir ou saisir un style…');
+});
+document.addEventListener('keydown', e => {
+  const i = e.target;
+  if (!i.classList || !i.classList.contains('sin')) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!FDD) fddOpen(i);
+    fddMove(e.key === 'ArrowDown' ? 1 : -1);
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (FDD && FDD.opts.length && (FDD.moved || FDD.opts.length === 1)) fddPick(FDD.moved ? FDD.k : 0);
+    else i.blur();
+  } else if (e.key === 'Escape') {
+    fddClose();
+    i.value = '';
+    i.blur();
   }
 });
 document.addEventListener('focusin', e => {

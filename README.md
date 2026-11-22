@@ -1,4 +1,4 @@
-# OpenMaltForge v6.10.3
+# OpenMaltForge v6.10.4
 
 Application de bureau de conception de recettes de bière : un binaire Go unique qui embarque l'interface
 (JavaScript sans framework) et gère la base SQLite, affichée dans une fenêtre d'application Chromium

@@ -2746,6 +2746,90 @@ check(
           );
         }
         {
+          /* 6.10.4 : style de la Conception = liste déroulante + autocomplétion (3 lettres min., 15 au plus) */
+          const st = { ok: false };
+          st.orig = await page.evaluate(async () => {
+            show('conception');
+            await new Promise(r => setTimeout(r, 200));
+            return S.kv.recipe.style;
+          });
+          const si = page.locator('#main .top input.sin');
+          if (await si.count()) {
+            const box = () =>
+              page.evaluate(() => [...document.querySelectorAll('.fdd .fdo')].map(x => x.textContent));
+            const nm = v => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            await si.click();
+            await page.waitForTimeout(80);
+            st.nAll = (await box()).length;
+            /* même taille de texte que le champ (pas les 16 px de la liste des polices) */
+            st.fs = await page.evaluate(() => [
+              getComputedStyle(document.querySelector('.fdd .fdo')).fontSize,
+              getComputedStyle(document.querySelector('#main .top input.sin')).fontSize
+            ]);
+            st.nStyles = await page.evaluate(() => document.querySelector('select.ssel').options.length);
+            st.empty = (await si.inputValue()) === '';
+            await page.keyboard.type('ip');
+            await page.waitForTimeout(50);
+            st.n2 = (await box()).length;
+            await page.keyboard.type('a');
+            await page.waitForTimeout(50);
+            const f = await box();
+            st.n3 = f.length;
+            st.filt = f.length > 0 && f.length <= 15 && f.every(x => nm(x).includes('ipa'));
+            await page.keyboard.press('ArrowDown');
+            const pick = await page.evaluate(() => (document.querySelector('.fdd .fdo.on') || {}).textContent);
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(80);
+            st.pick = pick;
+            st.r1 = await page.evaluate(() => S.kv.recipe.style);
+            st.v1 = await si.inputValue();
+            st.closed = !(await page.locator('.fdd').count());
+            /* saisie inconnue : style précédent rétabli */
+            await si.click();
+            await page.keyboard.type('zzqqx');
+            await page.waitForTimeout(50);
+            st.none = await page.evaluate(() => (document.querySelector('.fdd .fdv') || {}).textContent);
+            await page.keyboard.press('Tab');
+            await page.waitForTimeout(80);
+            st.r2 = await page.evaluate(() => S.kv.recipe.style);
+            st.v2 = await si.inputValue();
+            /* clic dans la liste */
+            await si.click();
+            await page.waitForTimeout(80);
+            const third = (await box())[2];
+            await page.locator('.fdd .fdo').nth(2).click();
+            await page.waitForTimeout(80);
+            st.r3 = await page.evaluate(() => S.kv.recipe.style);
+            st.third = third;
+            st.ok =
+              st.empty &&
+              st.fs[0] === st.fs[1] &&
+              st.fs[0] !== '16px' &&
+              st.nAll === st.nStyles &&
+              st.nAll > 15 &&
+              st.n2 === st.nAll &&
+              st.filt &&
+              !!pick &&
+              st.r1 === pick &&
+              st.v1 === pick &&
+              st.closed &&
+              st.none === 'Aucun style' &&
+              st.r2 === pick &&
+              st.v2 === pick &&
+              st.r3 === third;
+          }
+          await page.evaluate(async o => {
+            S.kv.recipe.style = o;
+            show('conception');
+            await new Promise(r => setTimeout(r, 100));
+          }, st.orig);
+          check(
+            'Conception › Style : liste déroulante (tous les styles) + autocomplétion à partir de 3 lettres (15 au plus), flèches / Entrée / clic, saisie inconnue = style rétabli',
+            st.ok,
+            JSON.stringify(st)
+          );
+        }
+        {
           /* 6.10.3 : clic sur une ligne de la bibliothèque = surbrillance, comme les bases (malts, houblons…) */
           await page.evaluate(async () => {
             S.biblio.push({
