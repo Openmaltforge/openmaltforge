@@ -842,8 +842,22 @@ async function scenarioApp(label) {
     await wait(150);
     await page.fill('input.nm[data-pn="3"][data-i="0"]', 'Prélèvements');
     await page.fill('input[data-pr="3"][data-i="0"][data-pf="l"]', '1');
+    /* 6.10.5 : OK du Process encadré comme le OK des bases (fond, bordure bleue, texte normal 12 px) */
+    const okSt = () =>
+      page.evaluate(() => {
+        const b = document.querySelector('tr[data-prow="3:0"] button[data-ped]'),
+          c = getComputedStyle(b);
+        return [b.textContent, c.borderTopStyle, c.borderTopColor, c.backgroundColor, c.fontWeight, c.fontSize].join('|');
+      });
+    const okOn = await okSt();
     await page.click('tr[data-prow="3:0"] button[data-ped]');
     await wait(150);
+    const okOff = await okSt();
+    check(
+      'Process : bouton OK d’une ligne en modification encadré comme dans les bases (fond, bordure bleue, texte normal), crayon sans cadre ensuite',
+      okOn === 'OK|solid|rgb(58, 143, 232)|rgb(47, 58, 73)|400|12px' && /^✎\|/.test(okOff) && !okOff.includes('rgb(47, 58, 73)'),
+      okOn + ' / ' + okOff
+    );
     const ph2 = await page.evaluate(() => {
       const P = S.kv.equip.proc3,
         pr = procSolve(),

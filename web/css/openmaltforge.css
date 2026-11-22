@@ -5771,3 +5771,20 @@ main .wt input.t0in {
   color: var(--t);
   font-style: normal;
 }
+
+/* 6.10.5 — Process : bouton OK d'une ligne en modification = même aspect encadré que le OK des bases (Malts,
+   Houblons…) : fond, bordure bleue, texte normal (les règles des boutons du Process le rendaient gras, sans cadre) */
+.ptab td.pact button[data-ped].okb {
+  background: #2f3a49 !important;
+  border: 1px solid var(--bl) !important;
+  border-radius: 3px !important;
+  color: var(--t) !important;
+  padding: 3px 9px !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: normal !important;
+  opacity: 1 !important;
+}
+:root.light .ptab td.pact button[data-ped].okb {
+  background: #f4f6f9 !important;
+}

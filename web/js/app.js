@@ -3462,6 +3462,7 @@ function procEdit(tr, on) {
   if (b) {
     b.textContent = on ? 'OK' : '✎';
     b.title = noIc(tx(on ? 'Valider' : b.closest('.phr') ? 'Renommer la phase' : 'Modifier'));
+    b.classList.toggle('okb', on); /* 6.10.5 : OK encadré, comme dans les bases */
   }
   tr.classList.toggle('ped', on);
   const P = ensureProc(),
@@ -3777,7 +3778,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.4',
+const VER = '6.10.5',
   MASH = [
     'Palier Saccharification',
     'Palier I',
