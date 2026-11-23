@@ -5814,3 +5814,20 @@ table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='usage'] { min-widt
     min-width: 130px;
   }
 }
+
+/* 6.11.0 — Paramètres › Réglages : fenêtre « Créer une base de données » et liste des bases */
+.nbf { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.nbf .nbn { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+.nbf .nbn input { width: 100%; box-sizing: border-box; font-weight: 400; }
+.nbf .nbr { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.nbf .nbt { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; padding: 8px 10px; border: 1px solid var(--b); border-radius: 6px; }
+.nbf .nbt p { grid-column: 1 / -1; margin: 0 0 4px; color: var(--m); font-size: 12px; }
+.nbf .nbt label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.nbf .nbt.off { opacity: 0.45; }
+.nbf .nbt.off label { cursor: default; }
+.nbf .nbmsg { color: #e5484d; margin: 0; }
+#dbinfo select#dbsel { max-width: 260px; }
+/* 6.11.0 : nom de la base jamais coupé au milieu ; les boutons passent à la ligne s'il manque de place */
+#regp .rgdb { flex-wrap: wrap; }
+#regp .rgdb .ul { flex: 1 0 auto; max-width: 100%; }
+#regp #dbinfo { word-break: normal; overflow-wrap: anywhere; }

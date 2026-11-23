@@ -239,6 +239,8 @@
         <a href="#formules">Expressões matemáticas</a>
         <a href="#courses">Lista de compras e stock</a>
         <a href="#bibliotheque">Biblioteca e importações</a>
+        <a class="s" href="#bi-import">Importar uma receita</a>
+        <a class="s" href="#bi-rel">Botão ↻</a>
         <a href="#bases">Bases de ingredientes</a>
         <a class="s" href="#b-filtres">Filtros</a>
         <a href="#html">Renderização HTML</a>
@@ -280,7 +282,7 @@
         <ul>
           <li><b>Menu</b>: Conceção, Biblioteca, as bases (Maltes, Lúpulos, Leveduras, Águas, Estilos, Ingredientes, Consumíveis), HTML, Rótulos, Folha de brassagem, Definições, depois o ícone <b>Documentação</b> (livro aberto) que mostra esta página).</li>
           <li><b>Guardar</b>: escreve imediatamente todos os dados na base. Há também uma gravação automática (a cada 5 minutos por predefinição, ajustável em Definições › Preferências).</li>
-          <li><b>Indicador «Base: openmaltforge.sqlite»</b>: verde quando tudo está guardado. Em caso de problema (programa fechado, escrita recusada), aparece um aviso laranja; um clique volta a tentar a gravação.</li>
+          <li><b>Indicador «Base: openmaltforge»</b> (nome da base aberta, sem «.sqlite»): verde quando tudo está guardado. Em caso de problema (programa fechado, escrita recusada), aparece um aviso laranja; um clique volta a tentar a gravação.</li>
           <li><b>Zona de notificações</b> (sob o menu): mensagens temporárias a verde (gravação, cálculo), erros a vermelho, avisos persistentes a laranja (por exemplo um rácio de maceração demasiado alto para a cuba). Várias mensagens aparecem lado a lado.</li>
           <li><b>Tema</b>: o interruptor sol / lua, no canto superior direito, alterna entre o tema escuro e o claro; a escolha fica memorizada.</li>
           <li><b>Rodapé</b>: licença (GNU GPL v3, clique para ler o texto) e número da versão.</li>
@@ -462,7 +464,20 @@
           <li>Colunas: nome, cervejeiro, realizado, estilo, DI, DF, IBU, EBC, ABV, maltes, lúpulos, leveduras; uma linha de filtros e ordenação com um clique no cabeçalho. O botão borracha apaga todos os filtros.</li>
           <li><b>Vista de cartões</b>: apresentação em fichas com a cor da cerveja.</li>
           <li><b>Número de brassagem</b>: <code>ano#posição</code> (ex. <code>2026#12</code>), posição por data de brassagem entre as receitas do ano, excluindo as receitas importadas. Aparece nos rótulos e no HTML.</li>
-          <li><b>Importar beer.xml</b> (BeerXML 1.0) e <b>Importar PDF</b> (impressão de uma receita Brewfather, exportação PDF do BeerSmith): as receitas importadas são só de leitura (copie-as para as modificar). Importar beer.xml: um ingrediente ausente da base é acrescentado com os dados do ficheiro. Importar PDF: uma caixa «Correspondência dos ingredientes» propõe ligar cada ingrediente desconhecido a um ingrediente da base; caso contrário fica como texto simples na receita.</li>
+        </ul>
+        <h3 id="bi-import">Importar uma receita</h3>
+        <ol>
+          <li>Na Biblioteca, clique em <b>Importar beer.xml</b> (ficheiro BeerXML 1.0, exportado pelo BeerSmith, Brewfather, Brewer’s Friend…) ou em <b>Importar PDF</b> (impressão de uma receita Brewfather, exportação PDF do BeerSmith). Podem escolher-se vários ficheiros de uma vez.</li>
+          <li><b>Nome do cervejeiro</b> (beer.xml): se não estiver indicado no ficheiro, uma caixa pede-o (lista dos cervejeiros já conhecidos); «Saltar» deixa-o vazio («-»).</li>
+          <li><b>Estilo</b> (beer.xml): um estilo desconhecido da base pode ser associado a um estilo BJCP da lista; caso contrário, fica em texto.</li>
+          <li><b>Correspondência dos ingredientes</b>: para cada ingrediente ausente da base com esse nome, escolha o ingrediente correspondente (escreva algumas letras para filtrar). Um campo deixado vazio mantém o ingrediente em texto simples na receita e acrescenta-o à lista «A pesquisar» (Definições).</li>
+          <li>A receita aparece na biblioteca, <b>só de leitura</b> (cadeado): o olho consulta-a; para a modificar, copie-a (botão copiar), a cópia abre-se na Conceção. Reimportar o mesmo ficheiro substitui a receita em vez de a duplicar.</li>
+        </ol>
+        <h3 id="bi-rel">Botão <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>: completar uma receita importada</h3>
+        <ul>
+          <li>O botão <b><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></b> aparece no fim da linha (e no cartão) de uma receita importada a que falta algo: um ou mais <b>ingredientes ausentes da base</b>, ou o <b>nome do cervejeiro</b>.</li>
+          <li>Um clique pede primeiro o <b>nome do cervejeiro</b> se faltar (a mesma caixa da importação; «Saltar» deixa-o vazio) e depois abre a <b>correspondência dos ingredientes</b> se ainda houver por associar: útil depois de acrescentar o ingrediente à sua base (por exemplo com os CSV de «A pesquisar»).</li>
+          <li>O botão desaparece quando a receita está completa.</li>
         </ul>
         <figure>
           <img src="img/en/bibliotheque-cartes.jpg" alt="Biblioteca em vista de cartões" />
@@ -588,6 +603,8 @@
           <li><b>Idioma</b> da interface: francês, inglês, espanhol, italiano, português. Toda a interface está traduzida, incluindo o prompt da secção «A pesquisar» e esta documentação (nas línguas que não o francês, as capturas mostram a interface em inglês).</li>
           <li><b>Exportar a base…</b>: descarrega uma cópia <code>AAAAMMDD_openmaltforge.sqlite</code> do estado apresentado.</li>
           <li><b>Mudar de base…</b>: substitui a base pelo conteúdo de outro ficheiro <code>.sqlite</code>; o ficheiro é verificado e atualizado, e é conservada uma cópia da base atual em <code>sauvegardes/</code>.</li>
+          <li><b>Criar uma base de dados…</b>: pede o nome da nova base e se se começa <b>com dados</b> (marcar as tabelas a preencher: lúpulos, maltes, leveduras, águas, ingredientes, consumíveis, biblioteca de receitas, estilos) ou <b>sem dados</b> (base vazia). As tabelas marcadas recebem os dados iniciais do OpenMaltForge; a biblioteca retoma as receitas da base atual. O equipamento, o processo, os tipos de letra e os outros parâmetros são retomados da base atual. A nova base (<code>&lt;nome&gt;.sqlite</code>, na pasta do OpenMaltForge) é aberta de imediato; a base anterior fica intacta.</li>
+          <li>Quando a pasta contém várias bases, o nome da base torna-se uma <b>lista</b>: escolher uma base abre-a (as alterações pendentes são gravadas antes). A última base aberta é reaberta no arranque seguinte.</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-polices.jpg" alt="Tipos de letra" />
@@ -596,7 +613,7 @@
 
         <h2 id="donnees">Dados e cópias de segurança</h2>
         <ul>
-          <li>Base única: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (um só ficheiro, que pode ser copiado a qualquer momento).</li>
+          <li>Base predefinida: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (um só ficheiro, que pode ser copiado a qualquer momento). Podem ser criadas outras bases na mesma pasta (Definições › Preferências › Criar uma base de dados).</li>
           <li>Antes de qualquer atualização da estrutura da base, e antes de uma mudança de base, é feita uma cópia em <code>~/OpenMaltForge/sauvegardes/</code>.</li>
           <li>Uma base criada por uma versão mais recente do OpenMaltForge é recusada (instale a versão mais recente).</li>
           <li>As bases antigas (BrewCraft 1.x a 4.x) são reconhecidas e convertidas; a base do OpenBrew 5.x (<code>~/OpenBrew/openbrew.sqlite</code>), ou senão a do BrewCraft 4.x (<code>~/BrewCraft/brewcraft.sqlite</code>), é retomada no primeiro arranque do OpenMaltForge.</li>

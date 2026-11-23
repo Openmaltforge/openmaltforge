@@ -317,8 +317,10 @@ function migrate() {
         })
       ),
     fresh = [];
+  const VIDE = S.kv.equip.vide || [] /* 6.11.0 : base créée sans ces tables : ne pas les remplir */;
   for (const t in COLS) {
-    if (!S[t] || (!S[t].length && ['malts', 'hops', 'yeasts', 'styles'].includes(t))) {
+    if (VIDE.includes(t)) S[t] = S[t] || [];
+    else if (!S[t] || (!S[t].length && ['malts', 'hops', 'yeasts', 'styles'].includes(t))) {
       S[t] = pseed(t);
       fresh.push(t);
     }
@@ -525,7 +527,7 @@ const WHYT = {
   need: 'écriture refusée par le serveur'
 };
 const why = () => (WHYT[PST] || '') + (WHY ? ' [' + WHY + ']' : ''),
-  dbName = () => (DB && DB.name) || 'la base',
+  dbName = () => ((DB && DB.name) || 'la base').replace(/\.sqlite$/i, '') /* 6.11.0 : sans suffixe */,
   escH = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 /* appel de l'API du serveur ; erreur = message renvoyé par le serveur */
 async function api(u, o) {
@@ -535,7 +537,7 @@ async function api(u, o) {
 }
 const dbHdr = r =>
   (DB = {
-    name: r.headers.get('X-OpenMaltForge-Db') || 'openmaltforge.sqlite',
+    name: decodeURIComponent(r.headers.get('X-OpenMaltForge-Db') || 'openmaltforge.sqlite'),
     path: decodeURIComponent(r.headers.get('X-OpenMaltForge-Path') || '')
   });
 /* notifications persistantes (orange) : ajoutées dans la zone de notification à la suite des autres, retirées quand le défaut est réglé */
@@ -717,7 +719,7 @@ const reglagesPanel = () => {
   return `<div class="panel" id="regp"><h3>Réglages</h3>
 <div class="rgrow"><label class="sw" title="Activer / désactiver la sauvegarde automatique"><input type="checkbox" id="autoon"${on ? ' checked' : ''}><span class="sl"></span></label><span class="ul">Sauvegarde automatique</span><span class="rgin"><input type="number" min="0" step="1" id="automin" value="${Math.max(0, Math.floor(+E.autoMin) || 0)}"${on ? '' : ' readonly'}> min</span></div>
 <div class="rgrow"><span class="ul">Langue</span><select id="langsel">${LANGS.map(([c, n]) => `<option value="${c}"${c === LANG ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
-<div class="rgrow rgdb"><span class="ul"><b>Base de données :</b> <span id="dbinfo">Lecture du fichier…</span></span><span class="rgbtns"><button id="dbexp" title="Télécharger une copie de la base SQLite (état actuel, modifications non enregistrées comprises)">⬇ Exporter la base…</button><button id="dbchg" title="Remplacer la base par le contenu d’un autre fichier .sqlite (une copie de la base actuelle est conservée)">📂 Changer de base…</button></span></div></div>`;
+<div class="rgrow rgdb"><span class="ul"><b>Base de données :</b> <span id="dbinfo">Lecture du fichier…</span></span><span class="rgbtns"><button id="dbexp" title="Télécharger une copie de la base SQLite (état actuel, modifications non enregistrées comprises)">⬇ Exporter la base…</button><button id="dbchg" title="Remplacer la base par le contenu d’un autre fichier .sqlite (une copie de la base actuelle est conservée)">📂 Changer de base…</button><button id="dbnew" title="Créer une nouvelle base de données dans le dossier d’OpenMaltForge et l’ouvrir">＋ Créer une base de données…</button></span></div></div>`;
 };
 document.addEventListener('change', e => {
   const t = e.target;
@@ -746,6 +748,12 @@ async function dbInfo() {
     const i = await (await api('api/info')).json();
     box.textContent = i.nom;
     box.title = i.chemin;
+    /* 6.11.0 : plusieurs bases dans le dossier → liste pour passer de l'une à l'autre */
+    const l = await (await api('api/bases')).json();
+    if (l.bases && l.bases.length > 1) {
+      box.innerHTML = `<select id="dbsel" title="Ouvrir une autre base du dossier d’OpenMaltForge">${l.bases.map(b => `<option value="${esc(b)}"${b === l.actif ? ' selected' : ''}>${escH(b.replace(/\.sqlite$/i, ''))}</option>`).join('')}</select>`;
+      box.title = i.chemin;
+    }
   } catch (e) {
     box.textContent = '⚠ ' + ((e && e.message) || e);
   }
@@ -825,6 +833,103 @@ document.addEventListener('click', async e => {
     notify('import', '✔ Base remplacée par ' + f.name + ' (copie de l’ancienne dans les sauvegardes)', 'ok');
   } catch (err) {
     if (!err || err.name !== 'AbortError') bcAlert('⚠ ' + ((err && err.message) || err));
+  }
+});
+/* 6.11.0 : créer une base de données (nom, avec ou sans données, tables à remplir), puis l'ouvrir ;
+   tables cochées = données de départ d'OpenMaltForge (bibliothèque : recettes de la base actuelle) ;
+   paramètres (équipement, process, polices, logos, traductions) repris de la base actuelle */
+const NBT = [
+  ['hops', '🌿 Houblons'],
+  ['malts', '🌾 Malts'],
+  ['yeasts', '🧫 Levures'],
+  ['eaux', '💧 Eaux'],
+  ['ings', '🧂 Ingrédients'],
+  ['conso', '📦 Consommables'],
+  ['biblio', '🍺 Bibliothèque de recettes'],
+  ['styles', '📝 Styles']
+];
+function newBaseState(tb) {
+  const o = JSON.parse(dbState()),
+    E = o.kv.equip;
+  /* malts, houblons, levures, styles : liste vide → remplie au chargement par migrate() (échelle des arômes comprise) ;
+     eaux, ingrédients, consommables : données de départ écrites tout de suite ; tables décochées : vides (E.vide) */
+  Object.keys(COLS).forEach(t => (o[t] = tb.includes(t) && !['malts', 'hops', 'yeasts', 'styles'].includes(t) ? pseed(t) : []));
+  if (!tb.includes('biblio')) {
+    o.biblio = [];
+    o.html = [];
+  }
+  E.vide = Object.keys(COLS).filter(t => !tb.includes(t));
+  E.courses = [];
+  E.arech = [];
+  return JSON.stringify(o);
+}
+const NB_RE = /^[\p{L}\p{N} ._-]{1,80}$/u;
+async function newBase() {
+  if (PEND) await persist();
+  const r = await bcForm('La nouvelle base est créée dans le dossier d’OpenMaltForge, puis ouverte ; la base actuelle reste intacte.', {
+    title: 'Créer une base de données',
+    ok: 'Créer',
+    cancel: 'Annuler',
+    ico: '＋',
+    wide: 1,
+    body: `<div class="nbf"><label class="nbn">Nom de la base<input id="nbnom" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Ex. : Brasserie 2"></label><label class="nbr"><input type="radio" name="nbd" value="1" checked> Démarrer avec des données</label><label class="nbr"><input type="radio" name="nbd" value="0"> Démarrer sans données (base vierge)</label><div class="nbt" id="nbt"><p>Tables à remplir (données de départ d’OpenMaltForge ; bibliothèque : recettes de la base actuelle) :</p>${NBT.map(([k, l]) => `<label><input type="checkbox" data-nbt="${k}" checked> ${l}</label>`).join('')}</div><p class="nbmsg" hidden></p></div>`,
+    collect: d => {
+      const n = d.querySelector('#nbnom').value.trim().replace(/\.sqlite$/i, '').trim(),
+        m = d.querySelector('.nbmsg'),
+        err = t => {
+          m.textContent = tx(t);
+          m.hidden = false;
+          d.querySelector('#nbnom').focus();
+        };
+      if (!n) return err('Donnez un nom à la base.');
+      if (!NB_RE.test(n) || n.startsWith('.')) return err('Nom invalide : lettres, chiffres, espaces, tirets, points et soulignés uniquement.');
+      const avec = d.querySelector('input[name="nbd"]:checked').value === '1';
+      return { n, tb: avec ? [...d.querySelectorAll('[data-nbt]:checked')].map(x => x.dataset.nbt) : [] };
+    }
+  });
+  if (!r) return;
+  try {
+    await api('api/bases', {
+      method: 'POST',
+      headers: { 'X-OpenMaltForge': '1', 'Content-Type': 'application/json' },
+      body: '{"action":"creer","nom":' + JSON.stringify(r.n) + ',"etat":' + newBaseState(r.tb) + '}'
+    });
+    await useState();
+    await saveNow();
+    show('params');
+    notify('nbase', '✔ Base créée et ouverte : ' + r.n, 'ok');
+  } catch (e) {
+    bcAlert('⚠ ' + ((e && e.message) || e));
+  }
+}
+async function openBase(n) {
+  try {
+    if (PEND) await persist();
+    await api('api/bases', {
+      method: 'POST',
+      headers: { 'X-OpenMaltForge': '1', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ouvrir', nom: n })
+    });
+    await useState();
+    show('params');
+    notify('nbase', '✔ Base ouverte : ' + dbName(), 'ok');
+  } catch (e) {
+    bcAlert('⚠ ' + ((e && e.message) || e));
+    dbInfo();
+  }
+}
+document.addEventListener('click', e => {
+  if (e.target.closest && e.target.closest('#dbnew')) newBase();
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'dbsel') openBase(e.target.value);
+  else if (e.target.name === 'nbd') {
+    const on = e.target.value === '1' && e.target.checked,
+      b = document.getElementById('nbt');
+    if (b) {
+      b.classList.toggle('off', !on);
+      b.querySelectorAll('input').forEach(i => (i.disabled = !on));
+    }
   }
 });
 async function load() {
@@ -3784,7 +3889,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.10.7',
+const VER = '6.11.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4413,7 +4518,7 @@ function biblio() {
   const cut = t => `<td class="cut">${t ? `<div class="cutv" title="${esc(t)}">${hh(t)}</div>` : ''}</td>`;
   const rows = LV.map(
     ({ i, r, c }) =>
-      `<tr tabindex="-1"><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxUnres(r.recipe).length ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
+      `<tr tabindex="-1"><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxNeedRel(r) ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
   ).join('');
   const BFL = {
       name: 'Nom',

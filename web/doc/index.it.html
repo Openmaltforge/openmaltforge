@@ -239,6 +239,8 @@
         <a href="#formules">Espressioni matematiche</a>
         <a href="#courses">Lista della spesa e scorte</a>
         <a href="#bibliotheque">Libreria e importazioni</a>
+        <a class="s" href="#bi-import">Importare una ricetta</a>
+        <a class="s" href="#bi-rel">Pulsante ↻</a>
         <a href="#bases">Database degli ingredienti</a>
         <a class="s" href="#b-filtres">Filtri</a>
         <a href="#html">Resa HTML</a>
@@ -280,7 +282,7 @@
         <ul>
           <li><b>Menu</b>: Progettazione, Libreria, i database (Malti, Luppoli, Lieviti, Acque, Stili, Ingredienti, Consumabili), HTML, Etichette, Scheda di cotta, Impostazioni, poi l’icona <b>Documentazione</b> (libro aperto) che mostra questa pagina).</li>
           <li><b>Salva</b>: scrive subito tutti i dati nel database. Avviene anche un salvataggio automatico (ogni 5 minuti per impostazione predefinita, regolabile in Impostazioni › Preferenze).</li>
-          <li><b>Spia «Database: openmaltforge.sqlite»</b>: verde quando tutto è salvato. In caso di problema (programma chiuso, scrittura rifiutata) compare un avviso arancione; un clic ritenta il salvataggio.</li>
+          <li><b>Spia «Database: openmaltforge»</b> (nome del database aperto, senza «.sqlite»): verde quando tutto è salvato. In caso di problema (programma chiuso, scrittura rifiutata) compare un avviso arancione; un clic ritenta il salvataggio.</li>
           <li><b>Area delle notifiche</b> (sotto il menu): messaggi temporanei in verde (salvataggio, calcolo), errori in rosso, avvisi persistenti in arancione (per esempio un rapporto d’ammostamento troppo alto per il tino). Più messaggi vengono mostrati uno accanto all’altro.</li>
           <li><b>Tema</b>: l’interruttore sole / luna, in alto a destra, passa dal tema scuro a quello chiaro; la scelta viene ricordata.</li>
           <li><b>Piè di pagina</b>: licenza (GNU GPL v3, clic per leggere il testo) e numero di versione.</li>
@@ -462,7 +464,20 @@
           <li>Colonne: nome, birraio, realizzato, stile, DI, DF, IBU, EBC, ABV, malti, luppoli, lieviti; una riga di filtri e l’ordinamento con un clic sull’intestazione. Il pulsante gomma cancella tutti i filtri.</li>
           <li><b>Vista schede</b>: visualizzazione a schede con il colore della birra.</li>
           <li><b>Numero di cotta</b>: <code>anno#posizione</code> (es. <code>2026#12</code>), posizione per data di cotta tra le ricette dell’anno, escluse le ricette importate. Compare sulle etichette e nell’HTML.</li>
-          <li><b>Importa beer.xml</b> (BeerXML 1.0) e <b>Importa PDF</b> (stampa di una ricetta Brewfather, esportazione PDF di BeerSmith): le ricette importate sono in sola lettura (da copiare per modificarle). Importa beer.xml: un ingrediente assente dal database vi viene aggiunto con i dati del file. Importa PDF: una finestra «Corrispondenza degli ingredienti» propone di collegare ogni ingrediente sconosciuto a un ingrediente del database; altrimenti resta come semplice testo nella ricetta.</li>
+        </ul>
+        <h3 id="bi-import">Importare una ricetta</h3>
+        <ol>
+          <li>Nella Libreria, cliccare su <b>Importa beer.xml</b> (file BeerXML 1.0, esportato da BeerSmith, Brewfather, Brewer’s Friend…) o su <b>Importa PDF</b> (stampa di una ricetta Brewfather, esportazione PDF di BeerSmith). Si possono scegliere più file insieme.</li>
+          <li><b>Nome del birraio</b> (beer.xml): se non è indicato nel file, una finestra lo chiede (elenco dei birrai già noti); «Salta» lo lascia vuoto («-»).</li>
+          <li><b>Stile</b> (beer.xml): uno stile sconosciuto al database può essere collegato a uno stile BJCP dell’elenco; altrimenti resta in testo.</li>
+          <li><b>Corrispondenza degli ingredienti</b>: per ogni ingrediente assente dal database con quel nome, scegliere l’ingrediente corrispondente (digitare qualche lettera per filtrare). Un campo lasciato vuoto mantiene l’ingrediente come semplice testo nella ricetta e lo aggiunge all’elenco «Da cercare» (Impostazioni).</li>
+          <li>La ricetta compare nella libreria, <b>in sola lettura</b> (lucchetto): l’occhio la consulta; per modificarla, copiarla (pulsante copia), la copia si apre nella Progettazione. Reimportare lo stesso file sostituisce la ricetta invece di duplicarla.</li>
+        </ol>
+        <h3 id="bi-rel">Pulsante <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>: completare una ricetta importata</h3>
+        <ul>
+          <li>Il pulsante <b><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></b> compare in fondo alla riga (e sulla scheda) di una ricetta importata a cui manca qualcosa: uno o più <b>ingredienti assenti dal database</b>, o il <b>nome del birraio</b>.</li>
+          <li>Un clic chiede prima il <b>nome del birraio</b> se manca (stessa finestra dell’importazione; «Salta» lo lascia vuoto), poi apre la <b>corrispondenza degli ingredienti</b> se ne restano da collegare: utile dopo aver aggiunto l’ingrediente al suo database (ad esempio con i CSV di «Da cercare»).</li>
+          <li>Il pulsante scompare quando la ricetta è completa.</li>
         </ul>
         <figure>
           <img src="img/en/bibliotheque-cartes.jpg" alt="Libreria in vista schede" />
@@ -588,6 +603,8 @@
           <li><b>Lingua</b> dell’interfaccia: francese, inglese, spagnolo, italiano, portoghese. Tutta l’interfaccia è tradotta, compreso il prompt della sezione «Da cercare» e questa documentazione (nelle lingue diverse dal francese, le schermate mostrano l’interfaccia in inglese).</li>
           <li><b>Esporta il database…</b>: scarica una copia <code>AAAAMMGG_openmaltforge.sqlite</code> dello stato visualizzato.</li>
           <li><b>Cambia database…</b>: sostituisce il database con il contenuto di un altro file <code>.sqlite</code>; il file viene verificato e aggiornato, e una copia del database attuale viene conservata in <code>sauvegardes/</code>.</li>
+          <li><b>Crea un database…</b>: chiede il nome del nuovo database, poi se iniziare <b>con dei dati</b> (spuntare le tabelle da riempire: luppoli, malti, lieviti, acque, ingredienti, materiali di consumo, libreria di ricette, stili) o <b>senza dati</b> (database vuoto). Le tabelle spuntate ricevono i dati iniziali di OpenMaltForge; la libreria riprende le ricette del database attuale. Attrezzatura, processo, caratteri e gli altri parametri sono ripresi dal database attuale. Il nuovo database (<code>&lt;nome&gt;.sqlite</code>, nella cartella di OpenMaltForge) viene aperto subito; il precedente resta intatto.</li>
+          <li>Quando la cartella contiene più database, il nome del database diventa un <b>elenco</b>: sceglierne uno lo apre (le modifiche in corso vengono prima salvate). L’ultimo database aperto viene riaperto all’avvio successivo.</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-polices.jpg" alt="Caratteri" />
@@ -596,7 +613,7 @@
 
         <h2 id="donnees">Dati e copie di sicurezza</h2>
         <ul>
-          <li>Database unico: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (un solo file, copiabile in qualsiasi momento).</li>
+          <li>Database predefinito: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (un solo file, copiabile in qualsiasi momento). Altri database possono essere creati nella stessa cartella (Impostazioni › Preferenze › Crea un database).</li>
           <li>Prima di ogni aggiornamento della struttura del database, e prima di un cambio di database, viene fatta una copia in <code>~/OpenMaltForge/sauvegardes/</code>.</li>
           <li>Un database creato da una versione più recente di OpenMaltForge viene rifiutato (installa l’ultima versione).</li>
           <li>I vecchi database (BrewCraft da 1.x a 4.x) vengono riconosciuti e convertiti; il database di OpenBrew 5.x (<code>~/OpenBrew/openbrew.sqlite</code>), altrimenti quello di BrewCraft 4.x (<code>~/BrewCraft/brewcraft.sqlite</code>), viene ripreso al primo avvio di OpenMaltForge.</li>

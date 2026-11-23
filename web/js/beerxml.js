@@ -588,7 +588,7 @@ function bxCards(L, flt) {
     const R = r.recipe || {},
       nm = (R.malts || []).length,
       nh = (R.hops || []).length;
-    return `<div class="bcard${r.imp ? ' imp' : ''}" data-bi="${i}" title="${r.imp ? 'Consulter (lecture seule)' : 'Ouvrir dans la conception'}"><div class="bact"><button data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button>${bxUnres(R).length ? bxRelBtn(i) : ''}<button data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button><button class="x" data-bdel="${i}" title="Supprimer">✕</button></div>
+    return `<div class="bcard${r.imp ? ' imp' : ''}" data-bi="${i}" title="${r.imp ? 'Consulter (lecture seule)' : 'Ouvrir dans la conception'}"><div class="bact"><button data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button>${bxNeedRel(r) ? bxRelBtn(i) : ''}<button data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button><button class="x" data-bdel="${i}" title="Supprimer">✕</button></div>
  <div class="bglass">${bxGlass(bxColor(c.ebc))}</div><h4>${hh(r.name)}</h4><div class="bs">${hh((r.style || '').replace(/^\d+[A-Za-z]?\s+/, '')) || '&nbsp;'}</div><div class="bs">${bxType(R.impd && R.impd.type)}</div>
  <div class="bs bbr"><input class="bxb" data-bbr="${i}" size="${Math.max(8, String(r.brasseur || '-').length + 1)}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="+ brasseur" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}">${R.date ? '<span class="okc" title="Brassé le ' + fd(R.date) + '">✔</span>' : ''}</div>
  <div class="bmeta"><span title="${bxTip(R, 'malts')}">🌾 ${nm}</span><span title="${bxTip(R, 'hops')}">🌿 ${nh}</span><span title="Volume">💧 ${nf(r.vol, 1)} L</span></div>
@@ -715,8 +715,39 @@ function bxUnres(R) {
   });
   return o;
 }
-const bxRelBtn = i =>
-  `<button class="pen brel" data-brel="${i}" title="Des ingrédients de cette recette ne sont pas dans la base : faire la correspondance avec les ingrédients de la base">${ic('rotate')}</button>`;
+/* 6.11.0 : recette importée sans nom de brasseur (vide ou « - ») : le bouton ↻ demande aussi le brasseur */
+const bxNoBrewer = b => !!(b && b.imp && !String(b.brasseur || '').replace(/^\s*-\s*$/, '').trim()),
+  bxNeedRel = b => !!b && (bxNoBrewer(b) || bxUnres(b.recipe).length > 0);
+const bxRelBtn = i => {
+  const b = S.biblio[i],
+    u = b && bxUnres(b.recipe).length,
+    t = bxNoBrewer(b)
+      ? u
+        ? 'Saisir le nom du brasseur, puis faire la correspondance des ingrédients absents de la base'
+        : 'Nom du brasseur absent : le saisir'
+      : 'Des ingrédients de cette recette ne sont pas dans la base : faire la correspondance avec les ingrédients de la base';
+  return `<button class="pen brel" data-brel="${i}" title="${t}">${ic('rotate')}</button>`;
+};
+/* demande le nom du brasseur d'une recette importée (même boîte qu'à l'import) ; true si un nom a été saisi */
+async function bxAskBrewer(i) {
+  const b = S.biblio[i];
+  const v = await bcPrompt(
+    'Le nom du brasseur n’est pas indiqué pour la recette « ' + b.name + ' ».\nQui l’a brassée ? (laisser vide si inconnu : « - »)',
+    { title: 'Nom du brasseur', ok: 'Valider', cancel: 'Passer', placeholder: 'Nom du brasseur', list: bxBrewerNames() }
+  );
+  const nv = (v && v.trim()) || '';
+  if (!nv || nv === '-') return false;
+  b.brasseur = nv;
+  if (b.recipe) b.recipe.brasseur = nv;
+  if (S.kv.recipe && S.kv.recipe.id === b.id) S.kv.recipe.brasseur = nv;
+  try {
+    const h = { id: b.id, name: b.name, date: b.date, code: withRec(b, () => htmlCode()) },
+      j = S.html.findIndex(z => z.id === b.id);
+    j >= 0 ? (S.html[j] = h) : S.html.push(h);
+  } catch (e) {}
+  save();
+  return true;
+}
 /* rapprochement tolérant (noms légèrement différents : ordre des mots, accents, « Malt », « Labs », codes S-04 / S04, Hallertauer / Hallertau…) : un jeu de mots contenu dans l'autre, meilleur score unique */
 const BXAL = {
   hallertauer: 'hallertau',
@@ -924,12 +955,20 @@ document.addEventListener(
     const i = +t.dataset.brel,
       b = S.biblio[i];
     if (!b) return;
+    const br = bxNoBrewer(b) ? await bxAskBrewer(i) : false;
     if (!bxUnres(b.recipe).length) {
       biblio();
+      if (br) notify('bbr', '✔ Brasseur de « ' + b.name + ' » : ' + b.brasseur, 'ok');
       return;
     }
     const n = await bxRelinkAsk([i]);
-    if (n === null) return;
+    if (n === null) {
+      if (br) {
+        biblio() /* brasseur saisi, correspondance remise à plus tard : la ligne affiche le nouveau nom */;
+        notify('bbr', '✔ Brasseur de « ' + b.name + ' » : ' + b.brasseur, 'ok');
+      }
+      return;
+    }
     const rest = bxUnres(b.recipe);
     biblio();
     const m = document.getElementById('hmsg');

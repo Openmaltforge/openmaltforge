@@ -2658,6 +2658,52 @@ check(
           );
         }
         {
+          /* 6.11.0 : recette importée sans brasseur → ↻ présent ; clic = boîte « Nom du brasseur », nom enregistré */
+          const nb = await page.evaluate(async () => {
+            const w = ms => new Promise(r => setTimeout(r, ms)),
+              o = {},
+              i = S.biblio.findIndex(b => b.imp),
+              b = S.biblio[i],
+              sv = b.brasseur,
+              man = window.__bcManual;
+            window.__bcManual = true;
+            b.brasseur = '-';
+            b.recipe.brasseur = '-';
+            biblio();
+            await w(200);
+            const own = S.biblio.findIndex(x => !x.imp && !bxUnres(x.recipe).length);
+            o.own = own < 0 || !document.querySelector('[data-brel="' + own + '"]');
+            const bt = document.querySelector('table.lib [data-brel="' + i + '"]');
+            o.btn = !!bt && /brasseur/.test(bt.title);
+            bt.click();
+            await w(200);
+            const d = document.querySelector('.bcdlg');
+            o.dlg = !!d && /Nom du brasseur/.test(d.querySelector('h4').textContent) && !!d.querySelector('.bcin');
+            d.querySelector('.bcin').value = 'Jean Test';
+            d.querySelector('.ok').click();
+            await w(300);
+            for (let k = 0; k < 20 && document.querySelector('.bcdlg'); k++) {
+              const n = document.querySelector('.bcdlg .no');
+              if (n) n.click() /* correspondance des ingrédients éventuelle : « Plus tard » */;
+              await w(150);
+            }
+            const b2 = S.biblio[i];
+            o.saved = b2.brasseur === 'Jean Test' && b2.recipe.brasseur === 'Jean Test';
+            o.cell = (document.querySelector('table.lib input[data-bbr="' + i + '"]') || {}).value === 'Jean Test';
+            o.gone = !bxUnres(b2.recipe).length ? !document.querySelector('[data-brel="' + i + '"]') : true;
+            b2.brasseur = sv;
+            b2.recipe.brasseur = sv;
+            window.__bcManual = man;
+            biblio();
+            return o;
+          });
+          check(
+            'bibliothèque : recette importée sans brasseur → icône ↻ ; un clic ouvre « Nom du brasseur », le nom saisi est enregistré (6.11.0)',
+            nb.own && nb.btn && nb.dlg && nb.saved && nb.cell && nb.gone,
+            JSON.stringify(nb)
+          );
+        }
+        {
           const kolsch = require('fs').readFileSync(require('path').join(__dirname, 'beerxml', 'kolsch.xml'), 'utf8');
           const dp = await page.evaluate(async xml => {
             window.__bcManual = true;
@@ -3069,6 +3115,10 @@ check(
                 (!/yeasts/.test(cs) || /name;labo;att_min;att_max/.test(t)),
               names: (S.kv.equip.arech || []).every(x => t.includes('- ' + x.n)),
               fmt: /UTF-8/.test(t) && /point-virgule/.test(t) && /CSV/.test(t),
+              /* 6.11.0 : CSV copiables depuis un bloc de texte brut (plus de fichier téléchargeable ni de bloc de code) */
+              brut:
+                t.includes('RÈGLES COMMUNES POUR LES CSV :\n- Un fichier CSV par catégorie ci-dessus, nommé comme indiqué, copiable à partir d’un bloc de texte brut.\n') &&
+                !/téléchargeable|bloc de code/.test(t),
               len: t.length
             };
             o.copy = !!p.querySelector('#arcopy');
@@ -3114,6 +3164,7 @@ check(
               ar.pr.hdr &&
               ar.pr.names &&
               ar.pr.fmt &&
+              ar.pr.brut &&
               ar.copy &&
               ar.bottom &&
               ar.after === ar.n - 1 &&
@@ -6889,12 +6940,100 @@ async function scenarioServeur() {
     const page = await newPage(srv.url, { init: FSA });
     await openDb(page);
     check(
-      'voyant vert « Base : openmaltforge.sqlite » dès le chargement',
-      /● Base : openmaltforge\.sqlite/.test(await txt(page, '#dbst')),
+      'voyant vert « Base : openmaltforge » (sans suffixe .sqlite, 6.11.0) dès le chargement',
+      /● Base : openmaltforge$/.test((await txt(page, '#dbst')).trim()),
       await txt(page, '#dbst')
     );
     check('fichier unique créé dans le dossier de données : openmaltforge.sqlite', fs.existsSync(f));
     await wait(1500); /* première écriture (données de départ, polices) */
+    /* 6.11.0 : Paramètres › Réglages › « Créer une base de données » : nom, avec / sans données, tables à remplir */
+    {
+      const nb = await page.evaluate(async () => {
+        const w = ms => new Promise(r => setTimeout(r, ms)),
+          o = {},
+          eq = S.kv.equip.nom,
+          until = async f => {
+            for (let i = 0; i < 60 && !f(); i++) await w(100);
+          },
+          dlg = async () => {
+            document.getElementById('dbnew').click();
+            await w(200);
+            return document.querySelector('.bcdlg');
+          };
+        show('params');
+        await w(300);
+        o.btn = !!document.getElementById('dbnew');
+        let d = await dlg();
+        o.dlg = !!d && /Créer une base de données/.test(d.querySelector('h4').textContent);
+        o.boxes = d.querySelectorAll('[data-nbt]:checked').length === 8 && d.querySelector('input[name="nbd"][value="1"]').checked;
+        d.querySelector('.ok').click();
+        await w(100);
+        o.empty = !!document.querySelector('.bcdlg') && !d.querySelector('.nbmsg').hidden;
+        d.querySelector('#nbnom').value = 'a/b';
+        d.querySelector('.ok').click();
+        await w(100);
+        o.bad = !!document.querySelector('.bcdlg') && /invalide/.test(d.querySelector('.nbmsg').textContent);
+        d.querySelector('#nbnom').value = 'Essai Vide';
+        const r0 = d.querySelector('input[name="nbd"][value="0"]');
+        r0.checked = true;
+        r0.dispatchEvent(new Event('change', { bubbles: true }));
+        o.off = [...d.querySelectorAll('[data-nbt]')].every(i => i.disabled);
+        d.querySelector('.ok').click();
+        await until(() => DB && DB.name === 'Essai Vide.sqlite');
+        await w(300);
+        o.vide = [DB.name, S.malts.length, S.hops.length, S.yeasts.length, S.eaux.length, S.ings.length, S.conso.filter(x => !x.sys).length, S.styles.length, S.biblio.length, S.kv.equip.nom === eq].join('|');
+        o.badge = document.getElementById('dbst').textContent.trim();
+        await useState() /* relecture (comme au lancement suivant) : les tables restent vides */;
+        o.relu = S.malts.length + S.hops.length + S.styles.length;
+        d = await dlg();
+        d.querySelector('#nbnom').value = 'Essai Plein';
+        d.querySelectorAll('[data-nbt="hops"], [data-nbt="biblio"]').forEach(i => (i.checked = false));
+        d.querySelector('.ok').click();
+        await until(() => DB && DB.name === 'Essai Plein.sqlite');
+        await w(300);
+        o.plein = [S.malts.length > 40, S.hops.length === 0, S.yeasts.length > 40, S.eaux.length > 40, S.ings.length > 10, S.conso.filter(x => !x.sys).length > 0, S.styles.length > 50, S.biblio.length === 0].join('|');
+        o.dup = await api('api/bases', {
+          method: 'POST',
+          headers: { 'X-OpenMaltForge': '1', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'creer', nom: 'Essai Vide', etat: {} })
+        }).then(
+          () => 'accepté',
+          e => e.message
+        );
+        show('params');
+        await until(() => document.getElementById('dbsel'));
+        const sel = document.getElementById('dbsel');
+        o.sel = sel ? [...sel.options].map(x => x.value).join('|') + ' / ' + sel.value : 'absente';
+        sel.value = 'openmaltforge.sqlite';
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        await until(() => DB && DB.name === 'openmaltforge.sqlite');
+        await w(300);
+        o.retour = DB.name === 'openmaltforge.sqlite' && S.malts.length > 40 && S.hops.length > 40 && document.getElementById('dbst').textContent.trim() === '● Base : openmaltforge';
+        show('conception');
+        await w(300);
+        return o;
+      });
+      check(
+        'Paramètres › Réglages : « Créer une base de données » — nom obligatoire et vérifié, base vierge (aucune table remplie hors lignes système des consommables, même relue), base avec les tables cochées seulement (données de départ), nom déjà pris refusé, liste des bases pour revenir à la première (6.11.0)',
+        nb.btn &&
+          nb.dlg &&
+          nb.boxes &&
+          nb.empty &&
+          nb.bad &&
+          nb.off &&
+          nb.vide === 'Essai Vide.sqlite|0|0|0|0|0|0|0|0|true' &&
+          nb.badge === '● Base : Essai Vide' &&
+          nb.relu === 0 &&
+          nb.plein === 'true|true|true|true|true|true|true|true' &&
+          /existe déjà/.test(nb.dup) &&
+          nb.sel === 'Essai Plein.sqlite|Essai Vide.sqlite|openmaltforge.sqlite / Essai Plein.sqlite' &&
+          nb.retour &&
+          fs.existsSync(path.join(dir, 'Essai Vide.sqlite')),
+        JSON.stringify(nb)
+      );
+      /* les bases d'essai sont retirées : la suite du scénario ne voit plus que openmaltforge.sqlite */
+      ['Essai Vide.sqlite', 'Essai Plein.sqlite'].forEach(n => fs.rmSync(path.join(dir, n), { force: true }));
+    }
     await page.fill('[data-e="vol"]', '27');
     {
       const vol = async () => {
@@ -6911,7 +7050,7 @@ async function scenarioServeur() {
     await page.click('#dbsave');
     await page.waitForFunction(() => /✔|⚠/.test(document.querySelector('#hmsg').textContent));
     const m = await txt(page, '#hmsg');
-    check('« Sauvegarder » écrit dans la base du serveur', m.startsWith('✔') && /openmaltforge\.sqlite/.test(m), m);
+    check('« Sauvegarder » écrit dans la base du serveur', m.startsWith('✔') && /enregistré dans openmaltforge\b/.test(m), m);
     check(
       'table style = vraies colonnes SQL (une par rubrique BJCP)',
       await (async () => {
@@ -8197,9 +8336,11 @@ async function scenarioI18n() {
     check(
       'Paramètres › Base de données : seulement chemin + nom du fichier (plus de liste de tables)',
       await page.evaluate(() => {
-        const t = document.getElementById('dbinfo').innerText;
+        /* 6.11.0 : plusieurs .sqlite dans le dossier → liste des bases (valeur = base ouverte) */
+        const sl = document.getElementById('dbsel'),
+          t = sl ? sl.value : document.getElementById('dbinfo').innerText;
         return (
-          /Base de données : openmaltforge\.sqlite/.test(document.querySelector('#regp .rgdb').innerText.replace(/\s+/g, ' ')) &&
+          /Base de données :/.test(document.querySelector('#regp .rgdb').innerText) &&
           !/Désactivée : seul|Les traductions sont stockées/.test(document.getElementById('regp').innerText) &&
           /openmaltforge\.sqlite/.test(t) &&
           !/polices \d+/.test(t) &&

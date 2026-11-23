@@ -239,6 +239,8 @@
         <a href="#formules">Mathematical expressions</a>
         <a href="#courses">Shopping list and stock</a>
         <a href="#bibliotheque">Library and imports</a>
+        <a class="s" href="#bi-import">Importing a recipe</a>
+        <a class="s" href="#bi-rel">↻ button</a>
         <a href="#bases">Ingredient databases</a>
         <a class="s" href="#b-filtres">Filters</a>
         <a href="#html">HTML rendering</a>
@@ -280,7 +282,7 @@
         <ul>
           <li><b>Menu</b>: Design, Library, the databases (Malts, Hops, Yeasts, Waters, Styles, Ingredients, Consumables), HTML, Labels, Brew sheet, Settings, then the <b>Documentation</b> icon (open book) that shows this page.</li>
           <li><b>Save</b>: immediately writes all the data to the database. An automatic save also takes place (every 5 minutes by default, adjustable in Settings › General settings).</li>
-          <li><b>“Database: openmaltforge.sqlite” indicator</b>: green when everything is saved. If there is a problem (program closed, write refused), an orange warning appears; a click retries the save.</li>
+          <li><b>“Database: openmaltforge” indicator</b> (name of the open database, without “.sqlite”): green when everything is saved. If there is a problem (program closed, write refused), an orange warning appears; a click retries the save.</li>
           <li><b>Notification area</b> (under the menu): temporary messages in green (save, calculation), errors in red, persistent warnings in orange (for example a mash ratio too high for the tun). Several messages are shown side by side.</li>
           <li><b>Theme</b>: the sun / moon switch, top right, toggles between the dark and light themes; the choice is remembered.</li>
           <li><b>Footer</b>: licence (GNU GPL v3, click to read the text) and version number.</li>
@@ -462,7 +464,20 @@
           <li>Columns: name, brewer, achieved, style, OG, FG, IBU, EBC, ABV, malts, hops, yeasts; a row of filters and sorting by clicking the header. The eraser button clears all the filters.</li>
           <li><b>Card view</b>: display as cards with the colour of the beer.</li>
           <li><b>Brew number</b>: <code>year#rank</code> (e.g. <code>2026#12</code>), rank by brewing date among the recipes of the year, imported recipes excluded. It appears on the labels and in the HTML.</li>
-          <li><b>Import beer.xml</b> (BeerXML 1.0) and <b>Import PDF</b> (printout of a Brewfather recipe, BeerSmith PDF export): imported recipes are read-only (copy them to edit them). Import beer.xml: an ingredient missing from the database is added with the data from the file. Import PDF: an “Ingredient matching” dialog offers to link each unknown ingredient to a database ingredient; otherwise it remains plain text in the recipe.</li>
+        </ul>
+        <h3 id="bi-import">Importing a recipe</h3>
+        <ol>
+          <li>In the Library, click <b>Import beer.xml</b> (BeerXML 1.0 file, exported by BeerSmith, Brewfather, Brewer’s Friend…) or <b>Import PDF</b> (printout of a Brewfather recipe, BeerSmith PDF export). Several files can be chosen at once.</li>
+          <li><b>Brewer name</b> (beer.xml): if it is not given in the file, a box asks for it (list of known brewers); “Skip” leaves it empty (“-”).</li>
+          <li><b>Style</b> (beer.xml): a style unknown to the database can be matched to a BJCP style from the list; otherwise it stays as text.</li>
+          <li><b>Ingredient matching</b>: for each ingredient missing from the database under that name, choose the matching ingredient (type a few letters to filter). A field left empty keeps the ingredient as plain text in the recipe and adds it to the “To look up” list (Settings).</li>
+          <li>The recipe appears in the library, <b>read-only</b> (padlock): the eye views it; to change it, copy it (copy button), the copy opens in the Design screen. Importing the same file again replaces the recipe instead of duplicating it.</li>
+        </ol>
+        <h3 id="bi-rel"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg> button: completing an imported recipe</h3>
+        <ul>
+          <li>The <b><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-label="↻"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></b> button appears at the end of the row (and on the card) of an imported recipe that lacks something: one or more <b>ingredients missing from the database</b>, or the <b>brewer name</b>.</li>
+          <li>A click first asks for the <b>brewer name</b> if it is missing (same box as during the import; “Skip” leaves it empty), then opens the <b>ingredient matching</b> if some remain to be matched: useful after adding the ingredient to its database (for example with the CSV files from “To look up”).</li>
+          <li>The button disappears once the recipe is complete.</li>
         </ul>
         <figure>
           <img src="img/en/bibliotheque-cartes.jpg" alt="Library in card view" />
@@ -588,6 +603,8 @@
           <li>Interface <b>language</b>: French, English, Spanish, Italian, Portuguese. The whole interface is translated, including the prompt of the “To look up” section and this documentation (in languages other than French, the screenshots show the English interface).</li>
           <li><b>Export the database…</b>: downloads a copy <code>YYYYMMDD_openmaltforge.sqlite</code> of the displayed state.</li>
           <li><b>Change database…</b>: replaces the database with the content of another <code>.sqlite</code> file; the file is checked and upgraded, and a copy of the current database is kept in <code>sauvegardes/</code>.</li>
+          <li><b>Create a database…</b>: asks for the name of the new database, then whether to start <b>with data</b> (tick the tables to fill: hops, malts, yeasts, waters, ingredients, consumables, recipe library, styles) or <b>without data</b> (empty database). Ticked tables receive the OpenMaltForge starter data; the library takes the recipes of the current database. Equipment, process, fonts and the other settings are taken from the current database. The new database (<code>&lt;name&gt;.sqlite</code>, in the OpenMaltForge folder) is opened at once; the previous one is left untouched.</li>
+          <li>When the folder holds several databases, the database name becomes a <b>list</b>: choosing a database opens it (pending changes are saved first). The last database opened is reopened at the next launch.</li>
         </ul>
         <figure class="half">
           <img src="img/en/parametres-polices.jpg" alt="Fonts" />
@@ -596,7 +613,7 @@
 
         <h2 id="donnees">Data and backups</h2>
         <ul>
-          <li>Single database: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (a single file, which can be copied at any time).</li>
+          <li>Default database: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (a single file, which can be copied at any time). Other databases can be created in the same folder (Settings › General settings › Create a database).</li>
           <li>Before any upgrade of the database structure, and before changing database, a copy is made in <code>~/OpenMaltForge/sauvegardes/</code>.</li>
           <li>A database created by a more recent version of OpenMaltForge is refused (install the latest version).</li>
           <li>Old databases (BrewCraft 1.x to 4.x) are recognised and converted; the OpenBrew 5.x database (<code>~/OpenBrew/openbrew.sqlite</code>), or else the BrewCraft 4.x one (<code>~/BrewCraft/brewcraft.sqlite</code>), is taken over on the first launch of OpenMaltForge.</li>

@@ -71,7 +71,10 @@ func Open(dir string, web fs.FS, legacy ...string) (*Server, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, err
 	}
-	if _, err := os.Stat(s.path); errors.Is(err, os.ErrNotExist) {
+	/* 6.11.0 : base ouverte en dernier (créée ou choisie dans Paramètres › Réglages) */
+	if a := activeBase(dir); a != "" {
+		s.path = a
+	} else if _, err := os.Stat(s.path); errors.Is(err, os.ErrNotExist) {
 		old := ""
 	search:
 		for _, l := range legacy {
@@ -167,6 +170,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/api/info", s.info)
 	mux.HandleFunc("/api/export", s.export)
 	mux.HandleFunc("/api/import", s.importDb)
+	mux.HandleFunc("/api/bases", s.bases)
 	mux.HandleFunc("/api/don", s.don)
 	mux.HandleFunc("/api/ping", func(w http.ResponseWriter, r *http.Request) {
 		s.TouchPing()
@@ -211,7 +215,7 @@ func writeAllowed(w http.ResponseWriter, r *http.Request) bool {
 
 func (s *Server) dbHeaders(w http.ResponseWriter) {
 	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("X-OpenMaltForge-Db", FileName)
+	w.Header().Set("X-OpenMaltForge-Db", url.PathEscape(filepath.Base(s.path)))
 	w.Header().Set("X-OpenMaltForge-Path", url.PathEscape(s.path))
 	if st, err := os.Stat(s.path); err == nil {
 		w.Header().Set("X-OpenMaltForge-Mtime", fmt.Sprint(st.ModTime().UnixMilli()))
@@ -275,13 +279,14 @@ type Info struct {
 func (s *Server) info(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	v, _ := db.SchemaVersion(s.db)
+	path := s.path
 	s.mu.Unlock()
-	in := Info{Nom: FileName, Chemin: s.path, Dossier: s.dir, Sauvegardes: s.backups, Structure: v,
+	in := Info{Nom: filepath.Base(path), Chemin: path, Dossier: s.dir, Sauvegardes: s.backups, Structure: v,
 		Version: config.Version, Reprise: filepath.Base(s.Imported), Don: config.DonURL != "", DonURL: config.DonURL}
 	if s.Imported == "" {
 		in.Reprise = ""
 	}
-	if st, err := os.Stat(s.path); err == nil {
+	if st, err := os.Stat(path); err == nil {
 		in.Taille, in.Modifie = st.Size(), st.ModTime().UnixMilli()
 	}
 	if f, _ := filepath.Glob(filepath.Join(s.backups, "*.sqlite")); f != nil {
