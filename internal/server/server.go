@@ -171,6 +171,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("/api/export", s.export)
 	mux.HandleFunc("/api/import", s.importDb)
 	mux.HandleFunc("/api/bases", s.bases)
+	mux.HandleFunc("/api/pdf", s.pdf)
+	mux.HandleFunc("/api/pdfsrc/", s.pdfPage)
 	mux.HandleFunc("/api/don", s.don)
 	mux.HandleFunc("/api/ping", func(w http.ResponseWriter, r *http.Request) {
 		s.TouchPing()

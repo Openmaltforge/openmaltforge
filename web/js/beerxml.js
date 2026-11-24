@@ -460,12 +460,14 @@ function bxCopy(b) {
       (R.brasseur ? ' (' + R.brasseur + ')' : '')
     : 'copie';
   if (b.imp) R.brasseur = 'Moi';
+  const had = courList().length;
   S.kv.recipe = R;
   S.kv.equip.vol = b.vol;
   ensureMash();
   upsertRecipe();
   save();
   show('conception');
+  courAskReset(had);
 }
 /* ---------- lecture seule dans l'écran Conception ---------- */
 let BXOBS = null;
@@ -588,7 +590,7 @@ function bxCards(L, flt) {
     const R = r.recipe || {},
       nm = (R.malts || []).length,
       nh = (R.hops || []).length;
-    return `<div class="bcard${r.imp ? ' imp' : ''}" data-bi="${i}" title="${r.imp ? 'Consulter (lecture seule)' : 'Ouvrir dans la conception'}"><div class="bact"><button data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button>${bxNeedRel(r) ? bxRelBtn(i) : ''}<button data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button><button class="x" data-bdel="${i}" title="Supprimer">✕</button></div>
+    return `<div class="bcard${r.imp ? ' imp' : ''}" data-bi="${i}" title="${r.imp ? 'Consulter (lecture seule)' : 'Ouvrir dans la conception'}"><div class="bact"><button data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button>${bxNeedRel(r) ? bxRelBtn(i) : ''}${bxOutBtns(i)}<button data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button><button class="x" data-bdel="${i}" title="Supprimer">✕</button></div>
  <div class="bglass">${bxGlass(bxColor(c.ebc))}</div><h4>${hh(r.name)}</h4><div class="bs">${hh((r.style || '').replace(/^\d+[A-Za-z]?\s+/, '')) || '&nbsp;'}</div><div class="bs">${bxType(R.impd && R.impd.type)}</div>
  <div class="bs bbr"><input class="bxb" data-bbr="${i}" size="${Math.max(8, String(r.brasseur || '-').length + 1)}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="+ brasseur" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}">${R.date ? '<span class="okc" title="Brassé le ' + fd(R.date) + '">✔</span>' : ''}</div>
  <div class="bmeta"><span title="${bxTip(R, 'malts')}">🌾 ${nm}</span><span title="${bxTip(R, 'hops')}">🌿 ${nh}</span><span title="Volume">💧 ${nf(r.vol, 1)} L</span></div>
@@ -628,12 +630,14 @@ function bxMore() {
   }
 }
 function bxOpen(b) {
+  const had = courList().length /* avant le chargement (la Conception resynchronise la liste) */;
   S.kv.recipe = JSON.parse(JSON.stringify(b.recipe));
   S.kv.recipe.id = b.id;
   S.kv.equip.vol = b.vol;
   ensureMash();
   save();
   show('conception');
+  courAskReset(had) /* 6.12.0 : vider et recalculer la liste de courses ? */;
 }
 document.addEventListener('click', e => {
   const c = e.target.closest && e.target.closest('.bcard');
@@ -985,6 +989,167 @@ document.addEventListener(
           [...new Set(rest.map(x => x.n))].join(', ') +
           ' reste(nt) à rechercher (Paramètres › À rechercher).';
     }
+  },
+  true
+);
+/* 6.12.0 : boutons PDF et export beer.xml d'une recette (liste et cartes) */
+const bxOutBtns = i =>
+  `<button class="pen" data-bpdf="${i}" title="Créer le PDF de la recette">${ic('pdf')}</button><button class="pen" data-bxml="${i}" title="Exporter la recette au format beer.xml">${ic('fexport')}</button>`;
+/* 6.12.0 : export d'une recette de la bibliothèque au format BeerXML 1.0 (fichier <nom>.xml, relisible par l'import) */
+function bxXml(b) {
+  const R = b.recipe || {},
+    E = S.kv.equip,
+    x = v =>
+      String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;'),
+    n = (v, d) => {
+      const f = +v;
+      return isFinite(f) ? +f.toFixed(d ?? 4) : 0;
+    },
+    tag = (k, v) => `<${k}>${x(v)}</${k}>`,
+    c = (() => {
+      let r = { og: 1, fg: 1, ibu: 0, ebc: 0, abv: 0 };
+      try {
+        withRec(b, () => (r = compute()));
+      } catch (e) {}
+      return r;
+    })(),
+    mash = R.mash || [],
+    boil = mash.find(m => m.role === 'boil'),
+    rinse = mash.find(m => m.role === 'rinse'),
+    srm = e => n((+e || 0) / 1.97, 1),
+    HU = { 'Dry hop': 'Dry Hop', 'First Wort': 'First Wort', Whirlpool: 'Aroma', Hopstand: 'Aroma' };
+  const ferm = (R.malts || [])
+    .map(m => {
+      const d = find('malts', m.n) || {};
+      return `<FERMENTABLE>${tag('NAME', d.name || m.n)}<VERSION>1</VERSION><TYPE>Grain</TYPE>${tag('AMOUNT', n((+m.g || 0) / 1000))}${tag('YIELD', n((+d.potentiel || 0) / 3.846, 1))}${tag('COLOR', srm(d.ebc))}${d.maltier ? tag('SUPPLIER', d.maltier) : ''}</FERMENTABLE>`;
+    })
+    .join('');
+  const hops = (R.hops || [])
+    .map(h => {
+      const d = find('hops', h.n) || {},
+        a = d.alpha_min != null ? ((+d.alpha_min || 0) + (+d.alpha_max || 0)) / 2 : 0,
+        use = HU[h.use] || 'Boil',
+        t = use === 'Dry Hop' ? (+h.t || 0) * 1440 : +h.t || 0;
+      return `<HOP>${tag('NAME', d.name || h.n)}<VERSION>1</VERSION>${tag('ALPHA', n(a, 2))}${tag('AMOUNT', n((+h.g || 0) / 1000, 5))}${tag('USE', use)}${tag('TIME', n(t, 1))}${h.use === 'Hopstand' ? tag('NOTES', 'Hop stand') : h.use === 'Whirlpool' ? tag('NOTES', 'Whirlpool') : ''}</HOP>`;
+    })
+    .join('');
+  const yeasts = (R.yeasts || [])
+    .map(y => {
+      const d = find('yeasts', y.n) || {},
+        at = d.att_min != null ? ((+d.att_min || 0) + (+d.att_max || 0)) / 2 : '';
+      return `<YEAST>${tag('NAME', d.name || y.n)}<VERSION>1</VERSION><TYPE>Ale</TYPE><FORM>Dry</FORM>${tag('AMOUNT', n((+y.g || 1) * 0.011, 3))}<AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT>${d.labo ? tag('LABORATORY', d.labo) : ''}${at !== '' ? tag('ATTENUATION', n(at, 1)) : ''}</YEAST>`;
+    })
+    .join('');
+  const miscs = (R.ings || [])
+    .map(
+      m =>
+        `<MISC>${tag('NAME', m.n)}<VERSION>1</VERSION><TYPE>Other</TYPE><USE>Boil</USE><TIME>0</TIME>${tag('AMOUNT', n((+m.g || 0) / 1000, 5))}<AMOUNT_IS_WEIGHT>TRUE</AMOUNT_IS_WEIGHT></MISC>`
+    )
+    .join('');
+  const steps = mash
+    .filter(m => !m.role && (m.t !== '' || m.m !== ''))
+    .map(
+      m =>
+        `<MASH_STEP>${tag('NAME', m.k || 'Palier')}<VERSION>1</VERSION><TYPE>Infusion</TYPE>${tag('STEP_TEMP', n(m.t, 1))}${tag('STEP_TIME', n(m.m, 0))}</MASH_STEP>`
+    )
+    .join('');
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n<RECIPES><RECIPE>' +
+    tag('NAME', b.name || R.name || 'Recette') +
+    '<VERSION>1</VERSION><TYPE>All Grain</TYPE>' +
+    tag('BREWER', b.brasseur || R.brasseur || '-') +
+    `<STYLE>${tag('NAME', b.style || R.style || '')}<VERSION>1</VERSION><STYLE_GUIDE>BJCP 2021</STYLE_GUIDE><TYPE>Ale</TYPE></STYLE>` +
+    tag('BATCH_SIZE', n(b.vol || E.vol, 2)) +
+    tag('BOIL_TIME', n(boil ? boil.m : 60, 0)) +
+    tag('EFFICIENCY', n(E.eff, 1)) +
+    `<HOPS>${hops}</HOPS><FERMENTABLES>${ferm}</FERMENTABLES><MISCS>${miscs}</MISCS><YEASTS>${yeasts}</YEASTS><WATERS></WATERS>` +
+    `<MASH><NAME>Empâtage</NAME><VERSION>1</VERSION><GRAIN_TEMP>20</GRAIN_TEMP>${rinse && rinse.t !== '' ? tag('SPARGE_TEMP', n(rinse.t, 1)) : ''}<MASH_STEPS>${steps}</MASH_STEPS></MASH>` +
+    tag('EST_OG', n(c.og, 3)) +
+    tag('EST_FG', n(c.fg, 3)) +
+    tag('EST_COLOR', srm(c.ebc)) +
+    tag('IBU', n(c.ibu, 1)) +
+    tag('EST_ABV', n(c.abv, 1)) +
+    tag('DISPLAY_COLOR', n(c.ebc, 0) + ' EBC') +
+    (R.notes ? tag('NOTES', R.notes) : '') +
+    '</RECIPE></RECIPES>\n'
+  );
+}
+/* nom de fichier sûr pour une recette (sans / \ : * ? " < > |) */
+const bxFileName = (b, ext) =>
+  (String(b.name || 'recette').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_').trim() || 'recette') + ext;
+function bxDownload(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function bxExportOne(i) {
+  const b = S.biblio[i];
+  if (!b) return;
+  const f = bxFileName(b, '.xml');
+  bxDownload(new Blob([bxXml(b)], { type: 'application/xml' }), f);
+  notify('bxexp', '✔ Recette exportée : ' + f, 'ok');
+}
+/* 6.12.0 : recette en PDF (rendu HTML mis en page, PDF produit par le serveur avec le moteur du navigateur) */
+function bxPdfDoc(b) {
+  const h = s =>
+      String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;'),
+    R = b.recipe || {},
+    code = withRec(b, () => htmlCode()),
+    sub = [b.style || R.style, b.brasseur && b.brasseur !== '-' ? b.brasseur : '', (b.vol || '') + ' L']
+      .filter(x => x && x !== ' L')
+      .map(h)
+      .join(' · ');
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${h(b.name)}</title><style>
+@page{size:A4;margin:14mm}
+body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-size:10.5pt;color:#1d2330;margin:0}
+h1{font-size:20pt;margin:0 0 2mm;color:#7a5a00}
+.subt{color:#5b6472;margin:0 0 6mm;font-size:10pt}
+table{width:100%;border-collapse:collapse;margin:0 0 5mm;page-break-inside:avoid}
+th,td{border:1px solid #c9ced6;padding:1.6mm 2.4mm;text-align:left;vertical-align:top}
+th{background:#f1ede1;font-weight:700}
+tr.total td{font-weight:700;background:#faf6e8}
+tr.sub td{background:#f6f7f9}
+hr,.version,table.invisible,table:has(img.aromatique){display:none} /* image du profil = chemin du site web, version déjà en pied */
+.foot{margin-top:6mm;color:#8a919c;font-size:8.5pt}
+</style></head><body><h1>${h(b.name)}</h1>${sub ? `<p class="subt">${sub}</p>` : ''}${code}<p class="foot">OpenMaltForge ${h(VER)}</p></body></html>`;
+}
+async function bxPdfOne(i, btn) {
+  const b = S.biblio[i];
+  if (!b) return;
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api('api/pdf', {
+      method: 'POST',
+      headers: { 'X-OpenMaltForge': '1', 'Content-Type': 'text/html; charset=utf-8' },
+      body: bxPdfDoc(b)
+    });
+    const f = bxFileName(b, '.pdf');
+    bxDownload(await r.blob(), f);
+    notify('bxpdf', '✔ PDF créé : ' + f, 'ok');
+  } catch (e) {
+    notify('bxpdf', '⚠ PDF impossible : ' + ((e && e.message) || e), 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+document.addEventListener(
+  'click',
+  e => {
+    const t = e.target.closest && e.target.closest('[data-bpdf],[data-bxml]');
+    if (!t) return;
+    e.stopPropagation();
+    if (t.dataset.bpdf !== undefined) bxPdfOne(+t.dataset.bpdf, t);
+    else bxExportOne(+t.dataset.bxml);
   },
   true
 );

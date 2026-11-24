@@ -22,6 +22,8 @@ const VERSION = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8
 /* clé interne (ic('clé'), FAMAP) → nom de l'icône Lucide */
 const NAMES = {
   lock: 'lock',
+  pdf: 'file-text' /* 6.12.0 : bibliothèque, recette en PDF */,
+  fexport: 'file-output' /* 6.12.0 : bibliothèque, export beer.xml */,
   thermometer: 'thermometer',
   login: 'log-in',
   beaker: 'beaker',

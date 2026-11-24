@@ -253,7 +253,7 @@
       <main>
         <h1>Documentación de OpenMaltForge</h1>
         <p class="lead">
-          OpenMaltForge (antes OpenBrew, y BrewCraft antes de la versión 5.0.0) es una aplicación de escritorio para diseñar recetas de
+          OpenMaltForge (antes OpenBrew) es una aplicación de escritorio para diseñar recetas de
           cerveza: cálculo de la densidad, el amargor y el color, agua y minerales, proceso de elaboración, costes, stock y lista
           de la compra, biblioteca de recetas, etiquetas y hoja de elaboración imprimibles.
         </p>
@@ -268,8 +268,7 @@
           OpenMaltForge se abre en su propia ventana (motor del navegador Chrome, Chromium, Edge o Brave instalado en el equipo).
           Todos los datos se guardan en un único archivo: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (carpeta personal,
           subcarpeta <code>OpenMaltForge</code>). En el primer inicio se recupera automáticamente la base de OpenBrew
-          (<code>~/OpenBrew/openbrew.sqlite</code>), si no la de BrewCraft (<code>~/BrewCraft/brewcraft.sqlite</code>), o, en su defecto, una base de una versión 3.x
-          (<code>brewcraft_3.x.sqlite</code>); el archivo antiguo no se modifica.
+          (<code>~/OpenBrew/openbrew.sqlite</code>); el archivo antiguo no se modifica.
         </p>
         <p>OpenMaltForge se abre siempre en la pantalla <b>Diseño</b>.</p>
         <p>Una base nueva se rellena con los datos iniciales: maltas, lúpulos, levaduras, estilos BJCP 2021, aguas, ingredientes, fuentes.</p>
@@ -460,6 +459,8 @@
         </figure>
         <ul>
           <li>«Guardar» en el Diseño guarda la receta en curso en la biblioteca (actualizada si ya está).</li>
+          <li><b>Lista de la compra al cargar</b>: cuando se abre una receta desde la biblioteca (lápiz, tarjeta o copia) y la lista de la compra no está vacía, una ventana pregunta si hay que <b>vaciarla y recalcularla</b> para esta receta («Sí») o <b>conservarla tal cual</b> («No»). La casilla «No volver a mostrar esta ventana» recuerda la respuesta; el ajuste «Lista de la compra al cargar una receta» (Ajustes › Preferencias) permite cambiar de opinión.</li>
+          <li><b>PDF</b> (<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>): crea el PDF de la receta (formato A4, maquetación del renderizado HTML, sin el perfil aromático), guardado en la carpeta de descargas con el nombre de la receta. <b>Exportar beer.xml</b> (<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M4.226 20.925A2 2 0 0 0 6 22h12a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.127"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m5 11-3 3"/><path d="m5 17-3-3h10"/></svg>): guarda la receta en formato <code>beer.xml</code> (BeerXML 1.0), legible por BeerSmith, Brewfather… y por la importación de OpenMaltForge.</li>
           <li><b>Lápiz</b>: abre la receta en el Diseño. <b>Cruz</b>: la elimina (tras confirmación).</li>
           <li>Columnas: nombre, cervecero, realizado, estilo, DI, DF, IBU, EBC, ABV, maltas, lúpulos, levaduras; una línea de filtros y orden con un clic en la cabecera. El botón goma borra todos los filtros.</li>
           <li><b>Vista de tarjetas</b>: presentación en fichas con el color de la cerveza.</li>
@@ -599,6 +600,7 @@
           <figcaption>Preferencias: guardado automático, idioma, base de datos.</figcaption>
         </figure>
         <ul>
+          <li><b>Lista de la compra al cargar una receta</b>: Preguntar (ventana en cada carga desde la biblioteca), Vaciar y recalcular siempre, o Conservar siempre.</li>
           <li><b>Guardado automático</b>: activado o no, y plazo en minutos (0 = tras cada modificación). Desactivado, solo el botón «Guardar» escribe en la base.</li>
           <li><b>Idioma</b> de la interfaz: francés, inglés, español, italiano, portugués. Toda la interfaz está traducida, incluido el prompt de la sección «Por buscar» y esta documentación (en los idiomas distintos del francés, las capturas muestran la interfaz en inglés).</li>
           <li><b>Exportar la base…</b>: descarga una copia <code>AAAAMMDD_openmaltforge.sqlite</code> del estado mostrado.</li>
@@ -616,7 +618,6 @@
           <li>Base por defecto: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (un solo archivo, que se puede copiar en cualquier momento). Se pueden crear otras bases en la misma carpeta (Ajustes › Preferencias › Crear una base de datos).</li>
           <li>Antes de cualquier actualización de la estructura de la base, y antes de un cambio de base, se hace una copia en <code>~/OpenMaltForge/sauvegardes/</code>.</li>
           <li>Una base creada por una versión más reciente de OpenMaltForge se rechaza (instale la última versión).</li>
-          <li>Las bases antiguas (BrewCraft 1.x a 4.x) se reconocen y se convierten; la base de OpenBrew 5.x (<code>~/OpenBrew/openbrew.sqlite</code>), si no la de BrewCraft 4.x (<code>~/BrewCraft/brewcraft.sqlite</code>), se recupera en el primer inicio de OpenMaltForge.</li>
         </ul>
 
         <h2 id="astuces">Consejos</h2>

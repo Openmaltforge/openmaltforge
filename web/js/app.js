@@ -718,6 +718,13 @@ const reglagesPanel = () => {
     on = E.autoOn !== false;
   return `<div class="panel" id="regp"><h3>Réglages</h3>
 <div class="rgrow"><label class="sw" title="Activer / désactiver la sauvegarde automatique"><input type="checkbox" id="autoon"${on ? ' checked' : ''}><span class="sl"></span></label><span class="ul">Sauvegarde automatique</span><span class="rgin"><input type="number" min="0" step="1" id="automin" value="${Math.max(0, Math.floor(+E.autoMin) || 0)}"${on ? '' : ' readonly'}> min</span></div>
+<div class="rgrow"><span class="ul">Liste de courses au chargement d’une recette</span><select id="courauto">${[
+    ['', 'Demander'],
+    ['oui', 'Toujours vider et recalculer'],
+    ['non', 'Toujours garder']
+  ]
+    .map(([v, l]) => `<option value="${v}"${(E.courAuto || '') === v ? ' selected' : ''}>${l}</option>`)
+    .join('')}</select></div>
 <div class="rgrow"><span class="ul">Langue</span><select id="langsel">${LANGS.map(([c, n]) => `<option value="${c}"${c === LANG ? ' selected' : ''}>${n}</option>`).join('')}</select></div>
 <div class="rgrow rgdb"><span class="ul"><b>Base de données :</b> <span id="dbinfo">Lecture du fichier…</span></span><span class="rgbtns"><button id="dbexp" title="Télécharger une copie de la base SQLite (état actuel, modifications non enregistrées comprises)">⬇ Exporter la base…</button><button id="dbchg" title="Remplacer la base par le contenu d’un autre fichier .sqlite (une copie de la base actuelle est conservée)">📂 Changer de base…</button><button id="dbnew" title="Créer une nouvelle base de données dans le dossier d’OpenMaltForge et l’ouvrir">＋ Créer une base de données…</button></span></div></div>`;
 };
@@ -872,7 +879,7 @@ async function newBase() {
     cancel: 'Annuler',
     ico: '＋',
     wide: 1,
-    body: `<div class="nbf"><label class="nbn">Nom de la base<input id="nbnom" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Ex. : Brasserie 2"></label><label class="nbr"><input type="radio" name="nbd" value="1" checked> Démarrer avec des données</label><label class="nbr"><input type="radio" name="nbd" value="0"> Démarrer sans données (base vierge)</label><div class="nbt" id="nbt"><p>Tables à remplir (données de départ d’OpenMaltForge ; bibliothèque : recettes de la base actuelle) :</p>${NBT.map(([k, l]) => `<label><input type="checkbox" data-nbt="${k}" checked> ${l}</label>`).join('')}</div><p class="nbmsg" hidden></p></div>`,
+    body: `<div class="nbf"><label class="nbn">Nom de la base<input id="nbnom" autocomplete="off" spellcheck="false" maxlength="80" placeholder="Ex. : Brasserie 2"></label><label class="nbr"><input type="radio" name="nbd" value="0"> Démarrer sans données (base vierge)</label><label class="nbr"><input type="radio" name="nbd" value="1" checked> Démarrer avec des données</label><div class="nbt" id="nbt"><p>Tables à remplir (données de départ d’OpenMaltForge ; bibliothèque : recettes de la base actuelle) :</p>${NBT.map(([k, l]) => `<label><input type="checkbox" data-nbt="${k}" checked> ${l}</label>`).join('')}</div><p class="nbmsg" hidden></p></div>`,
     collect: d => {
       const n = d.querySelector('#nbnom').value.trim().replace(/\.sqlite$/i, '').trim(),
         m = d.querySelector('.nbmsg'),
@@ -1364,6 +1371,47 @@ function courWarn() {
   });
   warnSet('courses', bad.length ? '⚠ Liste de courses : quantité insuffisante pour ' + bad.join(', ') : '');
 }
+/* 6.12.0 : recette chargée depuis la bibliothèque : vider et recalculer la liste de courses ?
+   E.courAuto : absent = demander, 'oui' = toujours vider et recalculer, 'non' = toujours garder (Paramètres › Réglages) */
+let COURNEV = false;
+async function courAskReset(had) {
+  const E = S.kv.equip;
+  if (!had) return /* liste vide avant le chargement : rien à vider */;
+  let yes = E.courAuto === 'oui';
+  if (!E.courAuto) {
+    COURNEV = false;
+    yes = !!(await bcAsk(
+      'Une recette vient d’être chargée. Voulez-vous vider la liste de courses et la recalculer pour cette recette ?\nNon : la liste est gardée telle quelle.',
+      {
+        title: 'Liste de courses',
+        ok: 'Oui',
+        cancel: 'Non',
+        ico: '🛒',
+        body: '<label class="nbr crask"><input type="checkbox" id="courask"> Ne plus afficher cette fenêtre (retenir ce choix)</label>'
+      }
+    ));
+    if (COURNEV) {
+      E.courAuto = yes ? 'oui' : 'non';
+      save();
+    }
+  }
+  if (!yes) return;
+  E.courses = [];
+  courSync();
+  const el = $('#courses');
+  if (el) el.innerHTML = coursesBox();
+  courWarn();
+  save();
+  notify('courses', '✔ Liste de courses vidée et recalculée', 'ok');
+}
+document.addEventListener('change', e => {
+  if (e.target.id === 'courask') COURNEV = e.target.checked;
+  else if (e.target.id === 'courauto') {
+    const v = e.target.value;
+    v ? (S.kv.equip.courAuto = v) : delete S.kv.equip.courAuto;
+    save();
+  }
+});
 function updCart() {
   if (courSync()) {
     const el = $('#courses');
@@ -3889,7 +3937,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.11.0',
+const VER = '6.12.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4518,7 +4566,7 @@ function biblio() {
   const cut = t => `<td class="cut">${t ? `<div class="cutv" title="${esc(t)}">${hh(t)}</div>` : ''}</td>`;
   const rows = LV.map(
     ({ i, r, c }) =>
-      `<tr tabindex="-1"><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxNeedRel(r) ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
+      `<tr tabindex="-1"><td class="nm">${hh(r.name)}</td><td><input class="bxb" data-bbr="${i}" value="${esc(r.brasseur || (r.imp ? '-' : ''))}"${r.imp ? ' readonly tabindex="-1"' : ''} placeholder="–" title="${r.imp ? 'Recette importée : non modifiable' : 'Nom du brasseur'}"></td><td class="ckc">${r.recipe.date ? '<span class="okc" title="Brassé le ' + fd(r.recipe.date) + '">✔</span>' : ''}</td><td>${hh(r.style)}</td><td>${nf(c.og, 3)}</td><td>${nf(c.fg, 3)}</td><td>${nf(c.ibu, 1)}</td><td>${nf(c.ebc, 0)}</td><td>${nf(c.abv, 1)}</td>${cut(names('malts', r.recipe.malts || []))}${cut(names('hops', r.recipe.hops || []))}${cut(names('yeasts', r.recipe.yeasts || []))}<td class="act"><span class="acts"><span class="as"><button class="pen" data-bview="${i}" title="Consulter la recette (lecture seule)">👁</button></span><span class="as">${r.imp ? '' : `<button class="pen" data-bedit="${i}" title="Modifier : ouvrir dans la conception">✎</button>`}</span><span class="as">${bxNeedRel(r) ? bxRelBtn(i) : ''}</span><span class="as"><button class="pen" data-bcopy="${i}" title="Copier la recette (pour la modifier)">📄</button></span><span class="as"><button class="pen" data-bpdf="${i}" title="Créer le PDF de la recette">${ic('pdf')}</button></span><span class="as"><button class="pen" data-bxml="${i}" title="Exporter la recette au format beer.xml">${ic('fexport')}</button></span><span class="as"><button class="x" data-bdel="${i}" title="Supprimer">✕</button></span></span></td></tr>`
   ).join('');
   const BFL = {
       name: 'Nom',

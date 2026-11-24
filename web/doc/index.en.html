@@ -253,7 +253,7 @@
       <main>
         <h1>OpenMaltForge documentation</h1>
         <p class="lead">
-          OpenMaltForge (formerly OpenBrew, and BrewCraft before version 5.0.0) is a desktop application for designing beer recipes:
+          OpenMaltForge (formerly OpenBrew) is a desktop application for designing beer recipes:
           gravity, bitterness and colour calculations, water and minerals, brewing process, costs, stock and shopping list,
           recipe library, printable labels and brew sheet.
         </p>
@@ -267,9 +267,8 @@
         <p>
           OpenMaltForge opens in its own window (engine of the Chrome, Chromium, Edge or Brave browser installed on the computer).
           All the data is stored in a single file: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (home folder, <code>OpenMaltForge</code>
-          sub-folder). On first launch, the OpenBrew database (<code>~/OpenBrew/openbrew.sqlite</code>), or else the BrewCraft one (<code>~/BrewCraft/brewcraft.sqlite</code>), is taken over
-          automatically, or failing that a database from a 3.x version (<code>brewcraft_3.x.sqlite</code>); the old file is
-          not modified.
+          sub-folder). On first launch, the OpenBrew database (<code>~/OpenBrew/openbrew.sqlite</code>) is taken over
+          automatically; the old file is not modified.
         </p>
         <p>OpenMaltForge always opens on the <b>Design</b> screen.</p>
         <p>A new database is filled with the starter data: malts, hops, yeasts, BJCP 2021 styles, waters, ingredients, fonts.</p>
@@ -460,6 +459,8 @@
         </figure>
         <ul>
           <li>“Save” in the Design screen stores the current recipe in the library (updated if it is already there).</li>
+          <li><b>Shopping list on loading</b>: when a recipe is opened from the library (pencil, card or copy) and the shopping list is not empty, a window asks whether to <b>empty and recalculate</b> it for this recipe (“Yes”) or to <b>keep it as it is</b> (“No”). The “Do not show this window again” box remembers the answer; the “Shopping list when loading a recipe” setting (Settings › General settings) lets you change your mind.</li>
+          <li><b>PDF</b> (<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>): creates the recipe PDF (A4, layout of the HTML rendering, without the aroma profile), saved in the downloads folder under the recipe name. <b>Export beer.xml</b> (<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><path d="M4.226 20.925A2 2 0 0 0 6 22h12a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v3.127"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m5 11-3 3"/><path d="m5 17-3-3h10"/></svg>): saves the recipe as <code>beer.xml</code> (BeerXML 1.0), readable by BeerSmith, Brewfather… and by the OpenMaltForge import.</li>
           <li><b>Pencil</b>: opens the recipe in the Design screen. <b>Cross</b>: deletes it (after confirmation).</li>
           <li>Columns: name, brewer, achieved, style, OG, FG, IBU, EBC, ABV, malts, hops, yeasts; a row of filters and sorting by clicking the header. The eraser button clears all the filters.</li>
           <li><b>Card view</b>: display as cards with the colour of the beer.</li>
@@ -599,6 +600,7 @@
           <figcaption>General settings: auto-save, language, database.</figcaption>
         </figure>
         <ul>
+          <li><b>Shopping list when loading a recipe</b>: Ask (window at each loading from the library), Always empty and recalculate, or Always keep.</li>
           <li><b>Auto-save</b>: on or off, and delay in minutes (0 = after each change). When it is off, only the “Save” button writes to the database.</li>
           <li>Interface <b>language</b>: French, English, Spanish, Italian, Portuguese. The whole interface is translated, including the prompt of the “To look up” section and this documentation (in languages other than French, the screenshots show the English interface).</li>
           <li><b>Export the database…</b>: downloads a copy <code>YYYYMMDD_openmaltforge.sqlite</code> of the displayed state.</li>
@@ -616,7 +618,6 @@
           <li>Default database: <code>~/OpenMaltForge/openmaltforge.sqlite</code> (a single file, which can be copied at any time). Other databases can be created in the same folder (Settings › General settings › Create a database).</li>
           <li>Before any upgrade of the database structure, and before changing database, a copy is made in <code>~/OpenMaltForge/sauvegardes/</code>.</li>
           <li>A database created by a more recent version of OpenMaltForge is refused (install the latest version).</li>
-          <li>Old databases (BrewCraft 1.x to 4.x) are recognised and converted; the OpenBrew 5.x database (<code>~/OpenBrew/openbrew.sqlite</code>), or else the BrewCraft 4.x one (<code>~/BrewCraft/brewcraft.sqlite</code>), is taken over on the first launch of OpenMaltForge.</li>
         </ul>
 
         <h2 id="astuces">Tips</h2>

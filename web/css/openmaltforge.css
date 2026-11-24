@@ -5831,3 +5831,8 @@ table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='usage'] { min-widt
 #regp .rgdb { flex-wrap: wrap; }
 #regp .rgdb .ul { flex: 1 0 auto; max-width: 100%; }
 #regp #dbinfo { word-break: normal; overflow-wrap: anywhere; }
+.bcdlg .crask { margin-top: 10px; }
+/* 6.12.0 : bibliothèque, 7 icônes de fin de ligne (consulter, modifier, ↻, copier, PDF, beer.xml, supprimer) : colonne
+   à largeur fixe, les autres colonnes se partagent le reste */
+table.lib col:last-child { width: 222px; }
+table.lib td.act { white-space: nowrap; }

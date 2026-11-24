@@ -2658,6 +2658,133 @@ check(
           );
         }
         {
+          /* 6.12.0 : icônes PDF et export beer.xml en fin de ligne (et sur les cartes) ; export relu par l'import ; PDF par le serveur */
+          const px = await page.evaluate(async () => {
+            const o = {};
+            show('biblio');
+            await new Promise(r => setTimeout(r, 200));
+            const rows = [...document.querySelectorAll('table.lib tr[tabindex]')];
+            o.rows = rows.length > 0 && rows.every(r => r.querySelector('[data-bpdf] svg.fa-pdf') && r.querySelector('[data-bxml] svg.fa-fexport'));
+            o.last = rows.every(r => {
+              const b = [...r.querySelectorAll('td.act button')];
+              return b.slice(-3).map(x => Object.keys(x.dataset)[0]).join() === 'bpdf,bxml,bdel';
+            });
+            const i = S.biblio.findIndex(b => !b.imp && (b.recipe.malts || []).length && (b.recipe.hops || []).length),
+              b = S.biblio[i],
+              xml = bxXml(b),
+              n0 = S.biblio.length,
+              r = bxImportTexts([{ name: 'rt.xml', text: xml, noCreate: true }]),
+              nb = S.biblio[r.idx[0]],
+              nm = (t, n) => (find(t, n) || { name: n }).name,
+              sig = R => JSON.stringify([R.malts.map(m => [nm('malts', m.n), Math.round(m.g)]), R.hops.map(h => [nm('hops', h.n), h.g, h.use, h.t]), R.yeasts.map(y => [nm('yeasts', y.n), y.g])]);
+            o.xml = /^<\?xml version="1.0" encoding="UTF-8"\?>\n<RECIPES><RECIPE><NAME>/.test(xml) && /<FERMENTABLES><FERMENTABLE>/.test(xml);
+            o.round = !!nb && sig(nb.recipe) === sig(b.recipe) && nb.style === b.style && nb.vol === b.vol;
+            if (!o.round) o.dbg = [sig(b.recipe), nb && sig(nb.recipe)];
+            S.biblio.splice(r.idx[0], 1);
+            o.back = S.biblio.length === n0;
+            o.file = bxFileName({ name: 'IPA / test: "v2"' }, '.xml') === 'IPA _ test_ _v2_.xml';
+            const pr = await fetch('api/pdf', { method: 'POST', headers: { 'X-OpenMaltForge': '1' }, body: bxPdfDoc(b) });
+            const pb = new Uint8Array(await pr.arrayBuffer());
+            o.pdf = pr.ok && String.fromCharCode(...pb.slice(0, 5)) === '%PDF-' && pb.length > 5000;
+            o.doc = /<h1>/.test(bxPdfDoc(b)) && /table:has\(img\.aromatique\)/.test(bxPdfDoc(b));
+            document.getElementById('bview').click();
+            await new Promise(r => setTimeout(r, 200));
+            o.cards = [...document.querySelectorAll('.bcard')].every(c => c.querySelector('[data-bpdf]') && c.querySelector('[data-bxml]'));
+            document.getElementById('bview').click();
+            await new Promise(r => setTimeout(r, 150));
+            return o;
+          });
+          check(
+            'bibliothèque : icônes PDF et export beer.xml en fin de ligne et sur les cartes ; beer.xml relu à l’identique par l’import ; PDF A4 produit par le serveur (6.12.0)',
+            Object.values(px).every(Boolean),
+            JSON.stringify(px)
+          );
+          const [dl] = await Promise.all([page.waitForEvent('download'), page.click('table.lib [data-bxml]')]);
+          check('bibliothèque : clic sur l’icône d’export → téléchargement <nom>.xml (6.12.0)', /\.xml$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+        }
+        {
+          /* 6.12.0 : recette chargée depuis la bibliothèque → « vider et recalculer la liste de courses ? » (Oui / Non,
+             case « ne plus afficher » qui retient le choix, réglage dans Paramètres › Réglages) */
+          const ca = await page.evaluate(async () => {
+            const w = ms => new Promise(r => setTimeout(r, ms)),
+              o = {},
+              E = S.kv.equip,
+              man = window.__bcManual,
+              svC = JSON.parse(JSON.stringify(E.courses || [])),
+              svA = E.courAuto,
+              svR = JSON.parse(JSON.stringify(S.kv.recipe)),
+              i = S.biblio.findIndex(b => !b.imp),
+              junk = () => (E.courses = [{ t: 'malts', n: 'ZZ Article manuel', q: 3, r: { manuel: 1 } }]),
+              has = () => (E.courses || []).some(c => c.n === 'ZZ Article manuel'),
+              open = async () => {
+                show('biblio');
+                await w(150);
+                document.querySelector('[data-bedit="' + i + '"]').click();
+                await w(250);
+                return document.querySelector('.bcdlg');
+              };
+            window.__bcManual = true;
+            delete E.courAuto;
+            junk();
+            let d = await open();
+            o.ask = !!d && /Liste de courses/.test(d.querySelector('h4').textContent) && !!d.querySelector('#courask');
+            d.querySelector('.no').click();
+            await w(200);
+            o.kept = has();
+            d = await open();
+            d.querySelector('.ok').click();
+            await w(300);
+            o.reset = !has();
+            junk();
+            d = await open();
+            const cb = d.querySelector('#courask');
+            cb.checked = true;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+            d.querySelector('.no').click();
+            await w(200);
+            o.memo = E.courAuto === 'non' && has();
+            await open();
+            o.silentKeep = !document.querySelector('.bcdlg') && has();
+            show('params');
+            await w(200);
+            const sel = document.getElementById('courauto');
+            o.reg = !!sel && sel.value === 'non' && sel.options.length === 3;
+            sel.value = 'oui';
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            await open();
+            o.silentReset = !document.querySelector('.bcdlg') && !has() && E.courAuto === 'oui';
+            sel.value = '';
+            show('params');
+            await w(150);
+            const s2 = document.getElementById('courauto');
+            s2.value = '';
+            s2.dispatchEvent(new Event('change', { bubbles: true }));
+            o.back = E.courAuto === undefined;
+            E.courses = [];
+            o.empty = !(await open()) /* liste vide : pas de question */;
+            /* 6.12.0 : popup « Créer une base de données » : « sans données » avant « avec des données » */
+            show('params');
+            await w(150);
+            document.getElementById('dbnew').click();
+            await w(200);
+            const r = [...document.querySelectorAll('.bcdlg input[name="nbd"]')].map(x => x.value + (x.checked ? '*' : '')).join('|');
+            o.radios = r === '0|1*';
+            document.querySelector('.bcdlg .no').click();
+            await w(100);
+            E.courses = svC;
+            svA === undefined ? delete E.courAuto : (E.courAuto = svA);
+            S.kv.recipe = svR;
+            window.__bcManual = man;
+            show('biblio');
+            return o;
+          });
+          check(
+            'bibliothèque : recette chargée → question « vider et recalculer la liste de courses » (Non = gardée, Oui = vidée), case « ne plus afficher » qui retient le choix, réglage Demander / Toujours vider / Toujours garder ; popup de création de base : « sans données » en premier (6.12.0)',
+            Object.values(ca).every(Boolean),
+            JSON.stringify(ca)
+          );
+        }
+        {
           /* 6.11.0 : recette importée sans brasseur → ↻ présent ; clic = boîte « Nom du brasseur », nom enregistré */
           const nb = await page.evaluate(async () => {
             const w = ms => new Promise(r => setTimeout(r, ms)),
