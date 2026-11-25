@@ -3937,7 +3937,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.12.1',
+const VER = '6.12.5',
   MASH = [
     'Palier Saccharification',
     'Palier I',

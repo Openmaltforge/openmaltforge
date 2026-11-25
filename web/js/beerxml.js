@@ -1113,26 +1113,115 @@ function bxPdfFonts() {
   );
   return out.join('\n');
 }
+/* répartition en pages, exécutée dans la page du PDF (mode impression) par le serveur juste avant l'impression :
+   sections empilées, jamais coupées ; le bloc à deux colonnes se répartit carte par carte (chaque colonne se remplit
+   jusqu'à la place restante, la suite continue en deux colonnes sur la page suivante) */
+function omfPaginate() {
+  var src = document.getElementById('omfsrc'),
+    T = JSON.parse(document.getElementById('omftpl').textContent),
+    cs = getComputedStyle(src),
+    inner = (297 * 96) / 25.4 - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2,
+    hOf = function (el) {
+      var s = getComputedStyle(el);
+      return el.getBoundingClientRect().height + parseFloat(s.marginTop) + parseFloat(s.marginBottom);
+    },
+    kids = [].slice.call(src.children),
+    head = kids[0],
+    run = kids[kids.length - 1],
+    rH = hOf(run),
+    pages = [[head.outerHTML]],
+    used = hOf(head),
+    newPage = function () {
+      pages.push([null]);
+      used = rH;
+    },
+    cur = function () {
+      return pages[pages.length - 1];
+    };
+  kids.slice(1, -1).forEach(function (el) {
+    var h = hOf(el);
+    if (!el.classList.contains('cols') || used + h <= inner) {
+      if (used + h > inner && cur().length > 1) newPage();
+      cur().push(el.outerHTML);
+      used += h;
+      return;
+    }
+    /* deux colonnes : cartes réparties colonne par colonne */
+    var cols = [].slice.call(el.children),
+      cards = cols.map(function (c) {
+        return [].slice.call(c.children).map(function (k) {
+          return { html: k.outerHTML, h: hOf(k) };
+        });
+      }),
+      extra = hOf(el) - Math.max.apply(null, cols.map(hOf)),
+      guard = 0;
+    while ((cards[0].length || cards[1].length) && guard++ < 50) {
+      var rem = inner - used - extra,
+        take = cards.map(function (L) {
+          var t = [],
+            u = 0;
+          while (L.length && (u + L[0].h <= rem || (!t.length && used <= rH + 1))) {
+            u += L[0].h;
+            t.push(L.shift());
+          }
+          return { t: t, u: u };
+        });
+      if (!take[0].t.length && !take[1].t.length) {
+        newPage();
+        continue;
+      }
+      cur().push(
+        '<div class="cols">' +
+          take.map(function (c) { return '<div>' + c.t.map(function (x) { return x.html; }).join('') + '</div>'; }).join('') +
+          '</div>'
+      );
+      used += Math.max(take[0].u, take[1].u) + extra;
+      if (cards[0].length || cards[1].length) newPage();
+    }
+  });
+  var N = pages.length,
+    num = function (t, n) {
+      return t.split('§n§').join(n).split('§N§').join(N);
+    };
+  document.getElementById('omfwrap').innerHTML = pages
+    .map(function (p, i) {
+      return (
+        '<div class="shpage sd-classique">' +
+        p.map(function (x) { return x === null ? num(T.run, i + 1) : x; }).join('') +
+        num(T.foot, i + 1) +
+        '</div>'
+      );
+    })
+    .join('');
+  return N;
+}
 function bxPdfDoc(b) {
   const h = s =>
       String(s ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;'),
+    P = withRec(b, () => sheetPdfParts(sheetData())),
     box = document.createElement('div');
-  box.innerHTML = withRec(b, () => sheetPages(sheetData(), 'classique'));
+  box.innerHTML = P.head + P.blocks.join('') + P.run.split('§n§/§N§').join('2/2');
   if (typeof icoTree === 'function') icoTree(box) /* caractères ✔ 🍺… → icônes, comme à l'écran */;
-  box.querySelectorAll('input, textarea').forEach(x => {
-    if (x.tagName === 'TEXTAREA') x.textContent = x.value;
-    else x.setAttribute('value', x.value);
-  });
+  const ico = t => {
+      const d = document.createElement('div');
+      d.innerHTML = t;
+      if (typeof icoTree === 'function') icoTree(d);
+      return d.innerHTML;
+    },
+    tpl = JSON.stringify({ run: ico(P.run), foot: ico(P.foot) }).replace(/</g, '\\u003c');
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${h(b.name)}</title><link rel="stylesheet" href="/css/openmaltforge.css"><style>
 ${bxPdfFonts()}
 @page{size:A4 portrait;margin:0}
 html,body{margin:0;padding:0;background:#fff!important}
 .shwrap{display:block!important;padding:0!important;zoom:1!important}
 .shpage{box-shadow:none!important;margin:0}
-</style></head><body><div class="shwrap" style="--ac:${SHDEF.acc}">${box.innerHTML}</div></body></html>`;
+.sd-classique .shtit h2{line-height:1.4!important;margin:3mm 0 2.6mm!important} /* 6.12.5 : titre plus haut (PDF) */
+.sd-classique .shhead{padding-bottom:5mm!important}
+</style></head><body><div class="shwrap" id="omfwrap" style="--ac:${SHDEF.acc}"><div class="shpage sd-classique" id="omfsrc">${box.innerHTML}</div></div>
+<script type="application/json" id="omftpl">${tpl}</script><script>${omfPaginate.toString()}</script></body></html>`;
 }
 async function bxPdfOne(i, btn) {
   const b = S.biblio[i];

@@ -2807,7 +2807,7 @@ input.cv,
 .sd-classique .shhead {
   border-radius: 0;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 3mm), 97% 100%, 0 100%);
-  padding-bottom: 5mm;
+  padding-bottom: 3mm; /* 6.12.4 : compense le titre plus haut (page 1 de la feuille ≤ 297 mm) */
 }
 .sd-classique .shhead:after {
   right: 0;
@@ -2822,8 +2822,9 @@ input.cv,
   display: none;
 }
 .sd-classique .shtit h2 {
+  margin: 1.8mm 0 1.2mm; /* 6.12.4 : accents et inclinaison du titre sans chevaucher les lignes voisines */
   font:
-    400 32pt/1 'LF Bangers',
+    400 32pt/1.12 'LF Bangers',
     'LF Anton',
     sans-serif;
   transform: skew(-7deg) rotate(-1.2deg);

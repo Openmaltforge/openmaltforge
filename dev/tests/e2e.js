@@ -2686,8 +2686,42 @@ check(
             const pr = await fetch('api/pdf', { method: 'POST', headers: { 'X-OpenMaltForge': '1' }, body: bxPdfDoc(b) });
             const pb = new Uint8Array(await pr.arrayBuffer());
             o.pdf = pr.ok && String.fromCharCode(...pb.slice(0, 5)) === '%PDF-' && pb.length > 5000;
-            /* 6.12.1 : visuel « Classique » de la feuille de brassage, polices intégrées */
-            const pd = bxPdfDoc(b);
+            /* 6.12.1 : visuel « Classique » de la feuille de brassage, polices intégrées ; 6.12.2 : volumes d'eau après les
+               colonnes (levure, resucrage), pas de Températures */
+            const pd = bxPdfDoc(b),
+              pdd = new DOMParser().parseFromString(pd, 'text/html'),
+              p1 = pdd.querySelector('.shpage');
+            {
+              /* 6.12.3 : sections dans l'ordre, jamais coupées : avec une recette très chargée, chaque page tient en A4 */
+              const all = pdd.body.textContent,
+                big = JSON.parse(JSON.stringify(b));
+              big.recipe.malts = Array.from({ length: 20 }, (_, k) => ({ n: S.malts[k % S.malts.length].name, g: 500 }));
+              big.recipe.hops = Array.from({ length: 15 }, (_, k) => ({ n: S.hops[k % S.hops.length].name, g: 20, use: 'Ébullition', t: 60 - k }));
+              /* PDF réel : autant de pages physiques que de pages annoncées (aucune section ne déborde ni n'est coupée) */
+              const br = await fetch('api/pdf', { method: 'POST', headers: { 'X-OpenMaltForge': '1' }, body: bxPdfDoc(big) }),
+                bt = new TextDecoder('latin1').decode(await br.arrayBuffer()),
+                np = (bt.match(/\/Type\s*\/Page(?![s\w])/g) || []).length,
+                na = +br.headers.get('X-OpenMaltForge-Pages');
+              o.fit = br.ok && na >= 2 && np === na;
+              if (!o.fit) o.dbgPages = [np, na];
+              const small = await fetch('api/pdf', { method: 'POST', headers: { 'X-OpenMaltForge': '1' }, body: bxPdfDoc(b) });
+              o.small = (new TextDecoder('latin1').decode(await small.arrayBuffer()).match(/\/Type\s*\/Page(?![s\w])/g) || []).length === +small.headers.get('X-OpenMaltForge-Pages');
+              {
+                /* 6.12.4 : paliers du PDF = Palier, °C, Temps (sans colonnes « réel ») */
+                const mh = [...pdd.querySelectorAll('table.mash')].map(t => [...t.querySelectorAll('th')].map(x => x.textContent.trim()).join('|'));
+                o.mash = mh.length === 1 && mh[0] === 'Palier|°C|Temps' && !pdd.querySelector('table.mash input');
+                /* 6.12.5 : volumes d'eau = Étape, Volume (L), Densité ; carte des notes seulement s'il y a des notes */
+                const eh = [...pdd.querySelectorAll('table.eau th')].map(x => x.textContent.trim()).join('|');
+                o.eau = eh === 'Étape|Volume (L)|Densité' && !pdd.querySelector('table.eau input');
+                const nb = JSON.parse(JSON.stringify(b)),
+                  wn = JSON.parse(JSON.stringify(b));
+                nb.recipe.notes = '';
+                wn.recipe.notes = 'Fermentation à 18 °C';
+                o.notes = !/class="card notes"/.test(bxPdfDoc(nb)) && /class="card notes"/.test(bxPdfDoc(wn)) && /Fermentation à 18/.test(bxPdfDoc(wn));
+                o.title = /line-height:1\.4!important/.test(pd);
+              }
+              o.order = !!p1 && all.indexOf('Resucrage') < all.indexOf('Volumes d’eau') && (all.indexOf('Notes de brassage') < 0 || all.indexOf('Volumes d’eau') < all.indexOf('Notes de brassage')) && !/Températures/.test(all);
+            }
             o.doc = /sd-classique/.test(pd) && /class="shhead"/.test(pd) && /@font-face\{font-family:'LF Anton'/.test(pd) && /@font-face\{font-family:'Inter'/.test(pd);
             document.getElementById('bview').click();
             await new Promise(r => setTimeout(r, 200));

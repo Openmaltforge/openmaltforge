@@ -75,8 +75,23 @@ const SM = {
       k = (l, v, u) => `<div class="kpi"><b>${v}</b><small>${l}${u ? ' · ' + u : ''}</small></div>`;
     return `<div class="kpis">${k('Densité init.', nf(c.og, 3))}${k('Densité finale', nf(c.fg, 3))}${k('Alcool', nf(c.abv, 1), '% vol.')}${k('Amertume', nf(c.ibu, 0), 'IBU')}${k('Couleur', nf(c.ebc, 0), 'EBC')}${k('IBU / DI', dg > 0 ? nf(c.ibu / dg, 2) : '-')}</div>${styleStats(find('styles', X.R.style))}`;
   },
-  water(X) {
+  water(X, pdf) {
     const { V, D, E } = X;
+    /* 6.12.5 : PDF de la recette : sans les colonnes « réalisé », en-tête « Densité » */
+    if (pdf)
+      return shCard(
+        'water',
+        'Volumes d’eau & densités',
+        shT(
+          ['Étape', 'Volume (L)', 'Densité'],
+          SW_ROWS.map(([k, l, hasD]) => [
+            l + (k === 'emp' ? ' (' + E.ratio + ' L/kg)' : ''),
+            V[k] == null ? '-' : nf(V[k], 2),
+            hasD ? nf(D[k], 3) : '-'
+          ]),
+          'eau'
+        )
+      );
     const rows = SW_ROWS.map(([k, l, hasD]) => [
       l + (k === 'emp' ? ' (' + E.ratio + ' L/kg)' : ''),
       V[k] == null ? '-' : nf(V[k], 2),
@@ -158,16 +173,19 @@ const SM = {
       )
     );
   },
-  mash(X) {
+  mash(X, pdf) {
     const { R } = X;
+    /* 6.12.4 : PDF de la recette : sans les colonnes « réel », en-têtes « °C » et « Temps » */
     return shCard(
       '',
       'Paliers d’empâtage',
-      shT(
-        ['Palier', '°C prévu', 'Min prévu', '°C réel', 'Min réel'],
-        R.mash.map((r, i) => [r.k, r.t === '' ? '-' : r.t, r.m === '' ? '-' : r.m, shIn('pt' + i), shIn('pm' + i)]),
-        'num2 mash'
-      )
+      pdf
+        ? shT(['Palier', '°C', 'Temps'], R.mash.map(r => [r.k, r.t === '' ? '-' : r.t, r.m === '' ? '-' : r.m]), 'num2 mash')
+        : shT(
+            ['Palier', '°C prévu', 'Min prévu', '°C réel', 'Min réel'],
+            R.mash.map((r, i) => [r.k, r.t === '' ? '-' : r.t, r.m === '' ? '-' : r.m, shIn('pt' + i), shIn('pm' + i)]),
+            'num2 mash'
+          )
     );
   },
   curve(X) {
@@ -261,6 +279,27 @@ function rkSide(X) {
   return `<aside class="rkside">${E.logo ? `<img src="${E.logo}" class="shlogo" alt="">` : ''}<small>Feuille de brassage${E.name ? ' · ' + hh(E.name) : ''}</small><h2>${hh(R.name || 'Sans nom')}</h2><div class="shsub">${hh(R.style || '—')}<br>${b.V} L · ${fd(R.date)}${R.embou ? '<br>embouteillé le ' + fd(R.embou) : ''}</div><div class="rks">${k('Densité init.', nf(c.og, 3))}${k('Densité finale', nf(c.fg, 3))}${k('Alcool', nf(c.abv, 1), '% vol.')}${k('Amertume', nf(c.ibu, 0), 'IBU')}${k('Couleur', nf(c.ebc, 0), 'EBC')}</div></aside>`;
 }
 const SCOLS = (a, b) => `<div class="cols"><div>${a.join('')}</div><div>${b.join('')}</div></div>`;
+const shFootHtml = (n, N) =>
+  `<footer class="shfoot"><span class="shtag">${ic('star')}  LOUD · HOPPY · HANDMADE  ${ic('star')}   </span>OpenMaltForge ${VER} · ${n}/${N}</footer>`;
+/* 6.12.3 : PDF de la recette (visuel « Classique ») : sections dans l'ordre (chiffres clés, malts / houblons / levure |
+   paliers / resucrage, volumes d'eau, courbe, notes ; sans Températures). La répartition en pages est faite par la page
+   du PDF elle-même (bxPdfDoc → omfPaginate), en mode impression, avec ses vraies mesures : une section qui ne tient pas
+   dans la place restante passe entière sur la page suivante. Gabarits avec §n§ / §N§ pour les numéros de page. */
+function sheetPdfParts(X) {
+  const m = SM;
+  return {
+    head: m.head(X),
+    blocks: [
+      m.kpi(X),
+      SCOLS([m.malts(X), m.hops(X), m.yeast(X)], [m.mash(X, 1), m.resu(X)]),
+      m.water(X, 1),
+      m.curve(X),
+      ...(String(X.R.notes || '').trim() ? [m.notes(X)] : []) /* 6.12.5 : pas de notes → pas de carte */
+    ],
+    run: m.run(X, 0, '§n§', '§N§'),
+    foot: shFootHtml('§n§', '§N§')
+  };
+}
 function sheetPages(X, id) {
   const dsg = SDESIGNS.find(d => d.id === id) || SDESIGNS[0],
     m = SM;
@@ -311,7 +350,7 @@ function sheetPages(X, id) {
   return p
     .map(
       (pg, i) =>
-        `<div class="shpage sd-${dsg.id}">${pg.join('')}<footer class="shfoot"><span class="shtag">${ic('star')}  LOUD · HOPPY · HANDMADE  ${ic('star')}   </span>OpenMaltForge ${VER} · ${i + 1}/${N}</footer></div>`
+        `<div class="shpage sd-${dsg.id}">${pg.join('')}${shFootHtml(i + 1, N)}</div>`
     )
     .join('');
 }

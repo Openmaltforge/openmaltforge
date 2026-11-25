@@ -186,8 +186,9 @@ func (s *cdpSess) waitEvent(name string) error {
 	}
 }
 
-// cdpPrintPDF lance le navigateur sans fenêtre (profil prof), charge pageURL et renvoie le PDF (A4).
-func cdpPrintPDF(ctx context.Context, browser, prof, pageURL string) ([]byte, error) {
+// cdpPrintPDF lance le navigateur sans fenêtre (profil prof), charge pageURL en mode impression, laisse la page se
+// répartir en pages (fonction omfPaginate, si présente) et renvoie le PDF (A4) et le nombre de pages annoncé.
+func cdpPrintPDF(ctx context.Context, browser, prof, pageURL string) ([]byte, int, error) {
 	port := filepath.Join(prof, "DevToolsActivePort")
 	os.Remove(port)
 	cmd := exec.Command(browser, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
@@ -196,7 +197,7 @@ func cdpPrintPDF(ctx context.Context, browser, prof, pageURL string) ([]byte, er
 	hideWindow(cmd)
 	cmd.WaitDelay = 3 * time.Second
 	if err := cmd.Start(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer func() {
 		killTree(cmd)
@@ -212,7 +213,7 @@ func cdpPrintPDF(ctx context.Context, browser, prof, pageURL string) ([]byte, er
 		}
 		select {
 		case <-ctx.Done():
-			return nil, errors.New("le navigateur sans fenêtre n'a pas démarré")
+			return nil, 0, errors.New("le navigateur sans fenêtre n'a pas démarré")
 		case <-time.After(100 * time.Millisecond):
 		}
 	}
@@ -236,40 +237,55 @@ func cdpPrintPDF(ctx context.Context, browser, prof, pageURL string) ([]byte, er
 		if wsURL == "" {
 			select {
 			case <-ctx.Done():
-				return nil, errors.New("page du navigateur sans fenêtre introuvable")
+				return nil, 0, errors.New("page du navigateur sans fenêtre introuvable")
 			case <-time.After(100 * time.Millisecond):
 			}
 		}
 	}
 	ws, err := wsDial(ctx, wsURL)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer ws.c.Close()
 	s := &cdpSess{ws: ws}
 	if _, err := s.call("Page.enable", map[string]any{}, nil); err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+	if _, err := s.call("Emulation.setEmulatedMedia", map[string]any{"media": "print"}, nil); err != nil {
+		return nil, 0, err
 	}
 	loaded := false
 	if _, err := s.call("Page.navigate", map[string]any{"url": pageURL}, func(m string) { loaded = loaded || m == "Page.loadEventFired" }); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if !loaded {
 		if err := s.waitEvent("Page.loadEventFired"); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
-	s.call("Runtime.evaluate", map[string]any{"expression": "document.fonts.ready.then(() => 1)", "awaitPromise": true}, nil)
+	pages := 0
+	if res, err := s.call("Runtime.evaluate", map[string]any{"expression": "document.fonts.ready.then(() => (typeof omfPaginate === 'function' ? omfPaginate() : 0))",
+		"awaitPromise": true, "returnByValue": true}, nil); err == nil {
+		var v struct {
+			Result struct {
+				Value float64 `json:"value"`
+			} `json:"result"`
+		}
+		if json.Unmarshal(res, &v) == nil {
+			pages = int(v.Result.Value)
+		}
+	}
 	res, err := s.call("Page.printToPDF", map[string]any{"printBackground": true, "preferCSSPageSize": true,
 		"paperWidth": 8.27, "paperHeight": 11.69, "displayHeaderFooter": false}, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	var out struct {
 		Data string `json:"data"`
 	}
 	if err := json.Unmarshal(res, &out); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return base64.StdEncoding.DecodeString(out.Data)
+	b, err := base64.StdEncoding.DecodeString(out.Data)
+	return b, pages, err
 }

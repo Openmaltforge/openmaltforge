@@ -41,7 +41,7 @@ func (s *Server) pdf(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	b, err := s.PDF(r.Context(), "http://"+r.Host, page)
+	b, n, err := s.PDF(r.Context(), "http://"+r.Host, page)
 	if err != nil {
 		code := http.StatusInternalServerError
 		if errors.Is(err, errPasDeNavigateur) {
@@ -52,14 +52,15 @@ func (s *Server) pdf(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("X-OpenMaltForge-Pages", fmt.Sprint(n)) // pages annoncées par la page (0 : pas de répartition)
 	w.Write(b)
 }
 
 // PDF produit le PDF d'une page HTML ; base = adresse du serveur (http://127.0.0.1:port).
-func (s *Server) PDF(ctx context.Context, base string, page []byte) ([]byte, error) {
+func (s *Server) PDF(ctx context.Context, base string, page []byte) ([]byte, int, error) {
 	br := PdfBrowser()
 	if br == "" {
-		return nil, errPasDeNavigateur
+		return nil, 0, errPasDeNavigateur
 	}
 	pdfMu.Lock()
 	defer pdfMu.Unlock()
@@ -70,18 +71,18 @@ func (s *Server) PDF(ctx context.Context, base string, page []byte) ([]byte, err
 	defer pdfSrc.Delete(tok)
 	prof := filepath.Join(s.dir, ".profil-pdf") // à côté du profil de la fenêtre : accessible aux navigateurs « snap »
 	if err := os.MkdirAll(prof, 0o755); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
-	b, err := cdpPrintPDF(ctx, br, prof, base+"/api/pdfsrc/"+tok)
+	b, n, err := cdpPrintPDF(ctx, br, prof, base+"/api/pdfsrc/"+tok)
 	if err != nil {
-		return nil, fmt.Errorf("le navigateur n'a pas produit le PDF : %v", err)
+		return nil, 0, fmt.Errorf("le navigateur n'a pas produit le PDF : %v", err)
 	}
 	if len(b) < 5 || string(b[:5]) != "%PDF-" {
-		return nil, errors.New("le navigateur n'a pas produit le PDF")
+		return nil, 0, errors.New("le navigateur n'a pas produit le PDF")
 	}
-	return b, nil
+	return b, n, nil
 }
 
 // pdfPage sert au navigateur sans fenêtre la page à imprimer (jeton à usage unique, local seulement).
