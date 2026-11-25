@@ -2686,7 +2686,9 @@ check(
             const pr = await fetch('api/pdf', { method: 'POST', headers: { 'X-OpenMaltForge': '1' }, body: bxPdfDoc(b) });
             const pb = new Uint8Array(await pr.arrayBuffer());
             o.pdf = pr.ok && String.fromCharCode(...pb.slice(0, 5)) === '%PDF-' && pb.length > 5000;
-            o.doc = /<h1>/.test(bxPdfDoc(b)) && /table:has\(img\.aromatique\)/.test(bxPdfDoc(b));
+            /* 6.12.1 : visuel « Classique » de la feuille de brassage, polices intégrées */
+            const pd = bxPdfDoc(b);
+            o.doc = /sd-classique/.test(pd) && /class="shhead"/.test(pd) && /@font-face\{font-family:'LF Anton'/.test(pd) && /@font-face\{font-family:'Inter'/.test(pd);
             document.getElementById('bview').click();
             await new Promise(r => setTimeout(r, 200));
             o.cards = [...document.querySelectorAll('.bcard')].every(c => c.querySelector('[data-bpdf]') && c.querySelector('[data-bxml]'));
@@ -2695,7 +2697,7 @@ check(
             return o;
           });
           check(
-            'bibliothèque : icônes PDF et export beer.xml en fin de ligne et sur les cartes ; beer.xml relu à l’identique par l’import ; PDF A4 produit par le serveur (6.12.0)',
+            'bibliothèque : icônes PDF et export beer.xml en fin de ligne et sur les cartes ; beer.xml relu à l’identique par l’import ; PDF A4 (feuille « Classique ») produit par le serveur (6.12.0, 6.12.1)',
             Object.values(px).every(Boolean),
             JSON.stringify(px)
           );

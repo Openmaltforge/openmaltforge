@@ -5836,3 +5836,8 @@ table.db:not(.rt):not(.lib) td > input[data-t='ings'][data-c='usage'] { min-widt
    à largeur fixe, les autres colonnes se partagent le reste */
 table.lib col:last-child { width: 222px; }
 table.lib td.act { white-space: nowrap; }
+/* 6.12.0 : le bandeau de la feuille de brassage est un <header> : les règles d'impression qui masquent l'en-tête de
+   l'application ne doivent pas le masquer (impression et PDF de la recette) */
+@media print {
+  .shpage header.shhead { display: flex !important; }
+}

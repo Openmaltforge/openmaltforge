@@ -1096,32 +1096,43 @@ function bxExportOne(i) {
   bxDownload(new Blob([bxXml(b)], { type: 'application/xml' }), f);
   notify('bxexp', '✔ Recette exportée : ' + f, 'ok');
 }
-/* 6.12.0 : recette en PDF (rendu HTML mis en page, PDF produit par le serveur avec le moteur du navigateur) */
+/* 6.12.0 : recette en PDF = feuille de brassage au visuel « Classique » (couleurs par défaut), page autonome :
+   feuille de style de l'application, polices de la feuille (Inter, Anton, Oswald, Bangers) intégrées depuis la base, icônes
+   déjà dessinées ; PDF produit par le serveur avec le moteur du navigateur */
+const BX_PDF_FAMS = ['Inter', 'LF Anton', 'LF Oswald', 'LF Bangers'];
+function bxPdfFonts() {
+  const E = S.kv.equip,
+    seen = new Set(),
+    out = [];
+  (E.fonts || []).forEach(u =>
+    lblFontFams(u.n).forEach(fam => {
+      if (!BX_PDF_FAMS.includes(fam) || seen.has(fam) || !u.d) return;
+      seen.add(fam);
+      out.push(`@font-face{font-family:'${fam}';src:url(${u.d});font-weight:100 900;font-style:normal}`);
+    })
+  );
+  return out.join('\n');
+}
 function bxPdfDoc(b) {
   const h = s =>
       String(s ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;'),
-    R = b.recipe || {},
-    code = withRec(b, () => htmlCode()),
-    sub = [b.style || R.style, b.brasseur && b.brasseur !== '-' ? b.brasseur : '', (b.vol || '') + ' L']
-      .filter(x => x && x !== ' L')
-      .map(h)
-      .join(' · ');
-  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${h(b.name)}</title><style>
-@page{size:A4;margin:14mm}
-body{font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;font-size:10.5pt;color:#1d2330;margin:0}
-h1{font-size:20pt;margin:0 0 2mm;color:#7a5a00}
-.subt{color:#5b6472;margin:0 0 6mm;font-size:10pt}
-table{width:100%;border-collapse:collapse;margin:0 0 5mm;page-break-inside:avoid}
-th,td{border:1px solid #c9ced6;padding:1.6mm 2.4mm;text-align:left;vertical-align:top}
-th{background:#f1ede1;font-weight:700}
-tr.total td{font-weight:700;background:#faf6e8}
-tr.sub td{background:#f6f7f9}
-hr,.version,table.invisible,table:has(img.aromatique){display:none} /* image du profil = chemin du site web, version déjà en pied */
-.foot{margin-top:6mm;color:#8a919c;font-size:8.5pt}
-</style></head><body><h1>${h(b.name)}</h1>${sub ? `<p class="subt">${sub}</p>` : ''}${code}<p class="foot">OpenMaltForge ${h(VER)}</p></body></html>`;
+    box = document.createElement('div');
+  box.innerHTML = withRec(b, () => sheetPages(sheetData(), 'classique'));
+  if (typeof icoTree === 'function') icoTree(box) /* caractères ✔ 🍺… → icônes, comme à l'écran */;
+  box.querySelectorAll('input, textarea').forEach(x => {
+    if (x.tagName === 'TEXTAREA') x.textContent = x.value;
+    else x.setAttribute('value', x.value);
+  });
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${h(b.name)}</title><link rel="stylesheet" href="/css/openmaltforge.css"><style>
+${bxPdfFonts()}
+@page{size:A4 portrait;margin:0}
+html,body{margin:0;padding:0;background:#fff!important}
+.shwrap{display:block!important;padding:0!important;zoom:1!important}
+.shpage{box-shadow:none!important;margin:0}
+</style></head><body><div class="shwrap" style="--ac:${SHDEF.acc}">${box.innerHTML}</div></body></html>`;
 }
 async function bxPdfOne(i, btn) {
   const b = S.biblio[i];
