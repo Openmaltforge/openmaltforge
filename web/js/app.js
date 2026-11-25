@@ -2084,9 +2084,7 @@ function fillWater() {
     tip = `Volume d’eau + malt (${f(o.vgr, 1)} L) ≥ volume maxi empâtage + malt dans la cuve (${f(wIn('cmax'), 1)} L)`;
   set('w-v0', f(o.v0, 2));
   set('w-rinc', f(o.rinc, 2));
-  set('w-nog', f(o.v0 + o.rinc, 2));
   set('w-tot', f(o.v0 + o.rinc, 2)); /* 6.10.1 : eau d’empâtage + eau de rinçage */
-  set('w-tf', f(o.tf, 1) + ' °C');
   set('w-vm', f(o.v0 + kg, 2));
   [
     ['w-al', over],
@@ -3126,9 +3124,10 @@ const WD = {
   contr: 4,
   pferm: 2,
   resuc: 2,
-  tmout: 95,
-  tglace: -16,
-  glace: 6,
+  /* 6.13.0 : plus de glace ; valeurs par défaut de la section Calculs (mélange froid / chaud) */
+  cv: 6,
+  ct: -16,
+  ht: 95,
   fmax: 30,
   cmax: 45,
   bout: 30
@@ -3292,15 +3291,6 @@ function wIn(k) {
   if (['ratio', 'vol', 'eff', 'evap', 'abs'].includes(k)) return +E[k] || 0;
   if (k === 'bout') return +E.vol || 0; /* volume à embouteiller = champ de l'écran Conception (source unique) */
   if (k === 'vmoût') return (+E.vol || 0) + wIn('pferm') - wIn('resuc');
-  if (k === 'glace') {
-    /* 6.8.0 : glace = « Ajouts » saisis des étapes du Process dont le nom contient « glace » (ou de rôle glace) ;
-       à défaut, ancienne valeur de la recette, sinon la valeur par défaut */
-    const G = ensureProc()
-      .flatMap(p => p.rows)
-      .filter(r => (/glace/i.test(r.n || '') || r.k === 'glace') && r.a !== undefined && r.a !== '');
-    if (G.length) return G.reduce((t, r) => t + (+r.a || 0), 0);
-    return R.glace === undefined || R.glace === '' || R.glace === null || isNaN(R.glace) ? WD.glace : +R.glace;
-  }
   if (k === 'duree') {
     const b = mrow('boil');
     return (+(b && b.m) || 60) / 60;
@@ -3337,9 +3327,7 @@ function wcalc() {
     ct = g('contr') / 100,
     pf = g('pferm'),
     rs = g('resuc'),
-    ice = g('glace'),
-    tm = g('tmout'),
-    ti = g('tglace'),
+    ice = 0 /* 6.13.0 : plus de glace */,
     o = {};
   o.v0 = kg * ratio + mort;
   o.vgr = o.v0 + kg / occ;
@@ -3364,7 +3352,6 @@ function wcalc() {
   o.d2 = 1 + o.pts / o.vpreb / 1000;
   o.d3 = 1 + o.pts / o.vpost / 1000;
   o.d4 = 1 + o.pts / MG / 1000;
-  o.tf = MG ? ((MG - ice) * tm - ice * (80 + 0.5 * Math.abs(ti))) / MG : 0;
   o.vreq = g('bout') + pf - rs;
   o.mg = MG;
   /* tableau Process (phases 1 et 2) : les lignes personnalisées l'emportent sur le calcul analytique */
@@ -3378,13 +3365,11 @@ function wcalc() {
     ve = by('evap'),
     vt = by('trub'),
     vc = by('contr'),
-    vg = by('glace'),
     vf = by('pferm'),
     vs = by('resuc');
   const pre0 = pr.rows.filter(x => x.pre);
   if (pre0.length && vp) o.v0 = pre0[pre0.length - 1].v;
   o.vgr = o.v0 + kg / occ;
-  o.glace = ice;
   if (vp) o.vpre = vp.v;
   if (vr) {
     o.rinc = pr.R;
@@ -3394,14 +3379,13 @@ function wcalc() {
   if (ve) o.vpost = ve.v;
   if (vt) o.vferm = vt.v;
   if (vc) o.vcold = vc.v;
-  if (vg) o.mg = vg.v;
   if (vf) o.vtr = vf.v;
   if (vs) o.vres = vs.v;
   o.vbot = pr.end;
   o.ret = kg * ret;
-  /* 6.9.0 : eau totale = tous les « Ajouts » du Process (empâtage, volume mort, rinçage, glace, resucrage, ajouts
-     personnalisés) ; sans Process, empâtage + rinçage + glace */
-  o.tot = pr.rows.length ? pr.rows.reduce((a, x) => a + (+x.a || 0), 0) : o.rinc + o.v0 + ice;
+  /* 6.9.0 : eau totale = tous les « Ajouts » du Process (empâtage, volume mort, rinçage, resucrage, ajouts
+     personnalisés) ; sans Process, empâtage + rinçage */
+  o.tot = pr.rows.length ? pr.rows.reduce((a, x) => a + (+x.a || 0), 0) : o.rinc + o.v0;
   o.hot = o.vpost;
   o.cold = o.vpost;
   /* 6.10.0 : densités ramenées au volume froid (la contraction au refroidissement ne change pas la densité) */
@@ -3414,11 +3398,7 @@ function wcalc() {
       o.d4 = 1 + o.pts / o.mg / 1000;
     };
   dens();
-  /* 6.8.0 : glace = « Ajouts » des étapes du Process dont le nom contient « glace » (ou de rôle glace) */
-  const gl = pr.rows.filter(x => /glace/i.test(x.r.n || '') || x.r.k === 'glace');
-  const iceT = gl.length ? gl.reduce((a, x) => a + (+x.a || 0), 0) : ice;
-  o.tf = o.mg ? ((o.mg - iceT) * tm - iceT * (80 + 0.5 * Math.abs(ti))) / o.mg : 0;
-  /* DI (OG) = cible de l'écran Conception : fixe les points extraits pour que la densité après la glace soit égale à la cible */
+  /* DI (OG) = cible de l'écran Conception : fixe les points extraits pour que la densité en fermenteur soit égale à la cible */
   const ot = parseFloat(S.kv.recipe.ogT);
   if (ot > 1 && o.mg > 0) {
     o.pts = (ot - 1) * 1000 * o.mg;
@@ -3431,7 +3411,7 @@ function wcalc() {
    l / a absents = valeur automatique tirée des Paramètres (selon le rôle k) ; volumes et densités cumulés */
 const PDEF = [
   {
-    n: 'Phase 1 — Empâtage → pré-rinçage',
+    n: 'Phase 1 — Empâtage' /* 6.12.7 */,
     rows: [
       { k: 'emp', n: 'Eau d’empâtage (grains × ratio)' },
       { k: 'mort', n: 'Volume mort sous le panier' },
@@ -3439,17 +3419,16 @@ const PDEF = [
     ]
   },
   {
-    n: 'Phase 2 — Rinçage → glace dans le fermenteur',
+    n: 'Phase 2 — Rinçage & Ébullition',
     rows: [
       { k: 'rinc', n: 'Eau de rinçage (équilibre le volume visé)' },
       { k: 'evap', n: 'Évaporation à l’ébullition' },
       { k: 'trub', n: 'Pertes de fond de cuve / trub' },
-      { k: 'contr', n: 'Contraction du moût au refroidissement' },
-      { k: 'glace', n: 'Glace dans le fermenteur' }
-    ]
+      { k: 'contr', n: 'Contraction du moût au refroidissement' }
+    ] /* 6.12.7 : plus d'étape « Glace dans le fermenteur » par défaut */
   },
   {
-    n: 'Phase 3 — Embouteillage (perte au fond du fermenteur → mise en bouteille)',
+    n: 'Phase 3 — Fermentation & Embouteillage',
     rows: [
       { k: 'ferm', n: 'Fermentation' },
       { k: 'pferm', n: 'Perte au fond du fermenteur' },
@@ -3477,6 +3456,11 @@ function ensureProc() {
     if (!Array.isArray(ph.rows)) ph.rows = [];
     for (const r of ph.rows) if (r.k === 'ferm' && /atténuation de la levure/.test(r.n)) r.n = 'Fermentation';
   }
+  /* 6.13.0 : plus de notion de glace — les étapes de rôle « glace » sont retirées une fois des Process enregistrés */
+  if (!E.noglace1) {
+    E.proc3.forEach(ph => (ph.rows = ph.rows.filter(r => r.k !== 'glace')));
+    E.noglace1 = 1;
+  }
   return E.proc3;
 }
 function procAuto() {
@@ -3488,7 +3472,6 @@ function procAuto() {
     ret: { l: kg * g('ret') },
     evap: { l: g('evap') * g('duree') },
     trub: { l: g('trub') },
-    glace: { a: g('glace') },
     pferm: { l: g('pferm') },
     resuc: { a: g('resuc') }
   };
@@ -3539,10 +3522,10 @@ function procSolve() {
   const run = procRun(R);
   return { rows: run.rows, end: run.end, R, T };
 }
-/* phase qui se termine par la DI (densité initiale) : celle de la glace dans le fermenteur, sinon celle qui précède
-   la fermentation, sinon la dernière */
+/* phase qui se termine par la DI (densité initiale) : 6.13.0 (plus de glace) celle du refroidissement (étape
+   « Contraction du moût »), sinon celle qui précède la fermentation, sinon la dernière */
 function procDiPhase(P) {
-  let p = P.findIndex(ph => ph.rows.some(r => r.k === 'glace'));
+  let p = P.findIndex(ph => ph.rows.some(r => r.k === 'contr'));
   if (p < 0) p = P.findIndex(ph => ph.rows.some(r => r.k === 'ferm')) - 1;
   return p < 0 ? P.length - 1 : p;
 }
@@ -3732,13 +3715,13 @@ const WOUT = [
       ['d1', 'Densité pré-rinçage', 3],
       ['d2', 'Densité pré-ébullition', 3],
       ['d3', 'Densité post-ébullition', 3],
-      ['d4', 'Densité initiale (DI) après fusion de la glace', 3]
+      ['d4', 'Densité initiale (DI)', 3]
     ]
   ],
 ];
 function waterPanel() {
   const inp = ([k, l, t, d]) =>
-    `<tr><td>${l}</td><td><input type="number" step="any" class="wi" ${t === 'e' ? `data-e="${k}"` : `data-w="${k}"`} data-d="${d}" data-t="${t}"${k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree' ? ` readonly title="Issu de l’écran Conception${k === 'duree' ? ' (paliers d’empâtage › Ébullition)' : ''}"` : k === 'pot' ? ' readonly title="Calculé d’après les malts de la recette (écran Conception)"' : ''}></td></tr>`;
+    `<tr><td>${l}</td><td><input type="number" step="any" class="wi" ${t === 'e' ? `data-e="${k}"` : `data-w="${k}"`} data-d="${d}" data-t="${t}"${k === 'kg' || k === 'ratio' || k === 'duree' ? ` readonly title="Issu de l’écran Conception${k === 'duree' ? ' (paliers d’empâtage › Ébullition)' : ''}"` : k === 'pot' ? ' readonly title="Calculé d’après les malts de la recette (écran Conception)"' : ''}></td></tr>`;
   return `<div class="panel"><h3>Paramètres de brassage <small>— vide = valeur automatique (recette / équipement)</small></h3><div class="wgrid2">${WIN.map(([h, r]) => `<table class="wt">${h ? `<tr><th colspan="2">${h}</th></tr>` : ''}${r.map(inp).join('')}</table>`).join('')}${WOUT.slice(
     2
   )
@@ -3749,8 +3732,8 @@ function waterPanel() {
     .join('')}<div id="wwarn"></div></div></div>`;
 }
 /* 6.9.0 : section « Calculs » des Paramètres — température d'un mélange de liquide froid et de liquide chaud, comme
-   l'ancienne « Température du moût dans le fermenteur en fin de transfert » : par défaut, liquide froid = glace du
-   Process (« Ajouts » des étapes « glace ») à −16 °C, liquide chaud = moût transféré (moût en fermenteur − glace) à 95 °C.
+   l'ancienne « Température du moût dans le fermenteur en fin de transfert » : par défaut (6.13.0, valeurs fixes WD),
+   liquide froid 6 L à −16 °C, liquide chaud = moût en fermenteur − 6 L à 95 °C.
    Liquide froid à 0 °C ou moins = glace : il faut la fondre (80 kcal/kg) et la réchauffer (0,5 kcal/kg/°C).
    Valeurs saisies dans S.kv.equip.calc ; case vide = valeur par défaut (italique). */
 const CALC = [
@@ -3758,9 +3741,9 @@ const CALC = [
   ['h', 'Volume de liquide chaud']
 ];
 function calcDef() {
-  const o = wcalc(),
-    g = wIn('glace');
-  return { cv: g, ct: wIn('tglace'), hv: Math.max(0, (o.mg || 0) - g), ht: wIn('tmout') };
+  /* 6.13.0 : valeurs par défaut fixes (plus de glace dans le Process) */
+  const o = wcalc();
+  return { cv: WD.cv, ct: WD.ct, hv: Math.max(0, (o.mg || 0) - WD.cv), ht: WD.ht };
 }
 function calcVal() {
   const D = calcDef(),
@@ -3803,7 +3786,7 @@ function updWater() {
     const k = el.dataset.w || el.dataset.e,
       d = +el.dataset.d,
       own =
-        k === 'kg' || k === 'glace' || k === 'ratio' || k === 'duree' || k === 'pot'
+        k === 'kg' || k === 'ratio' || k === 'duree' || k === 'pot'
           ? false
           : el.dataset.t === 'w' || el.dataset.t === 'a'
             ? W[k] !== undefined
@@ -3937,7 +3920,7 @@ function docScreen() {
   main.innerHTML = `<iframe id="docf" class="docf" title="Documentation d’OpenMaltForge" src="doc/${f}?v=${VER}${light ? '&theme=light' : ''}"></iframe>`;
 }
 /* Paliers, volumes, densités */
-const VER = '6.12.5',
+const VER = '6.13.0',
   MASH = [
     'Palier Saccharification',
     'Palier I',
@@ -4131,7 +4114,7 @@ function htmlCode() {
       tr(td('Empâtage + rinçage:', nf(wo.v0 + wo.rinc, 1), '-'), 'total'),
       tr(td('Volume début d’ébullition:', nf(b.vPre, 1), rv('v_debeb'))),
       tr(td('Volume fin d’ébullition:', nf(b.vEnd, 1), rv('v_fineb'))),
-      tr(td('Moût dans le fermenteur (glace fondue):', nf(b.o.mg, 1), '-'))
+      tr(td('Moût dans le fermenteur:', nf(b.o.mg, 1), '-'))
     ]),
     ...tb('tabla-larga', [
       tr(th('PROCESS', 'Pertes (L)', 'Ajouts (L)', 'Volume (L)', 'Densité')),
@@ -4315,7 +4298,7 @@ function htmlCode() {
   ].join('\n');
 }
 /* le code HTML stocké pour chaque recette de la bibliothèque est recalculé quand le gabarit change (HTMLV) — jamais de liste de courses dedans */
-const HTMLV = 7;
+const HTMLV = 8; /* 6.13.0 : plus de glace */
 function htmlRefreshAll() {
   const E = S.kv.equip;
   if (E.htmlv === HTMLV) return false;
@@ -5058,7 +5041,7 @@ document.addEventListener('input', e => {
     }
     R[d.r] = ['ogT', 'ibuT'].includes(d.r)
       ? parseFloat(t.value)
-      : ['sucre', 'tcarbo', 'glace'].includes(d.r)
+      : ['sucre', 'tcarbo'].includes(d.r)
         ? t.value === ''
           ? ''
           : parseFloat(t.value)
@@ -5582,26 +5565,24 @@ if (typeof document !== 'undefined')
     vpreT:
       'Volume pré-ébullition cible = volume de moût ÷ (1 − contraction) + évaporation × durée d’ébullition + pertes de fond de cuve.',
     rincN: 'Eau de rinçage = volume pré-ébullition − volume pré-rinçage disponible.',
-    tot: 'Eau totale = somme des « Ajouts » du Process (empâtage, volume mort, rinçage, glace, resucrage, ajouts personnalisés).',
+    tot: 'Eau totale = somme des « Ajouts » du Process (empâtage, volume mort, rinçage, resucrage, ajouts personnalisés).',
     pts: 'Points de sucre = poids des grains × potentiel (L°/kg) × efficacité ÷ 100.',
     hot: 'Volume à chaud = volume dans le fermenteur + pertes de fond de cuve (trub).',
     cold: 'Volume de moût froid final = volume post-ébullition (champ repris du calcul).',
     d1: 'Densité = 1 + (points de sucre ÷ volume pré-rinçage) ÷ 1000.',
     d2: 'Densité = 1 + (points de sucre ÷ volume pré-ébullition) ÷ 1000.',
     d3: 'Densité = 1 + (points de sucre ÷ volume post-ébullition) ÷ 1000.',
-    d4: 'DI = 1 + (points de sucre ÷ volume de moût cible, glace fondue) ÷ 1000.',
+    d4: 'DI = 1 + (points de sucre ÷ volume de moût cible) ÷ 1000.',
     vgr: 'Eau d’empâtage + volume occupé par les grains (poids ÷ occupation L/kg). Ne doit pas dépasser « Volume maxi empâtage + malt dans la cuve » (Contraintes & températures) : sinon le champ passe en rouge.',
-    glace: 'Volume de glace dans le fermenteur = « Ajouts » des étapes du Process dont le nom contient « glace ».',
     rinc: 'Eau de rinçage = volume pré-ébullition − volume pré-rinçage.',
     vpreb: 'Volume pré-ébullition = volume post-ébullition + évaporation × durée d’ébullition.',
     vpost: 'Volume post-ébullition = volume dans le fermenteur + pertes de fond de cuve.',
     vferm: 'Volume dans le fermenteur = volume de moût froid × (1 + contraction).',
-    vcold: 'Volume de moût froid = volume cible − glace.',
+    vcold: 'Volume de moût froid = volume cible.',
     mg: 'Volume de moût en fermenteur = volume à embouteiller (Conception) + perte au fond du fermenteur − resucrage.',
     vtr: 'Transfert = volume de moût cible − perte au fond du fermenteur.',
     vres: 'Volume resucré = volume transféré + resucrage.',
-    vbot: 'Volume en bouteille = volume de la cuve de resucrage.',
-    tf: 'Moyenne pondérée du moût transféré et de la glace : ((V − glace) × T° moût − glace × (80 + 0,5 × |T° glace|)) ÷ V.'
+    vbot: 'Volume en bouteille = volume de la cuve de resucrage.'
   };
   const SEC = ['V', 'D', 'T'],
     au = k =>
@@ -5645,9 +5626,7 @@ if (typeof document !== 'undefined')
     [/^calc-t$/, 'Température du mélange : (V chaud × T chaud + V froid × T froid) ÷ (V chaud + V froid) ; liquide froid à 0 °C ou moins = glace : (V chaud × T chaud − V glace × (80 + 0,5 × |T glace|)) ÷ volume total.'],
     [/^w-v0$/, 'Eau d’empâtage = poids des malts × ratio d’empâtage (L/kg) + volume mort.'],
     [/^w-vm$/, 'Eau d’empâtage + poids des malts (1 kg de malt ≈ 1 L).'],
-    [/^w-nog$/, 'Eau d’empâtage + eau de rinçage (la glace n’est pas comptée).'],
     [/^w-rinc$/, 'Eau de rinçage nécessaire (calcul des volumes d’eau, écran Paramètres).'],
-    [/^w-tf$/, 'Température du moût en fin de transfert, tenant compte de la glace ajoutée.'],
     [/^r-res$/, 'CO₂ déjà dissous dans la bière à la température saisie.'],
     [/^r-vb$/, 'Volume embouteillé = volume du moût − pertes + resucrage.'],
     [/^wrat$/, 'Ratio = sulfates (SO₄) ÷ chlorures (Cl) du total de l’eau (mg/L).'],
@@ -5680,7 +5659,7 @@ if (typeof document !== 'undefined')
         ? 'Désignation fixe : ligne automatique.'
         : 'Durée calculée : ' + au((S.elec[+(el.id || 'em0').replace('em', '')] || {}).auto);
     if (el.dataset.wf === 'l')
-      return 'Litres = quantité totale d’eau nécessaire (hors glace) × % de cette eau ÷ total des %.';
+      return 'Litres = quantité totale d’eau nécessaire × % de cette eau ÷ total des %.';
     if (el.dataset.wf === 'p') return '% = litres de cette eau ÷ total des litres saisis.';
     if (el.dataset.k && el.dataset.f === 'g')
       return 'Poids calculé d’après les pourcentages saisis (ressaisir un poids pour repasser en mode poids).';
@@ -5689,7 +5668,6 @@ if (typeof document !== 'undefined')
     const w = el.dataset.w,
       e = el.dataset.e;
     if (w === 'kg') return 'Poids total des malts de la recette (écran Conception).';
-    if (w === 'glace') return 'Glace = « Ajouts » des étapes du Process dont le nom contient « glace ».';
     if (w === 'duree') return 'Durée d’ébullition des paliers d’empâtage (Conception), en minutes.';
     if (e === 'ratio' || w === 'ratio') return 'Ratio eau/grain saisi dans l’écran Conception.';
     if (el.dataset.t && el.dataset.c === 'ppg') return 'PPG = potentiel (L°/kg) ÷ 8,345 (calculé).';

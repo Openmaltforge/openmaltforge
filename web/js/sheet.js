@@ -12,12 +12,11 @@ const SW_ROWS = [
   ['empm', 'Eau d’empâtage + malt', 0],
   ['pre', 'Moût avant rinçage (pré-rinçage)', 1],
   ['rinc', 'Eau de rinçage', 0],
-  ['glace', 'Glace dans le fermenteur', 0],
-  ['tot', 'Eau totale (empâtage + rinçage + glace)', 0],
+  ['tot', 'Eau totale (empâtage + rinçage)', 0],
   ['debeb', 'Début d’ébullition', 1],
   ['fineb', 'Fin d’ébullition', 1],
   ['froid', 'Moût froid dans le fermenteur', 0],
-  ['ferm', 'Fermenteur avec glace (DI)', 1],
+  ['ferm', 'Fermenteur (DI)', 1],
   ['tr', 'Transfert vers la cuve de resucrage', 0],
   ['bout', 'En bouteilles', 0],
   ['df', 'DF', 1]
@@ -36,7 +35,6 @@ function sheetData() {
       empm: w.v0 + kgw,
       pre: w.vpre,
       rinc: w.rinc,
-      glace: wIn('glace'),
       tot: w.tot,
       debeb: w.vpreb,
       fineb: w.vpost,
@@ -104,6 +102,32 @@ const SM = {
       'Volumes d’eau & densités',
       shT(['Étape', 'Volume (L)', 'Densité prévue', 'Volume réalisé', 'Densité réalisée'], rows, 'eau'),
       'à remplir pendant le brassage'
+    );
+  },
+  /* 6.12.6 : PDF de la recette : tableau Process des Paramètres (phases, étapes, pertes, ajouts, volume, densité, DI, DF) */
+  process(X) {
+    const { R, b } = X,
+      pr = procSolve(),
+      dn = procDens(pr, b.o.pts),
+      gs = (+R.sucre || 0) * pr.end,
+      ot = parseFloat(R.ogT),
+      v = (x, d) => (x ? nf(x, d) : '-'),
+      row = (c, cl) => `<tr${cl ? ` class="${cl}"` : ''}>${c.map(x => `<td>${x}</td>`).join('')}</tr>`,
+      out = [];
+    ensureProc().forEach((ph, p) => {
+      out.push(`<tr class="pph"><td colspan="5">${hh(ph.n || '-')}</td></tr>`);
+      pr.rows.forEach((x, j) => {
+        if (x.ph === p)
+          out.push(row([hh(procLabel(x.r, dn.att, gs) || '-'), v(x.l, 2), v(x.a, 2), nf(x.v, 2), dn[j] == null ? '-' : nf(dn[j], 3)]));
+      });
+      const last = pr.rows.filter(x => x.ph === p).pop();
+      if (p === dn.dp && last) out.push(row(['DI (densité initiale visée)', '', '', nf(last.v, 2), ot > 1 ? nf(ot, 3) : '-'], 'ptot'));
+    });
+    out.push(row(['DF (densité finale après refermentation en bouteilles)', '', '', nf(pr.end, 2), dn.df ? nf(dn.df, 3) : '-'], 'ptot'));
+    return shCard(
+      'water proc',
+      'Process',
+      `<table class="eau proc"><tr><th>Étape</th><th>Pertes (L)</th><th>Ajouts (L)</th><th>Volume (L)</th><th>Densité</th></tr>${out.join('')}</table>`
     );
   },
   malts(X) {
@@ -190,17 +214,6 @@ const SM = {
   },
   curve(X) {
     return shCard('wide', 'Courbe de température', `<div class="curve">${curveSvg()}</div>`);
-  },
-  temps(X) {
-    const { w } = X;
-    return shCard(
-      '',
-      'Températures',
-      shT(
-        ['Fin de transfert', 'Moût transféré', 'Glace'],
-        [[nf(w.tf, 1) + ' °C', nf(wIn('tmout'), 0) + ' °C', nf(wIn('tglace'), 0) + ' °C']]
-      )
-    );
   },
   band(X) {
     const { c, b } = X,
@@ -292,7 +305,7 @@ function sheetPdfParts(X) {
     blocks: [
       m.kpi(X),
       SCOLS([m.malts(X), m.hops(X), m.yeast(X)], [m.mash(X, 1), m.resu(X)]),
-      m.water(X, 1),
+      m.process(X) /* 6.12.6 : à la place des volumes d'eau */,
       m.curve(X),
       ...(String(X.R.notes || '').trim() ? [m.notes(X)] : []) /* 6.12.5 : pas de notes → pas de carte */
     ],
@@ -307,11 +320,11 @@ function sheetPages(X, id) {
   if (dsg.arr === 'A')
     p = [
       [m.head(X), m.water(X), m.kpi(X), SCOLS([m.malts(X), m.hops(X), m.yeast(X)], [m.mash(X), m.resu(X)])],
-      [m.run(X, 0, 2, 2), m.curve(X), m.temps(X), m.notes(X)]
+      [m.run(X, 0, 2, 2), m.curve(X), m.notes(X)]
     ];
   else if (dsg.arr === 'B')
     p = [
-      [m.head(X), m.kpi(X), m.water(X), SCOLS([m.malts(X), m.hops(X), m.yeast(X), m.resu(X)], [m.mash(X), m.temps(X)])],
+      [m.head(X), m.kpi(X), m.water(X), SCOLS([m.malts(X), m.hops(X), m.yeast(X), m.resu(X)], [m.mash(X)])],
       [m.run(X, 0, 2, 2), m.curve(X), m.notes(X)]
     ];
   else if (dsg.arr === 'C')
@@ -329,7 +342,7 @@ function sheetPages(X, id) {
         stp(2, SCOLS([m.malts(X)], [m.yeast(X)]) + m.hops(X)),
         stp(3, m.mash(X))
       ],
-      [m.run(X, 0, 2, 2), stp(4, m.curve(X)), stp(5, SCOLS([m.resu(X)], [m.temps(X)])), m.notes(X)]
+      [m.run(X, 0, 2, 2), stp(4, m.curve(X)), stp(5, m.resu(X)), m.notes(X)]
     ];
   else
     p = [
@@ -344,7 +357,7 @@ function sheetPages(X, id) {
           m.mash(X) +
           '</div></div>'
       ],
-      [m.run(X, 0, 2, 2), m.curve(X), SCOLS([m.resu(X)], [m.temps(X)]), m.notes(X)]
+      [m.run(X, 0, 2, 2), m.curve(X), m.resu(X), m.notes(X)]
     ];
   const N = p.length;
   return p

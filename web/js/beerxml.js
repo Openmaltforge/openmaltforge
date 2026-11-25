@@ -1220,6 +1220,9 @@ html,body{margin:0;padding:0;background:#fff!important}
 .shpage{box-shadow:none!important;margin:0}
 .sd-classique .shtit h2{line-height:1.4!important;margin:3mm 0 2.6mm!important} /* 6.12.5 : titre plus haut (PDF) */
 .sd-classique .shhead{padding-bottom:5mm!important}
+table.proc tr.pph td{font-weight:700;background:#ececec;text-transform:uppercase;font-size:7.5pt;letter-spacing:.06em}
+table.proc tr.ptot td{font-weight:700;border-top:.3mm solid #111}
+table.proc td:not(:first-child),table.proc th:not(:first-child){text-align:right}
 </style></head><body><div class="shwrap" id="omfwrap" style="--ac:${SHDEF.acc}"><div class="shpage sd-classique" id="omfsrc">${box.innerHTML}</div></div>
 <script type="application/json" id="omftpl">${tpl}</script><script>${omfPaginate.toString()}</script></body></html>`;
 }

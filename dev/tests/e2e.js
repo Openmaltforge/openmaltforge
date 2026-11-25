@@ -210,6 +210,22 @@ async function scenarioApp(label) {
   try {
     const page = await newPage(srv.url, { init: FSA });
     await openDb(page);
+    {
+      /* 6.12.7 : Process par défaut = 3 phases renommées, sans étape « Glace dans le fermenteur » (6.13.0 : plus de glace) */
+      const pd = await page.evaluate(() => {
+        const P = ensureProc();
+        return {
+          names: P.map(p => p.n).join('|'),
+          noIce: !P.some(p => p.rows.some(r => r.k === 'glace')),
+          def: PDEF.map(p => p.n).join('|') === P.map(p => p.n).join('|')
+        };
+      });
+      check(
+        'Process par défaut : « Phase 1 — Empâtage », « Phase 2 — Rinçage & Ébullition », « Phase 3 — Fermentation & Embouteillage », sans étape de glace (6.12.7)',
+        pd.names === 'Phase 1 — Empâtage|Phase 2 — Rinçage & Ébullition|Phase 3 — Fermentation & Embouteillage' && pd.noIce && pd.def,
+        JSON.stringify(pd)
+      );
+    }
     check(
       'démarrage direct : base chargée par le serveur, sans popup ni sélection de fichier',
       !(await page.$('#gate')) && (await page.evaluate(() => READY && !!document.querySelector('#nav button')))
@@ -359,7 +375,7 @@ async function scenarioApp(label) {
       })
     );
     check(
-      'Process : DI = cible de la Conception après la glace ; resucrage (g) dans le libellé ; ligne Fermentation (atténuation de la levure), resucrage, DF après refermentation',
+      'Process : DI = cible de la Conception en fin de phase 2 ; resucrage (g) dans le libellé ; ligne Fermentation (atténuation de la levure), resucrage, DF après refermentation',
       await page.evaluate(() => {
         const R = S.kv.recipe,
           s0 = R.sucre;
@@ -382,7 +398,7 @@ async function scenarioApp(label) {
           fl === 'Fermentation (atténuation ' + nf(at * 100, 0) + ' %)' &&
           Math.abs(fd - (1 + (o.pts * (1 - at)) / pr.rows.find(x => x.r.k === 'ferm').v / 1000)) < 6e-4 &&
           di === nf(+R.ogT, 3) &&
-          di === document.querySelector('#pd-1-4').value &&
+          di === document.querySelector('#pd-1-3').value &&
           Math.abs(got - exp) < 6e-4 &&
           lab === 'Resucrage (' + nf(8 * pr.end, 0) + ' g)' &&
           !document.querySelector('#pd-end,#pd-p2end,#pchk');
@@ -480,7 +496,7 @@ async function scenarioApp(label) {
         return (
           !/Date d’embouteillage|Equipement:|Volume de moût/.test(P.split('PROFIL')[0].slice(0, 1800)) &&
           !/lace dans le fermenteur:/.test(h) &&
-          /Phase 3 — Embouteillage/.test(h) &&
+          /Phase 3 — Fermentation &(amp;)? Embouteillage/.test(h) &&
           /DI \(densité initiale visée\)/.test(h) &&
           /DF \(densité finale/.test(h) &&
           !/Mise en bouteille visée/.test(h)
@@ -664,11 +680,11 @@ async function scenarioApp(label) {
     await nav(page, 'params');
     await wait(200);
     check(
-      'tableau Process : phase 1 (3 lignes) + phase 2 (5 lignes, finit à la glace) + phase 3 embouteillage (3 lignes : fermentation, perte, resucrage) + lignes DI et DF',
+      'tableau Process : phase 1 (3 lignes) + phase 2 (4 lignes, sans glace : 6.13.0) + phase 3 (3 lignes : fermentation, perte, resucrage) + lignes DI et DF',
       await page.evaluate(
         () =>
           document.querySelectorAll('tr[data-prow^="0:"]').length === 3 &&
-          document.querySelectorAll('tr[data-prow^="1:"]').length === 5 &&
+          document.querySelectorAll('tr[data-prow^="1:"]').length === 4 &&
           document.querySelectorAll('tr[data-prow^="2:"]').length === 3 &&
           !!document.querySelector('#pd-di') &&
           !!document.querySelector('#pv-df') &&
@@ -676,7 +692,7 @@ async function scenarioApp(label) {
             'Phase 1,Phase 2,Phase 3' &&
           document.querySelector('table[data-phase="1"] #pd-di') &&
           document.querySelector('table[data-phase="2"] #pd-df') &&
-          document.querySelectorAll('input.pi:not(.ro)').length === 22 &&
+          document.querySelectorAll('input.pi:not(.ro)').length === 20 &&
           [...document.querySelectorAll('#pv-df,#pd-df,#pd-di,#pv-0-0,#wo-V0')].every(
             x => x.tagName === 'INPUT' && x.readOnly
           )
@@ -699,9 +715,6 @@ async function scenarioApp(label) {
         contr: 4,
         pferm: 2,
         resuc: 2,
-        glace: 6,
-        tmout: 95,
-        tglace: -16,
         fmax: 30,
         bout: 30
       };
@@ -720,15 +733,15 @@ async function scenarioApp(label) {
         d1: g('pd-0-0'),
         d3: g('pd-0-2'),
         vEv: g('pv-1-1'),
-        dGl: g('pd-1-4'),
-        vGl: g('pv-1-4'),
+        dGl: g('pd-1-3'),
+        vGl: g('pv-1-3'),
         endT: g('pv-df'),
         chk: /aboutit à/.test(document.querySelector('#pwarn').innerText) ? '≠' : '✔'
       };
     });
     check(
-      'Process par défaut = feuille Excel : empâtage 30,26 / pré-rinçage 30,85→ rinçage 6,26 ; moût+glace 30 ; DI 1,060 ; bouteille 30,00 ✔ ; densité calculée sur chaque ligne (eau d’empâtage comprise)',
-      Math.abs(pa.R - 6.26063421) < 1e-6 &&
+      'Process par défaut (sans glace, 6.13.0) : empâtage 30,26 / pré-rinçage → rinçage 12,50 (6,26 + 6 L de glace × 1,04) ; moût 30 ; DI 1,060 ; bouteille 30,00 ✔ ; densité calculée sur chaque ligne',
+      Math.abs(pa.R - 12.50063421) < 1e-6 &&
         Math.abs(pa.end - 30) < 1e-9 &&
         pa.vGl === '30,00' &&
         pa.dGl === '1,060' &&
@@ -748,12 +761,11 @@ async function scenarioApp(label) {
       R: procSolve().R,
       end: procSolve().end,
       chk: /aboutit à/.test(document.querySelector('#pwarn').innerText) ? '≠' : '✔',
-      w: wcalc().rinc,
-      t: wIn('glace')
+      w: wcalc().rinc
     }));
     check(
-      'ajout d’une ligne « perte 2 L » : l’eau de rinçage passe à 8,34 L (6,26 + 2 × 1,04 de contraction), bouteille toujours 30 L, propagé aux calculs d’eau',
-      Math.abs(pb.R - 8.34063421) < 1e-6 &&
+      'ajout d’une ligne « perte 2 L » : l’eau de rinçage passe à 14,58 L (12,50 + 2 × 1,04 de contraction), bouteille toujours 30 L, propagé aux calculs d’eau',
+      Math.abs(pb.R - 14.58063421) < 1e-6 &&
         Math.abs(pb.end - 30) < 1e-9 &&
         Math.abs(pb.w - pb.R) < 1e-9 &&
         pb.chk === '✔',
@@ -774,7 +786,7 @@ async function scenarioApp(label) {
       delete ensureProc()[1].rows[0].a;
       updParams();
     });
-    await page.click('button[data-pdel="1:5"]');
+    await page.click('button[data-pdel="1:4"]') /* 6.13.0 : plus d'étape de glace, la perte ajoutée est la 5e */;
     await wait(150);
     await page.evaluate(() => {
       ensureProc()[1].rows[2].l = 5;
@@ -782,8 +794,8 @@ async function scenarioApp(label) {
     });
     await wait(200);
     check(
-      'perte de trub personnalisée (5 L) : le rinçage compense (9,26 L) ; vider la case rétablit l’auto',
-      (await page.evaluate(() => Math.abs(procSolve().R - 9.26063421) < 1e-6)) &&
+      'perte de trub personnalisée (5 L) : le rinçage compense (15,50 L, sans glace) ; vider la case rétablit l’auto',
+      (await page.evaluate(() => Math.abs(procSolve().R - 15.50063421) < 1e-6)) &&
         (await (async () => {
           await page.evaluate(() => {
             delete ensureProc()[1].rows[2].l;
@@ -792,7 +804,7 @@ async function scenarioApp(label) {
           await wait(200);
           return page.evaluate(
             () =>
-              Math.abs(procSolve().R - 6.26063421) < 1e-6 &&
+              Math.abs(procSolve().R - 12.50063421) < 1e-6 &&
               document.querySelector('input[data-pr="1"][data-i="2"][data-pf="l"]').classList.contains('auto')
           );
         })())
@@ -812,7 +824,7 @@ async function scenarioApp(label) {
       await page.evaluate(() => {
         const rows = [...document.querySelectorAll('.ptab tr[data-prow], .ptab tr.phr')];
         return (
-          rows.length === 14 &&
+          rows.length === 13 /* 6.13.0 : 10 étapes (plus de glace) + 3 phases */ &&
           rows.every(tr => tr.querySelector('button[data-ped]')) &&
           [...document.querySelectorAll('.ptab tr[data-prow] input[id^="pd-"]')].every(x => /^\d,\d{3}$/.test(x.value))
         );
@@ -907,7 +919,7 @@ async function scenarioApp(label) {
     await page.click('button[data-phm="3:-1"]');
     await wait(150);
     check(
-      'Process : ▲ d’une phase la remonte (la DI reste sur la phase de la glace)',
+      'Process : ▲ d’une phase la remonte (la DI reste sur la phase du refroidissement)',
       await page.evaluate(
         () =>
           S.kv.equip.proc3[2].n === 'Garde à froid' &&
@@ -923,7 +935,7 @@ async function scenarioApp(label) {
       return {
         ph: ['Phase 1 — Empâtage', 'Garde à froid', 'Prélèvements', 'DI (densité', 'DF (densité'].every(t => h.includes(t)),
         d0: h.includes(nf(dn[0], 3)),
-        ord: h.indexOf('Garde à froid') < h.indexOf('Phase 3 — Embouteillage')
+        ord: h.indexOf('Garde à froid') < h.indexOf('Phase 3 — Fermentation')
       };
     });
     check('écran HTML : phases nommées du Process (ordre compris), étapes ajoutées, densité de chaque étape', hp.ph && hp.d0 && hp.ord, JSON.stringify(hp));
@@ -1124,9 +1136,6 @@ async function scenarioApp(label) {
         contr: 4,
         pferm: 2,
         resuc: 2,
-        glace: 6,
-        tmout: 95,
-        tglace: -16,
         fmax: 30,
         bout: 30
       };
@@ -1135,14 +1144,14 @@ async function scenarioApp(label) {
     });
     const near = (a, b, t = 1e-4) => Math.abs(a - b) < t;
     check(
-      'calcul d’eau = feuille Excel (empâtage 30,257 ; total 42,518 + 2 L de resucrage = tous les ajouts du Process (6.9.0) ; rinçage 6,261 (tableau Process) ; DI = cible 1,060 ; T° 58,4)',
+      'calcul d’eau (6.13.0, sans glace) : empâtage 30,257 ; total = tous les ajouts du Process (empâtage, volume mort, rinçage 12,501, resucrage 2) ; DI = cible 1,060 ; plus de T° de fin de transfert',
       near(wc.v0, 30.257328714474) &&
-        near(wc.tot, 42.5179629248004 + 2) &&
-        near(wc.rincN, 6.26063421032641) &&
-        near(wc.rinc, 6.26063421032641) &&
+        near(wc.tot, 44.75796292480039) &&
+        near(wc.rincN, 12.50063421032641) &&
+        near(wc.rinc, 12.50063421032641) &&
         near(wc.d4, 1.06, 1e-9) &&
         near(wc.d1, 1.078989455524, 1e-6) /* 6.10.0 : volume chaud ramené au volume froid (Excel : 1,07595) */ &&
-        near(wc.tf, 58.4, 1e-6) &&
+        wc.tf === undefined &&
         near(wc.vbot, 30),
       JSON.stringify(wc)
     );
@@ -1182,7 +1191,7 @@ async function scenarioApp(label) {
     );
     /* 6.9.0 : section Calculs — mélange liquide froid / liquide chaud */
     check(
-      'Paramètres › Calculs : température du mélange froid / chaud (glace : fusion comptée), valeurs par défaut = glace du Process et moût transféré ; résultat en jaune ; Calculs puis Contactez-moi sous Polices de caractères',
+      'Paramètres › Calculs : température du mélange froid / chaud (liquide ≤ 0 °C : fusion comptée), valeurs par défaut fixes (6 L à −16 °C, moût − 6 L à 95 °C, 6.13.0) ; résultat en jaune ; Calculs puis Contactez-moi sous Polices de caractères',
       await page.evaluate(() => {
         const set = (k, v) => {
             const el = document.querySelector(`[data-calc="${k}"]`);
@@ -1192,7 +1201,7 @@ async function scenarioApp(label) {
           r = () => parseFloat(document.getElementById('calc-t').textContent.replace(',', '.')),
           D = calcDef(),
           o = wcalc(),
-          defOk = Math.abs(r() - +nf(o.tf, 1).replace(',', '.')) < 0.11 && Math.abs(D.cv - wIn('glace')) < 1e-9;
+          defOk = D.cv === 6 && D.ct === -16 && D.ht === 95 && Math.abs(D.hv - Math.max(0, o.mg - 6)) < 1e-9 && Math.abs(r() - ((D.hv * 95 - 6 * (80 + 8)) / (D.hv + 6))) < 0.06;
         set('cv', '10');
         set('ct', '20');
         set('hv', '10');
@@ -1252,34 +1261,23 @@ async function scenarioApp(label) {
     await page.fill('[data-r="sucre"]', '8');
     await page.fill('[data-r="tcarbo"]', '20');
     await wait(150);
-    /* 6.8.0 : plus de glace ni de T° de fin de transfert dans « Quantités d’eau » ; la T° de fin de transfert utilise les
-       « Ajouts » des étapes du Process dont le nom contient « glace » */
+    /* 6.13.0 : plus aucune notion de glace : Quantités d'eau, Process (étape de rôle « glace » retirée une fois), T° de fin de transfert */
     check(
-      'Quantités d’eau sans glace ni T° de fin de transfert ; T° du moût en fin de transfert calculée avec les ajouts des étapes « glace » du Process',
+      'plus de glace : ni dans Quantités d’eau, ni T° de fin de transfert, ni étape « glace » dans le Process (retirée des process enregistrés) (6.13.0)',
       await page.evaluate(() => {
         const t = document.querySelector('#wtab').innerText,
-          P = ensureProc(),
-          g = P.flatMap(p => p.rows).find(r => r.k === 'glace'),
-          a0 = g.a,
-          tf = a => {
-            const o = wcalc(),
-              tm = wIn('tmout'),
-              ti = wIn('tglace');
-            return { got: o.tf, exp: o.mg ? ((o.mg - a) * tm - a * (80 + 0.5 * Math.abs(ti))) / o.mg : 0 };
-          };
-        g.a = 9;
-        const r1 = tf(9);
-        P[0].rows.push({ k: 'x1', n: 'Ajout de glace pilée', a: 2 });
-        const r2 = tf(11);
-        P[0].rows.pop();
-        if (a0 === undefined) delete g.a;
-        else g.a = a0;
+          E = S.kv.equip,
+          sv = JSON.parse(JSON.stringify(E.proc3));
+        E.proc3[1].rows.push({ k: 'glace', n: 'Glace dans le fermenteur', a: 6 });
+        delete E.noglace1;
+        const gone = !ensureProc().some(p => p.rows.some(r => r.k === 'glace')) && E.noglace1 === 1;
+        E.proc3 = sv;
         return (
-          !/Glace dans le fermenteur|T° du moût/.test(t) &&
+          gone &&
+          !/Glace|T° du moût/.test(t) &&
           !document.querySelector('[data-r="glace"]') &&
           !document.querySelector('#w-tf') &&
-          Math.abs(r1.got - r1.exp) < 1e-9 &&
-          Math.abs(r2.got - r2.exp) < 1e-9 &&
+          wcalc().tf === undefined &&
           !document.querySelector('#wtab').innerText.includes('(E – M)')
         );
       })
@@ -1308,22 +1306,20 @@ async function scenarioApp(label) {
     );
     await nav(page, 'params');
     check(
-      'Paramètres : plus de champ glace ; la glace du Process est reprise comme liquide froid de la section Calculs',
+      'Paramètres : plus de champ glace ; liquide froid de la section Calculs = 6 L par défaut (6.13.0)',
       await page.evaluate(
-        () =>
-          !document.querySelector('.wi[data-w="glace"]') && /* 6.9.0 : glace réglée dans le Process, reprise par Calculs */
-          Math.abs(+document.querySelector('[data-calc="cv"]').value - wIn('glace')) < 0.01
+        () => !document.querySelector('.wi[data-w="glace"]') && Math.abs(+document.querySelector('[data-calc="cv"]').value - 6) < 0.01
       )
     );
     await nav(page, 'conception');
     await nav(page, 'sheet');
     check(
-      'feuille de brassage : valeurs calculées (eau, glace, resucrage, sucre total)',
+      'feuille de brassage : valeurs calculées (eau, resucrage, sucre total), plus de glace ni de carte Températures (6.13.0)',
       await page.evaluate(() => {
         const t = document.querySelector('#main').innerText;
         return (
           /Eau d’empâtage/.test(t) &&
-          /Glace dans le fermenteur/.test(t) &&
+          !/Glace|Températures/i.test(t) &&
           /Quantité totale de sucre/.test(t) &&
           /En bouteilles/.test(t)
         );
@@ -2711,8 +2707,10 @@ check(
                 const mh = [...pdd.querySelectorAll('table.mash')].map(t => [...t.querySelectorAll('th')].map(x => x.textContent.trim()).join('|'));
                 o.mash = mh.length === 1 && mh[0] === 'Palier|°C|Temps' && !pdd.querySelector('table.mash input');
                 /* 6.12.5 : volumes d'eau = Étape, Volume (L), Densité ; carte des notes seulement s'il y a des notes */
-                const eh = [...pdd.querySelectorAll('table.eau th')].map(x => x.textContent.trim()).join('|');
-                o.eau = eh === 'Étape|Volume (L)|Densité' && !pdd.querySelector('table.eau input');
+                /* 6.12.6 : Process (Paramètres) à la place des volumes d'eau */
+                const eh = [...pdd.querySelectorAll('table.proc th')].map(x => x.textContent.trim()).join('|');
+                o.eau = eh === 'Étape|Pertes (L)|Ajouts (L)|Volume (L)|Densité' && !/Volumes d’eau/.test(pdd.body.textContent) &&
+                  pdd.querySelectorAll('table.proc tr.pph').length === ensureProc().length && /DI \(densité initiale visée\)/.test(pdd.body.textContent);
                 const nb = JSON.parse(JSON.stringify(b)),
                   wn = JSON.parse(JSON.stringify(b));
                 nb.recipe.notes = '';
@@ -2720,7 +2718,7 @@ check(
                 o.notes = !/class="card notes"/.test(bxPdfDoc(nb)) && /class="card notes"/.test(bxPdfDoc(wn)) && /Fermentation à 18/.test(bxPdfDoc(wn));
                 o.title = /line-height:1\.4!important/.test(pd);
               }
-              o.order = !!p1 && all.indexOf('Resucrage') < all.indexOf('Volumes d’eau') && (all.indexOf('Notes de brassage') < 0 || all.indexOf('Volumes d’eau') < all.indexOf('Notes de brassage')) && !/Températures/.test(all);
+              o.order = !!p1 && all.indexOf('Resucrage') < all.indexOf('Process') && (all.indexOf('Notes de brassage') < 0 || all.indexOf('Process') < all.indexOf('Notes de brassage')) && !/Températures/.test(all);
             }
             o.doc = /sd-classique/.test(pd) && /class="shhead"/.test(pd) && /@font-face\{font-family:'LF Anton'/.test(pd) && /@font-face\{font-family:'Inter'/.test(pd);
             document.getElementById('bview').click();
@@ -8238,10 +8236,10 @@ async function scenarioI18n() {
       })
     );
     check(
-      'HTML (6.10.0) : plus de ligne « Brassin N° » ni de tableau ÉLECTRICITÉ ; version du gabarit 7',
+      'HTML (6.10.0) : plus de ligne « Brassin N° » ni de tableau ÉLECTRICITÉ ; version du gabarit 8 (6.13.0 : sans glace)',
       await page.evaluate(() => {
         const h = htmlCode();
-        return !/Brassin N°/.test(h) && !/ÉLECTRICITÉ/.test(h) && /PARAMETRES/.test(h) && /LEVURE/.test(h) && HTMLV === 7;
+        return !/Brassin N°/.test(h) && !/ÉLECTRICITÉ/.test(h) && /PARAMETRES/.test(h) && /LEVURE/.test(h) && HTMLV === 8 && !/glace/i.test(h);
       })
     );
     {
